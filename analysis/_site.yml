@@ -1,7 +1,7 @@
-name: "CorticalAmygdala_pipelines"
+name: CorticalAmygdala_pipelines
 output_dir: ../docs
 navbar:
-  title: "CorticalAmygdala_pipelines"
+  title: CorticalAmygdala_pipelines
   left:
   - text: Home
     href: index.html
@@ -9,6 +9,10 @@ navbar:
     href: about.html
   - text: License
     href: license.html
+  right:
+  - icon: fab fa-github
+    text: Source code
+    href: https://github.com/jamesrhowe/CorticalAmygdala_pipelines
 output:
   workflowr::wflow_html:
     toc: yes
