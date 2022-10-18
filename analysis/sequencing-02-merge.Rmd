@@ -308,7 +308,7 @@ src_list <- mapply(function(tab_name, dr_type, dim1, dim2) {
     src <- c(
         "### {{tab_name}} {.unnumbered}",
         "```{r batch-{{tab_name}}, message = FALSE, warning = FALSE}",
-        "cluster_plot_formatted(array, '{{dr_type}}', 'orig.ident', batch_colors)",  
+        "cluster_plot_formatted(array, '{{dr_type}}', 'orig.ident', batch_colors_rna)",  
         "```",
         ""
     )
