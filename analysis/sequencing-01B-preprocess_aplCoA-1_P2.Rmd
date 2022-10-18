@@ -1,0 +1,463 @@
+---
+author: "James Howe"
+params:
+  dataset: "aplCoA-1_P2"
+  input_path: "data/sequencing/RNA/"
+  output_path: "output/sequencing/01-preprocess-RNA/"
+title: "Preprocessing: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This notebook is a basic workflow to go from raw CellRanger pipeline output to a pre-processed, Seurat-formatted dataset with low-quality cells, doublets, and outliers removed.  Most filtering steps have already been extensively validated, in most cases in the pipeComp paper (see methods for pipeline references).
+
+```{r setup, message = FALSE, warning = FALSE}
+# set up paths
+input <- params$input_path
+output <- params$output_path
+id <- params$dataset
+path <- paste0(input, id)
+
+# import helper scripts
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
+
+# load packages
+require(DropletUtils)
+require(scDblFinder)
+require(tidyverse)
+require(Seurat)
+require(BUSpaRse)
+require(biomaRt)
+require(scater)
+require(Matrix.utils)
+require(knitr)
+require(future)
+
+# set up parallelization, multisession for compatibility purposes, assuming 32GB RAM
+plan("multisession", earlySignal = TRUE, gc = TRUE)
+options(future.globals.maxSize = 32 * 1024 ^ 3)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+# Load expression data
+
+The input parameters should specify the location of the raw (unfiltered) g-zipped matrix output of cellranger for preprocessing and the name of the associated dataset, which will be carried forward into downstream analyses. This step also adds an identifier to the label for each cell to ensure they maintain the identity of their respective sample, regardless of file format. Uses a dash and underscore for string splitting downstream to produce metadata for each in terms of the condition and batch.
+
+```{r 1-read_raw_mtx, message = FALSE, warning = FALSE}
+# load the kallisto array
+array <- Read10X(data.dir = path, strip.suffix = TRUE)
+colnames(array) <- paste0(id, "_", colnames(array))
+```
+
+# Barcode filtration
+
+Filters barcodes using emptyDrops, which compares likely non-empty droplets with ambient RNA profiles in droplets, determining whether a droplet is significantly more full than empty droplets. Droplets with less than 100 total counts are used to construct the ambient RNA profile and an FDR threshold below 0.001 are used to select putatively occupied droplets. All barcodes with greater than 1000 UMIs were further assumed non-empty.
+
+## Call cells with emptyDrops {.tabset}
+
+```{r 2-barcode_call, message = FALSE, warning = FALSE}
+# run emptyDrops
+barcode_filter <- emptyDrops(array, retain = 1000)
+barcode_filter$FDR[is.na(barcode_filter$FDR)] <- 1
+knee_ranks <- barcodeRanks(array)
+
+# export metrics
+plot_array <- list(cbind.data.frame(knee_ranks$rank, 
+                                 knee_ranks$total, 
+                                 barcode_filter$FDR,
+                                 barcode_filter$FDR < 0.001),
+                     sum(barcode_filter$FDR < 0.001),
+                     (sum(array[,barcode_filter$FDR < 0.001]) / sum(array)),
+                     knee_ranks@metadata$knee,
+                     knee_ranks@metadata$inflection)
+names(plot_array) <- c("Metrics", "Total", "UMIs_in_cells", "Knee_threshold", "Inflection_threshold")
+colnames(plot_array$Metrics) <- c("Rank", "UMIs", "FDR", "Retain")
+rownames(plot_array$Metrics) <- c(knee_ranks@rownames)
+
+# actually filter the array
+array <- array[, plot_array$Metrics$FDR < 0.001]
+
+cat(paste(plot_array$Total, "barcodes retained"),
+    paste0(round(plot_array$UMIs_in_cells*100, 2), "% UMIs in cells"), sep = "\n")
+```
+
+### Knee plot
+
+```{r 3-knee_plot, message = FALSE, warning = FALSE}
+# remove duplicates, will crash notebook and computer if retained in plot
+plot_array$Metrics <- plot_array$Metrics[!duplicated(plot_array$Metrics$Rank),]
+plot_array$Metrics <- plot_array$Metrics[order(plot_array$Metrics$Rank),]
+
+# produce knee plot for output of emptyDrops
+knee_plot(plot_array)
+```
+
+### Metrics
+
+```{r 4-first_metrics, message = FALSE, warning = FALSE}
+# give first stage QC metrics
+cat(paste("Called barcodes:", length(colnames(array))), 
+    paste("Mean UMIs/called barcode:", round(sum(array)/length(colnames(array)), 2)),
+    paste("Mean Features/called barcode:", round(sum(array != 0)/length(colnames(array)), 2)),
+    paste("Percent reads in called barcodes:", round(plot_array$UMIs_in_cells*100, 2)), 
+    paste("Knee point:", plot_array$Knee_threshold),
+    paste("Inflection point:", plot_array$Inflection_threshold), sep = "\n")
+```
+
+# Format into Seurat object {.tabset}
+
+Seurat objects are by far the most versatile and easiest to perform pre-processing on, so all subsequent steps will work with Seurat-formatted data matrices. This step also uses aforementioned string splitting to extract the condition, and it also determines mitochondrial and ribosomal read proportion.
+
+```{r 5-format_data, message = FALSE, warning = FALSE}
+array <- CreateSeuratObject(array)
+  
+# add non-nuclear read proportion metadata
+Mito_proportion <- Matrix::colSums(array[grepl("^mt-|-mt-", rownames(array)),]) / array$nCount_RNA * 100
+array <- AddMetaData(array, Mito_proportion, col.name = "Mito_proportion")
+
+Ribo_proportion <- Matrix::colSums(array[grepl("rpl|rps", rownames(array)),]) / array$nCount_RNA * 100
+array <- AddMetaData(array, Ribo_proportion, col.name = "Ribo_proportion")
+
+# add group information by string splitting ID, removing replicate
+array <- AddMetaData(array, strsplit(id, "-")[[1]][1], col.name = "Region")
+
+track_data <- c("post-emptyDrops", length(colnames(array)),
+                as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                round(mean(array$Mito_proportion), digits = 3), 
+                round(mean(array$Ribo_proportion), digits = 3))
+```
+
+## Abridged Metrics
+
+```{r 6-abridged_metrics_initial, warning = FALSE, message = FALSE}
+cat(paste(length(colnames(array)), "called barcodes"),
+    paste(round(mean(array$nCount_RNA), 2), "mean counts per called barcode"),
+    paste(round(mean(array$nFeature_RNA), 2), "mean features per called barcode"), sep = "\n")
+```
+
+## Complete Metrics
+
+```{r 7-complete_metrics_initial, warning = FALSE, message = FALSE}
+count_all(paste(id, "called barcode"), array)
+```
+
+# Quality control
+
+## Perform complexity filtering {.tabset}
+
+Remove cells with fewer than 1000 features. Some differentially filter cells and glia, but doing both at 1000 should be far less complex, and sufficient for our purposes.
+
+```{r 8-complexity_filter, warning = FALSE, message = FALSE}
+
+# Store pre-filter population metrics for plotting
+plot_complex_array <- cbind.data.frame(array$nCount_RNA, 
+                                       array$nFeature_RNA, 
+                                       array$nFeature_RNA > 1000)
+colnames(plot_complex_array) <- c("UMIs", "Genes", ">1000 Genes")
+
+# Remove all cells with fewer than 1000 UMIs
+array <- subset(array, subset = nFeature_RNA >= 1000)
+
+track_data <- rbind.data.frame(track_data,
+                               c("1000 features", length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))
+```
+
+### Scatter
+
+```{r 9-complexity_plot, warning = FALSE, message = FALSE}
+filter_plot(plot_complex_array, "Genes", "UMIs", ">1000 Genes")
+```
+
+### Histogram
+
+```{r 10-complexity_histogram, warning = FALSE, message = FALSE}
+filter_histogram(plot_complex_array, "Genes", ">1000 Genes", 20, 1000)
+```
+
+### Metrics
+
+```{r 11-complexity_metrics, warning = FALSE, message = FALSE}
+cat(count_all(paste(id, "nucleus with >1000 features"), array), 
+    paste(id, "nuclei passing 1000-feature complexity filter:", length(colnames(array))), sep = "\n")
+```
+
+## Perform outlier filtering {.tabset}
+
+Remove cells that deviate from the median count/cell by more than 5 median absolute deviations. This is mostly to remove potential doublets not detected by scDblFinder, as massive outliers could be cells of similar type loaded into the same droplet. The cutoff is extremely lenient to avoid accidentally removing real cells. Needs to be performed after complexity filtering, or else the cutoff will be artificially low and could remove non-outliers.
+
+```{r 12-high_outlier_filter, warning = FALSE, message = FALSE}
+# Store pre-filter population metrics for plotting
+plot_count_array <- cbind.data.frame(array$nCount_RNA, 
+                                     array$nFeature_RNA, 
+                                     array$nCount_RNA < median(array$nCount_RNA)+
+                                                        5*mad(array$nCount_RNA)) 
+colnames(plot_count_array) <- c("UMIs", "Genes", "<median+5xMAD")
+
+# Remove all cells with fewer than 1000 UMIs
+array <- subset(array, subset = nCount_RNA < median(array$nCount_RNA)+5*mad(array$nCount_RNA))
+
+track_data <- rbind.data.frame(track_data,
+                               c("UMI outliers", length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))
+```
+
+### Scatter
+
+```{r 13-outlier_plot, warning = FALSE, message = FALSE}
+filter_plot(plot_count_array, "Genes", "UMIs", "<median+5xMAD")
+```
+
+### Histogram
+
+```{r 14-outlier_histogram, warning = FALSE, message = FALSE}
+filter_histogram(plot_count_array, "UMIs", "<median+5xMAD", 200,
+                 median(plot_count_array$UMIs)+5*mad(plot_count_array$UMIs))
+```
+
+### Metrics
+
+```{r 15-outlier_metrics, warning = FALSE, message = FALSE}
+cat(count_all(paste(id, "nucleus passing all filters"), array), 
+    paste(id, "nuclei passing high outlier filtering:", length(colnames(array))), sep = "\n")
+```
+
+## Mitochondrial read filter {.tabset}
+
+According to pipeComp, removing high ribosomal read outliers mildly increases pipeline performance if done downstream with SCTransform and in tandem with removing high mitochondrial read outliers. This cell filters out high outlier nuclei where their mitochondrial read proportion exceeds Q3+5xIQR. Median absolute deviation-based filtering is ideal, but the median is zero for many nuclear libraries, making it infeasible in many cases, so Q3 is used instead.
+
+```{r 16-mito_filter, message = FALSE, warning = FALSE}
+# Store pre-filter population metrics for plotting
+plot_mito_array <- cbind.data.frame(array$nCount_RNA, 
+                                    array$Mito_proportion,
+                                    array$Mito_proportion <= quantile(array$Mito_proportion)[4]
+                                                             +5*IQR(array$Mito_proportion))
+colnames(plot_mito_array) <- c("UMIs", "Mito_proportion", "<Q3+5xIQR")
+
+# Remove all extreme high outliers for mitochondrial reads, defined as Q3+5*IQR, which is an EXTREMELY lenient standard 
+array <- subset(array, subset = Mito_proportion <= quantile(array$Mito_proportion)[4]+
+                                                   5*IQR(array$Mito_proportion))
+
+track_data <- rbind.data.frame(track_data,
+                               c("Mito filter", length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))
+```
+
+### Scatter
+
+```{r 17-mito_plot, warning = FALSE, message = FALSE}
+filter_plot(plot_mito_array, "UMIs", "Mito_proportion", "<Q3+5xIQR")
+```
+
+### Histogram
+
+```{r 18-mito_histogram, warning = FALSE, message = FALSE}
+filter_histogram(plot_mito_array, "Mito_proportion", "<Q3+5xIQR", .01, 
+                 quantile(plot_mito_array$Mito_proportion)[4]+5*IQR(plot_mito_array$Mito_proportion))
+```
+
+### Metrics
+
+```{r 19-mito_metrics, warning = FALSE, message = FALSE}
+cat(count_all(paste(id, "nucleus passing mitochondrial read filter"), array),
+    paste(id,  "nuclei passing mitochondrial outlier filters:", length(colnames(array))), sep = "\n")
+```
+
+## Perform quality filtering: ribosomal reads {.tabset}
+
+Repeat this filtration with mitochondrial read proportion.
+
+```{r 20-ribo_filter, message = FALSE, warning = FALSE}
+# Store pre-filter population metrics for plotting
+plot_ribo_array <- cbind.data.frame(array$nCount_RNA, 
+                                    array$Ribo_proportion,
+                                    array$Ribo_proportion <= quantile(array$Ribo_proportion)[4]
+                                                             +5*IQR(array$Ribo_proportion))
+colnames(plot_ribo_array) <- c("UMIs", "Ribo_proportion", "<Q3+5xIQR")
+
+# Remove all extreme high outliers for mitochondrial reads, defined as Q3+5*IQR, which is an EXTREMELY lenient standard 
+array <- subset(array, subset = Ribo_proportion <= quantile(array$Ribo_proportion)[4]
+                                                   +5*IQR(array$Ribo_proportion))
+
+track_data <- rbind.data.frame(track_data,
+                               c("Ribo filter", length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))
+```
+
+### Scatter
+
+```{r 21-ribo_plot, warning = FALSE, message = FALSE}
+filter_plot(plot_ribo_array, "UMIs", "Ribo_proportion", "<Q3+5xIQR")
+```
+
+### Histogram
+
+```{r 22-ribo_histogram, warning = FALSE, message = FALSE}
+filter_histogram(plot_ribo_array, "Ribo_proportion", "<Q3+5xIQR", .001, 
+                 quantile(plot_ribo_array$Ribo_proportion)[4]+5*IQR(plot_ribo_array$Ribo_proportion))
+```
+
+### Metrics
+
+```{r 23-ribo_metrics, warning = FALSE, message = FALSE}
+cat(count_all(paste(id, "nucleus passing ribosomal read filter"), array), 
+    paste(id,  "nuclei passing ribosomal outlier filters:", length(colnames(array))), sep = "\n")
+```
+
+# Remove doublets {.tabset}
+
+According to pipeComp,
+the DoubletFinder package performs the best for doublet classification, creating artificial doublets and removing similar barcodes in gene expression space. scDblFinder is a more scalable implementation of this workflow. 
+
+```{r 24-doublet_filter, message = FALSE, warning = FALSE}
+sce <- as.SingleCellExperiment(array) %>%
+    scDblFinder
+
+# add DR to the SCE array for downstream plotting
+sce <- scater::runPCA(sce)
+sce <- scater::runTSNE(sce)
+sce <- scater::runUMAP(sce)
+
+plot_array <- cbind.data.frame(array$nCount_RNA, 
+                               array$nFeature_RNA,
+                               sce$scDblFinder.class)
+colnames(plot_array) <- c("UMIs", "Features", "Doublet_status")
+
+# subset the actual array and the sce array for plotting
+array <- subset(array, cells = colnames(array)[sce$scDblFinder.class == "singlet"])
+sce <- sce[,sce$scDblFinder.class == "singlet"]  
+
+track_data <- rbind.data.frame(track_data,
+                               c("Doublet filter", length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))
+colnames(track_data) <-  c("Filter_step", "Total_nuclei", 
+                           "Mean_counts", "Mean_features", 
+                           "Mean_mito", "Mean_ribo")
+track_data$Filter_step <- factor(track_data$Filter_step, levels = track_data$Filter_step)
+for (i in 2:length(colnames(track_data))){
+  track_data[,i] <- as.numeric(track_data[,i])
+}
+
+metrics_dr <- c("scDblFinder.score", "nCount_RNA", "nFeature_RNA", 
+                "Ribo_proportion", "Mito_proportion")
+```
+
+## Abridged Metrics
+
+```{r 25-abridged_metrics_initial, warning = FALSE, message = FALSE}
+cat(paste(length(colnames(array)), "pre-processed nuclei"),
+    paste(round(mean(array$nCount_RNA), 2), "mean counts per pre-processed nucleus"),
+    paste(round(mean(array$nFeature_RNA), 2), "mean features per pre-processed nucleus"), sep = "\n")
+```
+
+## Complete Metrics
+
+```{r 26-complete_metrics_initial, warning = FALSE, message = FALSE}
+# get final metrics
+cat(count_all(paste(id, "nuclei passing all preprocessing filters"), array),
+    paste(id, "nuclei passing all preprocessing filters:", length(colnames(array))), sep = "\n")
+```
+
+# Metric visualization {.tabset}
+
+## PCA {.tabset}
+
+```{r 27-pca_metrics, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(metrics_dr, function(mdr) {
+    src <- c(
+        "### {{mdr}} {.unnumbered}",
+        "```{r pca-metrics-{{mdr}}, message = FALSE, warning = FALSE}",
+        "plotPCA(sce, colour_by = '{{mdr}}') + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## tSNE {.tabset}
+
+```{r 28-tsne_metrics, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(metrics_dr, function(mdr) {
+    src <- c(
+        "### {{mdr}} {.unnumbered}",
+        "```{r tsne-metrics-{{mdr}}, message = FALSE, warning = FALSE}",
+        "plotTSNE(sce, colour_by = '{{mdr}}') + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## UMAP {.tabset}
+
+```{r 29-umap_metrics, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(metrics_dr, function(mdr) {
+    src <- c(
+        "### {{mdr}} {.unnumbered}",
+        "```{r umap-metrics-{{mdr}}, message = FALSE, warning = FALSE}",
+        "plotUMAP(sce, colour_by = '{{mdr}}') + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Filter progression {.tabset}
+
+Shows the effect of each filter on the aggregate key metric of interest.
+
+```{r 30-progression_nuclei, message = FALSE, warning = FALSE, results= "hide"}
+src_list <- mapply(function(metric, label) {
+    src <- c(
+        "## {{label}} {.unnumbered}",
+        "```{r progression-{{label}}, message = FALSE, warning = FALSE}",
+        "filter_progression(track_data, '{{metric}}')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, c("Total_nuclei", "Mean_counts", "Mean_features", "Mean_mito", "Mean_ribo"),
+   c("Total Nuclei", "Mean UMIs", "Mean Features", 
+     "Mean Mitochodrial Proportion", "Mean Ribosomal Proportion"))
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Save pre-processed matrix
+
+The output can now be passed to the next step of the pipeline, library merging and normalization.
+
+```{r 31-save_output, message=FALSE, warning=FALSE}
+saveRDS(array, file = paste0(output, id, "_RNA_preprocess.rds"))
+```
