@@ -3,8 +3,7 @@ author: "James Howe"
 params:
   id: "plCoA"
   input_path: "output/sequencing/01-preprocess-RNA/"
-  output_path: "output/sequencing/02-merge-RNA/"
-  dimn: 30
+  output_path: "output/sequencing/02-semisupervised_rd1/"
 title: "Merge, transform, and format RNA datasets: `r params$id`"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 ---
@@ -17,7 +16,6 @@ This notebook merges the individual libraries into a single dataset, adds the ap
 id <- params$id
 input <- params$input_path
 output <- params$output_path
-dimn <- params$dimn
 
 source("code/sequencing_misc.R")
 source("code/sequencing-color_scales.R")
@@ -78,7 +76,7 @@ colnames(plot_merge_array) <- c("UMIs", "Genes", "Batch", "Region")
 
 ## Total Nuclei
 
-```{r 3-total_nuclei, message = FALSE, warning = FALSE}
+```{r 3-total_nuclei, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 3}
 total_nuclei_plot(plot_merge_array)
 ```
 
@@ -104,11 +102,11 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Batch {.tabset}
 
-```{r 5-batch_violin, message = FALSE, warning = FALSE, results = "hide"}
+```{r 5-batch_violin, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
 src_list <- mapply(function(metric, label){
     src <- c(
         "#### {{label}} {.unnumbered}",
-        "```{r batch_violin-{{metric}}, message = FALSE, warning = FALSE}",
+        "```{r batch_violin-{{metric}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}",
         "violin_metrics_formatted(array, 'orig.ident', '{{metric}}', '{{label}}', batch_colors_rna)",  
         "```",
         ""
@@ -122,11 +120,11 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Region {.tabset}
 
-```{r 6-region_violin, message = FALSE, warning = FALSE, results = "hide"}
+```{r 6-region_violin, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
 src_list <- mapply(function(metric, label){
     src <- c(
         "#### {{label}} {.unnumbered}",
-        "```{r region_violin-{{metric}}, message = FALSE, warning = FALSE}",
+        "```{r region_violin-{{metric}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}",
         "violin_metrics_formatted(array, 'Region', '{{metric}}', '{{label}}', region_colors)",  
         "```",
         ""
@@ -244,8 +242,10 @@ cat(paste0("First 50 PCs explain ", round(plot_var_array$Cumulative_variance[50]
 
 ### Elbow Plot
 
-```{r 15-elbow, message = FALSE, warning = FALSE}
-ElbowPlot(array, ndims = 50)
+```{r 15-elbow, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 12}
+pc_info <- find_optimum_pcs(array)
+
+improved_elbow_plot(pc_info)
 ```
 
 ### Variance Explained
@@ -297,8 +297,8 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 The top two principal components are generally unsuitable for visualizing single cell -omics data. As a result, non-linear dimensionality reduction incorporating all relevant top PCs must be used. This is implemented via tSNE or UMAP. Seurat's tSNE implementation is sufficient at default settings. via UMAP, using Seurat's native RunUMAP function, running uwot under the hood. The number of epochs has been increased to 1000 from defaults (because it increases stability), and the min.dist has been raised to 0.5 (because it makes global structure more legible).
 
 ```{r 19-tsne_umap, message = FALSE, warning = FALSE}
-array <- RunTSNE(array, verbose = FALSE, dims.use = 1:dimn)
-array <- RunUMAP(array, verbose = FALSE, dims = 1:dimn, n.epochs = 1000, min.dist = 0.5)
+array <- RunTSNE(array, verbose = FALSE, dims.use = 1:pc_info$Optimal_PCs)
+array <- RunUMAP(array, verbose = FALSE, dims = 1:pc_info$Optimal_PCs, n.epochs = 1000, min.dist = 0.5)
 ```
 
 ## Batch {.tabset}
@@ -321,12 +321,50 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ## Region {.tabset}
 
-```{r 21-dr_region, message = FALSE, warning = FALSE,  results = "hide"}
+### All {.tabset}
+
+```{r 21-dr_region_all, message = FALSE, warning = FALSE,  results = "hide"}
 src_list <- mapply(function(tab_name, dr_type, dim1, dim2) {
     src <- c(
-        "### {{tab_name}} {.unnumbered}",
-        "```{r region-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r region-all-{{tab_name}}, message = FALSE, warning = FALSE}",
         "cluster_plot_formatted(array, '{{dr_type}}', 'Region', region_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### aplCoA {.tabset}
+
+```{r 22-dr_region_aplCoA, message = FALSE, warning = FALSE,  results = "hide"}
+src_list <- mapply(function(tab_name, dr_type, dim1, dim2) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r region-aplCoA-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "cluster_plot_formatted(array[, array$Region == 'aplCoA'], '{{dr_type}}', 'Region', region_colors[1])",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### pplCoA {.tabset}
+
+```{r 23-dr_region_pplCoA, message = FALSE, warning = FALSE,  results = "hide"}
+src_list <- mapply(function(tab_name, dr_type, dim1, dim2) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r region-pplCoA-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "cluster_plot_formatted(array[, array$Region == 'pplCoA'], '{{dr_type}}', 'Region', region_colors[2])",  
         "```",
         ""
     )
@@ -339,7 +377,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ## UMIs {.tabset}
 
-```{r 22-dr_umis, message = FALSE, warning = FALSE, results = "hide"}
+```{r 24-dr_umis, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(tab_name, dr_type) {
     src <- c(
         "### {{tab_name}} {.unnumbered}",
@@ -357,7 +395,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ## Genes {.tabset}
 
-```{r 23-dr_genes, message = FALSE, warning = FALSE, results = "hide"}
+```{r 25-dr_genes, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(tab_name, dr_type) {
     src <- c(
         "### {{tab_name}} {.unnumbered}",
@@ -375,7 +413,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ## % Mito {.tabset}
 
-```{r 24-dr_mito, message = FALSE, warning = FALSE, results = "hide"}
+```{r 26-dr_mito, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(tab_name, dr_type) {
     src <- c(
         "### {{tab_name}} {.unnumbered}",
@@ -393,7 +431,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ## % Ribo {.tabset}
 
-```{r 25-dr_ribo, message = FALSE, warning = FALSE, results = "hide"}
+```{r 27-dr_ribo, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(tab_name, dr_type) {
     src <- c(
         "### {{tab_name}} {.unnumbered}",
@@ -413,6 +451,6 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 The output can now be passed to the next step of the pipeline, broad cell type classification.
 
-```{r 26-save_output, message = FALSE, warning = FALSE}
-saveRDS(array, file = paste0(output, id, "_merged.rds"))
+```{r 28-save_output, message = FALSE, warning = FALSE}
+saveRDS(array, file = paste0(output, id, "_merged_rd1_RNA.rds"))
 ```
