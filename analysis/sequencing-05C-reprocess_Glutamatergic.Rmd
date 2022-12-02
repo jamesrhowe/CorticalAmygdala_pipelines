@@ -1,0 +1,442 @@
+---
+author: "James Howe"
+params:
+  id: "plCoA"
+  class: "Glutamatergic"
+  input_path: "output/sequencing/03-clusters-RNA/"
+  output_path: "output/sequencing/05-subcluster_process-RNA/"
+  dimn: 20
+title: "Transform subcluster datasets: `r params$id` `r params$class`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This notebook takes the subsetted array for all neurons, transforms/normalizes the data using SCTransform, and then performs linear dimensionality reduction initially via principal component analysis, followed by non-linear dimensionality reduction via tSNE and UMAP (see methods for references). It then does clustering at resolution 1, then separates neurons into glutamatergic, GABAergic, or other. This is required because top-level clustering often misassigns one or more clusters into the wrong class, and correct assignments are necessary for classification.
+
+```{r setup, message = FALSE, warning = FALSE}
+id <- params$id
+input <- params$input_path
+output <- params$output_path
+dimn <- params$dimn
+cell_class <- params$class
+
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
+
+require(tidyverse)
+require(Seurat)
+require(sparseMatrixStats)
+require(knitr)
+require(scCustomize)
+
+# increase memory size to ensure nothing hangs
+options(future.globals.maxSize = 32 * 1024 ^ 3)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+# Read in data from step 01
+
+Extracts all of the paths and their dataset names from the outputs of step 1, then puts them into a list for merging.  
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+array <- readRDS(paste0(input, id, "_", cell_class, "_initial.rds"))
+
+plot_merge_array <- cbind.data.frame(array$nCount_RNA, 
+                               array$nFeature_RNA,
+                               array$orig.ident,
+                               array$Region)
+colnames(plot_merge_array) <- c("UMIs", "Genes", "Batch", "Region")
+```
+
+## Metrics
+
+```{r 2-merge_metrics, message = FALSE, warning = FALSE}
+count_all(paste(id, cell_class, "nuclei passing filter"), array)
+
+table(array$orig.ident)
+table(array$Region)
+```
+
+## Total Nuclei
+
+```{r 3-total_nuclei, message = FALSE, warning = FALSE, dev = "svg"}
+total_nuclei_plot(plot_merge_array)
+```
+
+## Genes/UMIs Scatter {.tabset}
+
+```{r 4-gene_umi_scatter, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(br, br_colors){
+    src <- c(
+        "### {{br}} {.unnumbered}",
+        "```{r gene_umi_scatter-{{br}}, message = FALSE, warning = FALSE}",
+        "count_feature_plot(plot_merge_array, '{{br}}', {{br_colors}})",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, batch_region, batch_color_list)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Violin {.tabset}
+
+### Batch {.tabset}
+
+```{r 5-batch_violin, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(metric, label){
+    src <- c(
+        "#### {{label}} {.unnumbered}",
+        "```{r batch_violin-{{metric}}, message = FALSE, warning = FALSE}",
+        "violin_metrics_formatted(array, 'orig.ident', '{{metric}}', '{{label}}', batch_colors_rna)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, vln_metrics$id, vln_metrics$label)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Region {.tabset}
+
+```{r 6-region_violin, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(metric, label){
+    src <- c(
+        "#### {{label}} {.unnumbered}",
+        "```{r region_violin-{{metric}}, message = FALSE, warning = FALSE}",
+        "violin_metrics_formatted(array, 'Region', '{{metric}}', '{{label}}', region_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, vln_metrics$id, vln_metrics$label)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Metrics
+
+```{r 7-merge_metrics, message = FALSE, warning = FALSE}
+count_all(paste(id, "nuclei passing filter"), array)
+
+table(array$orig.ident)
+table(array$Region)
+```
+
+# Filter non-expressed genes {.tabset}
+
+Removal of non-expressed genes de-noises the array and improves downstream pipeline performance. This step eliminates all genes expressed in 3 or fewer cells, a very lenient cutoff.
+
+```{r 8-gene_filter, message = FALSE, warning = FALSE}
+plot_gene_array <- cbind.data.frame(rowMeans(array@assays$RNA@counts),
+                                    rowSums(array@assays$RNA@counts != 0),
+                                    rowVars(array@assays$RNA@counts),
+                                    (rowVars(array@assays$RNA@counts) / 
+                                     rowMeans(array@assays$RNA@counts))^2,
+                                    rowSums(array@assays$RNA@counts != 0) > 3,
+                                    rownames(array@assays$RNA@counts))
+colnames(plot_gene_array) <- c("Mean", "Total_cells", "Variance_raw", "CV2", ">3 Nuclei", "Gene_ID")
+
+plot_diff_array <- cbind.data.frame(array$nCount_RNA, array$nFeature_RNA)
+colnames(plot_diff_array) <- c("Orig_count", "Orig_features")
+
+array <- subset(array, features = which(rowSums(array) > 3))
+```
+
+## Scatter
+
+```{r 9-gene_scatter, message = FALSE, warning = FALSE}
+gene_filter_formatted(plot_gene_array)
+```
+
+## Metrics
+
+```{r 10-gene_metrics, message = FALSE, warning = FALSE}
+cat(paste(round(mean(plot_gene_array$Mean), 3), "average UMIs per gene per nucleus"),
+    paste(round(mean(plot_gene_array$Total_cells), 0), "mean nuclei expressing each gene"), 
+    paste(length(rownames(array)), "genes expressed in >3 nuclei"), sep = "\n")
+```
+
+# Normalization via SCTransform {.tabset}
+
+SCTransform is the best performing normalization method. It uses a variance stabilizing transform based on Pearson residuals to eliminate count depth differences and robustly approximate log-normalization. 5000 genes are selected as highly variable genes to ensure maximum resolution while removing non-informative features.
+
+```{r 11-sctransform, message = FALSE, warning = FALSE}
+# needs conserve.memory = TRUE, or else it crashes R session on laptop
+array <- SCTransform(array, variable.features.n = 5000, residual_type = "pearson", 
+                     conserve.memory = TRUE, return.only.var.genes = TRUE, verbose = FALSE,
+                     vst.flavor = "v2", vars.to.regress = "Mito_proportion")
+
+HVG <- plot_gene_array$Gene_ID %in% array@assays$SCT@var.features
+plot_gene_array <- cbind.data.frame(plot_gene_array, HVG)
+
+HVG <- rownames(array@assays$SCT@SCTModel.list$model1@feature.attributes) %in% array@assays$SCT@var.features
+plot_sct_array <- cbind.data.frame(array@assays$SCT@SCTModel.list$model1@feature.attributes, HVG)
+```
+
+```{r 12-sct_plots, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(array, x_var, y_var, tab_name) {
+    src <- c(
+        "## {{tab_name}} {.unnumbered}",
+        "```{r sct-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "sct_plot({{array}}, '{{x_var}}', '{{y_var}}')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, c("plot_gene_array", "plot_gene_array", "plot_sct_array", "plot_sct_array"),
+   c("Mean", "Mean", "gmean", "gmean"), c("CV2", "Variance_raw", "variance", "residual_variance"),
+   c("Mean-CV2", "Mean-Variance", "Geometric Mean-Variance", "Geometric Mean-Residual Variance"))
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## List
+
+```{r 13-hvg, message = FALSE, warning = FALSE}
+plot_gene_array[plot_gene_array$HVG == TRUE, 1:4]
+```
+
+# Dimensionality Reduction
+
+## Principal Component Analysis {.tabset}
+
+Runs a principal component analysis on the imported array using Seurat's RunPCA function, returning results for the first 50 principal components. We aim to use all 50 top principal components explaining for downstream clustering. Adding principal components beyond the first 50 has strong diminishing returns and only serves to introduce noise into the reduction in most cases.
+
+```{r 14-pca, message = FALSE, warning = FALSE}
+array <- RunPCA(array, verbose = FALSE)
+
+# create array for downstream plotting, with PCs, total variance, and cumulative variance
+plot_var_array <- cbind.data.frame(c(1:50),
+                                   (array@reductions$pca@stdev)^2
+                                   / array@reductions$pca@misc$total.variance,
+                                   cumsum((array@reductions$pca@stdev)^2
+                                           / array@reductions$pca@misc$total.variance))
+colnames(plot_var_array) <- c("PC", "Proportion_variance", "Cumulative_variance")
+
+cat(paste0("First 50 PCs explain ", round(plot_var_array$Cumulative_variance[50]*100, 1), "% of the variance"))
+```
+
+### Elbow Plot
+
+```{r 15-elbow, message = FALSE, warning = FALSE}
+ElbowPlot(array, ndims = 50)
+```
+
+### Variance Explained
+
+```{r 16-var_explained, message = FALSE, warning = FALSE}
+variance_explained_plot(plot_var_array)
+```
+
+### PC Loadings {.tabset}
+
+```{r 17-pca-dim-loadings, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(pc_list, function(pcs) {
+    src <- c(
+        "#### PC {{pcs}} Loadings {.unnumbered}",
+        "```{r pca-loadings-{{pcs}}, message = FALSE, warning = FALSE}",
+        "VizDimLoadings(array, dims = {{pcs}}, reduction = 'pca', balanced = TRUE)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### PC Heatmaps {.tabset}
+
+```{r 18-pca-dim-heatmap, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(pc_list, function(pcs) {
+    src <- c(
+        "#### PC {{pcs}} Heatmap {.unnumbered}",
+        "```{r pca-heatmap-{{pcs}}, message = FALSE, warning = FALSE}",
+        "DimHeatmap(array, dims = {{pcs}}, balanced = TRUE, fast = FALSE) +
+                    scale_fill_gradientn(colours = heatmap_colors) + 
+                    labs(fill = 'PC Score')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Visualization (non-linear DR): tSNE and UMAP (non-integrated) {.tabset}
+
+The top two principal components are generally unsuitable for visualizing single cell -omics data. As a result, non-linear dimensionality reduction incorporating all relevant top PCs must be used. This is implemented via tSNE or UMAP. Seurat's tSNE implementation is sufficient at default settings. via UMAP, using Seurat's native RunUMAP function, running uwot under the hood. The number of epochs has been increased to 1000 from defaults (because it increases stability), and the min.dist has been raised to 0.5 (because it makes global structure more legible).
+
+```{r 19-tsne_umap, message = FALSE, warning = FALSE}
+array <- RunTSNE(array, verbose = FALSE, dims.use = 1:dimn)
+array <- RunUMAP(array, verbose = FALSE, dims = 1:dimn, n.epochs = 1000, min.dist = 0.5)
+```
+
+## Batch {.tabset}
+
+```{r 20-dr_batch, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type, dim1, dim2) {
+    src <- c(
+        "### {{tab_name}} {.unnumbered}",
+        "```{r batch-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "cluster_plot_formatted(array, '{{dr_type}}', 'orig.ident', batch_colors_rna)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Region {.tabset}
+
+### All {.tabset}
+
+```{r 21-dr_region_all, message = FALSE, warning = FALSE,  results = "hide"}
+src_list <- mapply(function(tab_name, dr_type, dim1, dim2) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r region-all-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "cluster_plot_formatted(array, '{{dr_type}}', 'Region', region_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### aplCoA {.tabset}
+
+```{r 22-dr_region_aplCoA, message = FALSE, warning = FALSE,  results = "hide"}
+src_list <- mapply(function(tab_name, dr_type, dim1, dim2) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r region-aplCoA-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "cluster_plot_formatted(array[, array$Region == 'aplCoA'], '{{dr_type}}', 'Region', region_colors[1])",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### pplCoA {.tabset}
+
+```{r 23-dr_region_pplCoA, message = FALSE, warning = FALSE,  results = "hide"}
+src_list <- mapply(function(tab_name, dr_type, dim1, dim2) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r region-pplCoA-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "cluster_plot_formatted(array[, array$Region == 'pplCoA'], '{{dr_type}}', 'Region', region_colors[2])",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## UMIs {.tabset}
+
+```{r 24-dr_umis, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "### {{tab_name}} {.unnumbered}",
+        "```{r umis-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, '{{dr_type}}', 'nCount_RNA', c('lightgrey', 'blue'), NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Genes {.tabset}
+
+```{r 25-dr_genes, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "### {{tab_name}} {.unnumbered}",
+        "```{r genes-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, '{{dr_type}}', 'nFeature_RNA', c('lightgrey', 'blue'), NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## % Mito {.tabset}
+
+```{r 26-dr_mito, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "### {{tab_name}} {.unnumbered}",
+        "```{r mito-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, '{{dr_type}}', 'Mito_proportion', c('lightgrey', 'blue'), NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## % Ribo {.tabset}
+
+```{r 27-dr_ribo, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "### {{tab_name}} {.unnumbered}",
+        "```{r ribo-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, '{{dr_type}}', 'Ribo_proportion', c('lightgrey', 'blue'), NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Save pre-processed matrix (non-integrated)
+
+The output can now be passed to the next step of the pipeline, broad cell type classification.
+
+```{r 28-save_output, message = FALSE, warning = FALSE}
+saveRDS(array, file = paste0(output, id, "_merged.rds"))
+```
+

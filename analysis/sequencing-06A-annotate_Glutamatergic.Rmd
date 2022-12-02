@@ -1,0 +1,677 @@
+---
+author: "James Howe"
+params:
+  id: "plCoA"
+  class: "Glutamatergic"
+  input_path: "output/sequencing/05-subcluster_process-RNA/"
+  output_path: "output/sequencing/06-annotated_subclusters-RNA/"
+  dimn: 15
+title: "Narrow cell type classification: `r params$class`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This notebook identifies subclusters within broad cell types and performs trajectory analysis to find continuity within these groups of cells. 
+
+```{r setup, message = FALSE, warning = FALSE}
+id <- params$id
+input <- paste0(params$input_path)
+output <- paste0(params$output_path)
+cell_class <- params$class
+dimn <- params$dimn
+
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
+
+require(Seurat)
+require(tidyverse)
+require(knitr)
+require(scCustomize)
+require(clustree)
+require(chisq.posthoc.test)
+require(speckle)
+require(ggtree)
+require(pvclust)
+require(dendextend)
+require(heatmap3)
+require(colorRamps)
+require(Libra)
+require(EnhancedVolcano)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+## Read in data from step 02
+
+Imports the merged and transformed Seurat object from step 05. This object should contain SCT data, all relevant metadata, and it should be barcode- and feature-filtered already.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+array <- readRDS(paste0(input, cell_class, "_processed.rds"))
+```
+
+# Cluster nuclei {.tabset}
+
+Clusters nuclei using Seurat's implementation of the Leiden clustering algorithm ([see methods for references), which improves upon the more traditional Louvain algorithm. Clustering is performed at a variety of resolutions so that the best can be chosen from among the different results, ensuring optimal cluster assignments prior to downstream segmentation. 
+
+```{r 2-leiden_clustering, message = FALSE, warning = FALSE}
+array <- FindNeighbors(array, dims = 1:dimn, k.param = 30, verbose = FALSE)
+
+res_index <- c(0.01, seq(0.1, 2, 0.1))
+for (i in 1:length(res_index)){
+  array <- FindClusters(array, method = 4, resolution = res_index[i], verbose = FALSE)
+}
+```
+
+## Clustree {.tabset}
+
+### Standard {.unnumbered}
+
+```{r 3-clustree_standard, message = FALSE, warning = FALSE, fig.height = 10, fig.width = 14}
+clustree(array, prefix = "SCT_snn_res.")
+```
+
+### Stability {.unnumbered}
+
+```{r 4-clustree_stability, message = FALSE, warning = FALSE, fig.height = 10, fig.width = 14}
+clustree(array, prefix = "SCT_snn_res.", node_colour = "sc3_stability")
+```
+
+## Scatter {.tabset}
+
+### PCA {.tabset}
+
+```{r 5-pca_res, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(res_index, function(res) {
+    src <- c(
+        "#### Res {{res}} {.unnumbered}",
+        "```{r pca-res-{{res}}, message = FALSE, warning = FALSE}",
+        "resolution_plot_formatted(array, 'pca', {{res}}, 'SCT')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### tSNE {.tabset}
+
+```{r 6-tsne_res, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(res_index, function(res) {
+    src <- c(
+        "#### Res {{res}} {.unnumbered}",
+        "```{r tsne-res-{{res}}, message = FALSE, warning = FALSE}",
+        "resolution_plot_formatted(array, 'tsne', {{res}}, 'SCT')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### UMAP {.tabset}
+
+```{r 7-umap_res, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(res_index, function(res) {
+    src <- c(
+        "#### Res {{res}} {.unnumbered}",
+        "```{r umap-res-{{res}}, message = FALSE, warning = FALSE}",
+        "resolution_plot_formatted(array, 'umap', {{res}}, 'SCT')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Annotate clusters
+
+## Select optimal resolution
+
+Optimal resolution can be selected by examining clustering on dimension-reduced data to determine if they match visual clustering. Further, clustree (and its packaged stability metric) can be used to find the highest resolution that does not lose stability, providing an optimal balance between over- and under-clustering. It is difficult to automate this without some degree of supervision or hand-curation. This is mostly to identify large clusters, so there is little need to get extremely specific so long as clusters are coherent.
+
+```{r 8-select_resolution, message = FALSE, warning = FALSE}
+optimal_res <- 0.5
+
+clusters <- array[[paste0("SCT_snn_res.", optimal_res)]]
+array[["seurat_clusters"]] <- NULL
+for (i in 1:21){
+  array[[paste0("SCT_snn_res.", res_index[i])]] <- NULL 
+}
+array <- AddMetaData(array, clusters, col.name = "clusters")
+Idents(array) <- "clusters"
+
+# helps downstrean formatting to regenerate cluster vector from the array vector
+type_clusters <- as.character(array$clusters)
+
+paste(optimal_res, "is optimal clustering resolution")
+```
+
+# Consolidate clusters
+
+Based on known marker gene expression, assign broad cellular identities to clusters at the optimal resolution selected. These identities are hand-assigned, and multiple clusters are in many cases combined into broad cellular identities due to uneven differences between cell types.
+
+```{r 9-consolidate_clusters, message = FALSE, warning = FALSE}
+# replace clusters with curated types, reorder for plotting
+array <- AddMetaData(array, as.factor(type_clusters), col.name = "Type")
+levels(array$Type) <-  c("Gl.1", "Gl.2", "Gl.3", "Gl.4", "Gl.5", "Gl.6", "Gl.7", "Gl.8", 
+                                             "Gl.9", "Gl.10", "Gl.11", "Gl.12", "Gl.13", "Gl.14", "Gl.15", "Gl.16")
+
+plot_group_array <- cbind.data.frame(array$Type,
+                                     array$orig.ident,
+                                     array$Region)
+colnames(plot_group_array) <- c("Type", "Batch", "Region")
+
+table(array$Type)
+```
+
+# Select marker genes and annotate
+
+```{r 10-find_markers, message = FALSE, warning = FALSE, results = "hide"}
+# find de novo markers, clusters
+marker_type <- markers_sc_wilcox(array, "Type")
+
+# find regional markers within cell types
+marker_type_region <- markers_pb_edgeRLRT(array, "Type")
+```
+
+## Volcano (region markers) {.tabset}
+
+### Unlabeled {.tabset}
+
+```{r 11-volcano_type, message = FALSE, warning = FALSE, results = "hide", fig.height = 12, fig.width = 12}
+src_list <- lapply(levels(as.factor(array$Type)), function(type) {
+    src <- c(
+        "#### {{type}} {.unnumbered}",
+        "```{r volcano-type-{{type}}, message = FALSE, warning = FALSE, fig.height = 12, fig.width = 12}",
+        "enhanced_volcano_plot(marker_type_region$aplCoA${{type}}, 
+                               title_id = paste('{{type}}'), label_size = 0)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Labeled {.tabset}
+
+```{r 12-volcano_type_label, message = FALSE, warning = FALSE, results = "hide", fig.height = 12, fig.width = 12}
+src_list <- lapply(levels(as.factor(array$Type)), function(type) {
+    src <- c(
+        "#### {{type}} {.unnumbered}",
+        "```{r volcano-type-{{type}}-label, message = FALSE, warning = FALSE, fig.height = 12, fig.width = 12}",
+        "enhanced_volcano_plot(marker_type_region$aplCoA${{type}}, 
+                               title_id = paste('{{type}}'), label_size = 2)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Cell type marker genes
+
+```{r 13-filter_marker_lists, message = FALSE, warning = FALSE, results = "hide"}
+# region-specific
+marker_type_region_negative <- lapply(marker_type_region, function(y){
+                                        lapply(y, function(x) {x[x$p_val_adj < .01 & x$avg_logFC < -0.585,]
+  })
+})
+
+marker_type_region <- lapply(marker_type_region, function(y){
+                               lapply(y, function(x) {x[x$p_val_adj < .01 & x$avg_logFC > 0.585,]
+  })
+})
+```
+
+```{r 14-markers_list_type, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_type), function(group) {
+    src <- c(
+        "### {{group}} {.unnumbered}",
+        "```{r marker-type-{{group}}, message = FALSE, warning = FALSE}",
+        "marker_type${{group}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Region marker genes {.tabset}
+
+### aplCoA {.tabset}
+
+```{r 15-markers_list_aplCoA_type, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_type_region$aplCoA), function(type) {
+    src <- c(
+        "#### {{type}} {.unnumbered}",
+        "```{r marker-type-aplCoA-{{type}}, message = FALSE, warning = FALSE}",
+        "marker_type_region$aplCoA${{type}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### pplCoA {.tabset}
+
+```{r 16-markers_list_pplCoA_tissue, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_type_region$pplCoA), function(type) {
+    src <- c(
+        "#### {{type}} {.unnumbered}",
+        "```{r marker-type-pplCoA-{{type}}, message = FALSE, warning = FALSE}",
+        "marker_type_region$pplCoA${{type}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## DEG Abundance
+
+```{r 17-deg_abundance_class, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 10}
+deg_abundance_plot(marker_type_region, glut_colors, array$Type)
+```
+
+## Visualize marker genes in consolidated clusters {.tabset}
+
+### Dot Plot {.tabset}
+
+```{r 32-dot_tg, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 20}
+src_list <- lapply(tissue_class, function(tg) {
+    src <- c(
+        "#### {{tg}} {.unnumbered}",
+        "```{r dot-{{tg}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 20}",
+        "DotPlot(array, features = marker_features, group.by = '{{tg}}') +
+                 scale_colour_gradientn(colours = dotplot_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Stacked Violin {.tabset}
+
+```{r 33-stacked_vln_marker, message = FALSE, warning = FALSE, results = "hide", fig.height = 12, fig.width = 12}
+src_list <- mapply(function(tg, tc) {
+    src <- c(
+        "#### {{tg}} {.unnumbered}",
+        "```{r stacked_vln_marker-{{tg}}, message = FALSE, warning = FALSE, fig.height = 12, fig.width = 12}",
+        "VlnPlot(array, features = marker_features, 
+                 pt.size = 0, stack = TRUE, flip = TRUE, 
+                 group.by = '{{tg}}') + 
+                 theme(legend.position = 'none')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, tissue_class, tissue_color_list)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Heatmap {.tabset}
+
+```{r 34-heatmap_marker, message = FALSE, warning = FALSE, results = "hide", dev = "png", fig.height = 8, fig.width = 16}
+src_list <- mapply(function(tg, tc) {
+    src <- c(
+        "#### {{tg}} {.unnumbered}",
+        "```{r heatmap_marker-{{tg}}, message = FALSE, warning = FALSE, dev = 'png', fig.height = 8, fig.width = 16}",
+        "DoHeatmap(array, features = marker_features, group.by = '{{tg}}', size = 0,
+                   group.colors = {{tc}}) +
+                   scale_fill_gradientn(colours = heatmap_colors) +  
+                   scale_colour_manual(values = {{tc}})",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, tissue_class, tissue_color_list)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Visualize consolidated clusters {.tabset}
+
+## Clusters
+
+```{r 18-type_consolidated, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(dr, label) {
+    src <- c(
+        "## {{label}} {.unnumbered}",
+        "```{r {{label}}-type, message = FALSE, warning = FALSE}",
+        "cluster_plot_formatted(array, '{{dr}}', 'Type', glut_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$type, dr_params$name)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Marker genes {.tabset}
+
+### PCA {.tabset}
+
+```{r 10-pca_markers, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(marker_features2, function(marker) {
+    src <- c(
+        "#### {{marker}} {.unnumbered}",
+        "```{r pca-{{marker}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'pca', '{{marker}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### tSNE {.tabset}
+
+```{r 11-tsne_markers, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(marker_features2, function(marker) {
+    src <- c(
+        "#### {{marker}} {.unnumbered}",
+        "```{r tsne-{{marker}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'tsne', '{{marker}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### UMAP {.tabset}
+
+```{r 12-umap_markers, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(marker_features2, function(marker) {
+    src <- c(
+        "#### {{marker}} {.unnumbered}",
+        "```{r umap-{{marker}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'umap', '{{marker}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Visualize consolidated cluster composition
+
+## Absolute Composition {.tabset}
+
+```{r 13-type_absolute, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(br, br_colors) {
+    src <- c(
+        "### {{br}} {.unnumbered}",
+        "```{r type-absolute-{{br}}, message = FALSE, warning = FALSE}",
+        "absolute_bar_plot_formatted(plot_group_array, 'Type', '{{br}}', {{br_colors}})",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, batch_region, batch_color_list)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Relative Composition {.tabset}
+
+### Bar {.tabset}
+
+#### Batch
+
+```{r 14-type_relative, message = FALSE, warning = FALSE, results = "hide"}
+relative_bar_plot_formatted(plot_group_array, 'Type', 'Batch', batch_colors_rna)
+```
+
+#### Region
+
+```{r 15-type_relative, message = FALSE, warning = FALSE, results = "hide"}
+type_region_bar <- relative_bar_plot_formatted(plot_group_array, 'Type', 'Region', region_colors)
+
+type_region_bar + geom_hline(yintercept = table(array$Region)[2] / length(array$Region), linetype = "dashed")
+```
+
+### Stats {.tabset}
+
+#### Chi-square results
+
+```{r 16-chi_square_type, message = FALSE, warning = FALSE}
+chisq_table <- table(array$Region, array$Type)
+
+chisq.test(chisq_table)
+chisq.posthoc.test(chisq_table, method = "bonferroni")
+```
+
+#### Propeller results
+
+```{r 17-propeller_type, message = FALSE, warning = FALSE}
+props <- propeller(array, clusters = array$Type, sample = array$orig.ident, group = array$Region)
+
+prop_table <- cbind.data.frame(rownames(props), props$BaselineProp.Freq*100, props$Tstatistic, props$FDR,
+                               ifelse(props$FDR > 0.05, "ns", ifelse(
+                                 props$FDR > 0.01, "*", ifelse(
+                                   props$FDR > 0.001, "**", ifelse(
+                                     props$FDR > 0.0001, "***", "****"
+                               )))))
+colnames(prop_table) <- c("Tissue", "% Freq", "F-statistic", "FDR", "Significance")
+
+prop_table
+```
+
+## Region {.tabset}
+
+### Absolute
+
+```{r 18-region_relative, message = FALSE, warning = FALSE, results = "hide"}
+absolute_bar_plot_formatted(plot_group_array, 'Region', 'Type', glut_colors)
+```
+
+### Relative {.tabset}
+
+#### Bar
+
+```{r 19-region_relative, message = FALSE, warning = FALSE, results = "hide"}
+relative_bar_plot_formatted(plot_group_array, 'Region', 'Type', glut_colors)
+```
+
+#### Chi-square results
+
+```{r 20-chi_square_region, message = FALSE, warning = FALSE}
+chisq_table <- table(array$Type, array$Region)
+
+chisq.test(chisq_table)
+chisq.posthoc.test(chisq_table, method = "bonferroni")
+```
+
+# Examine metrics for consolidated clusters {.tabset}
+
+```{r 21-vln_consolidated_type, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(metric, label) {
+    src <- c(
+        "### {{label}} {.unnumbered}",
+        "```{r vln-tissue-{{metric}}, message = FALSE, warning = FALSE}",
+        "violin_metrics_formatted(array, 'Type', '{{metric}}', '{{label}}', glut_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, vln_metrics$id, vln_metrics$label)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# VG1/VG2 Expression {.tabset}
+
+## Plot
+
+```{r 22-vg1vg2_plot_region, message = FALSE, warning = FALSE, results = "hide"}
+vg1vg2_coexpression_plot_region(array)
+```
+
+## Stats {.tabset}
+
+### aplCoA
+
+```{r 23-vg1vg2_stats_aplCoA, message = FALSE, warning = FALSE}
+vg1vg2_coexpression_stats(array, 'aplCoA')
+```
+
+### pplCoA
+
+```{r 24-vg1vg2_stats_aplCoA, message = FALSE, warning = FALSE}
+vg1vg2_coexpression_stats(array, 'pplCoA')
+```
+
+## Visualize cluster distances {.tabset}
+
+### Dendrogram {.tabset}
+
+#### Type
+
+```{r 25-type_dendrogram, message = FALSE, warning = FALSE, results = "hide"}
+type_dend <- create_dendrogram(array, array$Type, glut_colors)
+
+plot(type_dend[[2]], axes = FALSE)
+```
+
+#### Batch
+
+```{r 26-library_dendrogram, message = FALSE, warning = FALSE, results = "hide"}
+batch_dend <- create_dendrogram(array, as.factor(array$orig.ident), glut_colors)
+
+plot(batch_dend[[2]], axes = FALSE)
+```
+
+#### Type with Region ID
+
+```{r 27-type_dendrogram_region, message = FALSE, warning = FALSE, results = "hide"}
+# create region+class convolution ID
+array_noint <- AddMetaData(array, metadata = paste(array$Region, array$Type), col.name = "Region_Type")
+
+type_region_dend <- create_dendrogram(array_noint, as.factor(array_noint$Region_Type), region_glut_colors)
+
+plot(type_region_dend[[2]], axes = FALSE)
+```
+
+### Cluster distance heatmap {.tabset}
+
+#### Type {.tabset}
+
+##### Distance
+
+```{r 28-cluster_heatmap_noregion_dist, message = FALSE, warning = FALSE, results = "hide"}
+dendrogram_heatmap(type_dend, method_id = "distance")
+```
+
+##### Correlation
+
+```{r 29-cluster_heatmap_noregion_cor, message = FALSE, warning = FALSE, results = "hide"}
+dendrogram_heatmap(type_dend, method_id = "correlation")
+```
+
+#### Batch {.tabset}
+
+##### Distance
+
+```{r 30-cluster_heatmap_batch_dist, message = FALSE, warning = FALSE, results = "hide"}
+dendrogram_heatmap(batch_dend, method_id = "distance")
+```
+
+##### Correlation
+
+```{r 31-cluster_heatmap_batch_cor, message = FALSE, warning = FALSE, results = "hide"}
+dendrogram_heatmap(batch_dend, method_id = "correlation")
+```
+
+#### Class with Region ID {.tabset}
+
+##### Distance
+
+```{r 32-cluster_heatmap_region_dist, message = FALSE, warning = FALSE, results = "hide", fig.height = 25, fig.width = 25}
+dendrogram_heatmap(type_region_dend, method_id = "distance")
+```
+
+##### Correlation
+
+```{r 33-cluster_heatmap_region_cor, message = FALSE, warning = FALSE, results = "hide", fig.height = 25, fig.width = 25}
+dendrogram_heatmap(type_region_dend, method_id = "correlation")
+```
+
+# Split matrices for subclustering
+
+Splits the array into separate matrices of neurons and glia, as well as each of their respective first-level classes. All of these arrays are saved separately as different arrays for cell type-specific subclustering.
+
+```{r 34-save_matrices, message = FALSE, warning = FALSE}
+#saveRDS(array, file = paste0(output, id, "_", cell_class, "_", "_subclustered.rds"))
+#
+# save the subgroups/classes
+#for (i in 1:length(levels(array_noint$Type))){
+#  subset_array <- subset(array_noint, subset = Type == levels(array_noint$Type)[i])
+#  metadata_array <- cbind.data.frame(subset_array$Region,
+#                                     subset_array$Mito_proportion, subset_array$Ribo_proportion,
+#                                     subset_array$Type)
+#  colnames(metadata_array) <- c("Region", 
+#                                "Mito_proportion", "Ribo_proportion", 
+#                                "Type")
+#  subset_array <- CreateSeuratObject(subset_array@assays$RNA@counts)
+#  for (j in 1:length(colnames(metadata_array))){
+#    subset_array <- AddMetaData(subset_array, 
+#                                metadata = metadata_array[,j], 
+#                                col.name = colnames(metadata_array)[j])
+#  }
+#  saveRDS(subset_array, file = paste0(output, id, "_", cell_class, "_", levels(array$Type)[i], ".rds"))
+#}
+ 
+# save cluster assignments, do not need whole array
+#cluster_file <- cbind.data.frame(array$Type)
+#colnames(cluster_file) <- c("Type")
+#write.csv(cluster_file, file = "output/cluster_lists/06A-Glutamatergic_clusters.csv", col.names = TRUE)
+```
