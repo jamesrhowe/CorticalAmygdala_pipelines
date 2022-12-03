@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Preprocessing: pplCoA-1</title>
+
+<script src="site_libs/header-attrs-2.17/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Preprocessing: pplCoA-1</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">02 December, 2022</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-12-02
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestreeb43fa3aa822a2cfa2c10e4f7289b12076a7a1576targetblankb43fa3aa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/b43fa3aa822a2cfa2c10e4f7289b12076a7a1576" target="_blank">b43fa3a</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestreeb43fa3aa822a2cfa2c10e4f7289b12076a7a1576targetblankb43fa3aa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/b43fa3aa822a2cfa2c10e4f7289b12076a7a1576" target="_blank">b43fa3a</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/sequencing/
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/behavior_01-topography-testing.Rmd
+    Untracked:  analysis/behavior_01-topography.Rmd
+    Untracked:  analysis/behavior_02-genetics.Rmd
+    Untracked:  analysis/behavior_03-projections.Rmd
+    Untracked:  analysis/behavior_04-projections_silencing_tmt.Rmd
+    Untracked:  analysis/behavior_05-projections_silencing_2PE.Rmd
+    Untracked:  analysis/projections.Rmd
+    Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02D-reprocess_Nonneuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-04-initial_deg.Rmd
+    Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
+    Untracked:  code/behavior-color_scales.R
+    Untracked:  code/behavior_misc.R
+    Untracked:  code/sequencing-color_scales.R
+    Untracked:  code/sequencing-plot_functions.R
+    Untracked:  code/sequencing_misc.R
+    Untracked:  output/sequencing/
+
+Unstaged changes:
+    Modified:   analysis/sequencing-03-initial_classification.Rmd
+    Modified:   analysis/sequencing-05A-reprocess_Neuron.Rmd
+    Modified:   analysis/sequencing-05B-reprocess_Nonneuron.Rmd
+    Modified:   analysis/sequencing-05C-reprocess_Glutamatergic.Rmd
+    Modified:   analysis/sequencing-05D-reprocess_GABAergic.Rmd
+    Modified:   analysis/sequencing-05E-reprocess_Astro.Rmd
+    Modified:   analysis/sequencing-05F-reprocess_Microglia.Rmd
+    Modified:   analysis/sequencing-05G-reprocess_OPC.Rmd
+    Modified:   analysis/sequencing-05H-reprocess_OLG.Rmd
+    Modified:   analysis/sequencing-05I-reprocess_VLMC.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd</code>) and
+HTML (<code>docs/sequencing-01E-preprocess_pplCoA-1_RNA.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/de46738577cb023f97576c6c88abba571c170d94/analysis/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd" target="_blank">de46738</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2022-12-02
+</td>
+<td>
+Renamed and updated early pipeline.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This notebook is a basic workflow to go from raw CellRanger pipeline
+output to a pre-processed, Seurat-formatted dataset with low-quality
+cells, doublets, and outliers removed. Most filtering steps have already
+been extensively validated, in most cases in the pipeComp paper (see
+methods for pipeline references).</p>
+<pre class="r"><code># set up paths
+input &lt;- params$input_path
+output &lt;- params$output_path
+id &lt;- params$dataset
+path &lt;- paste0(input, id)
+
+# import helper scripts
+source(&quot;code/sequencing_misc.R&quot;)
+source(&quot;code/sequencing-color_scales.R&quot;)
+source(&quot;code/sequencing-plot_functions.R&quot;)
+
+# load packages
+require(DropletUtils)
+require(scDblFinder)
+require(tidyverse)
+require(Seurat)
+require(BUSpaRse)
+require(biomaRt)
+require(scater)
+require(Matrix.utils)
+require(knitr)
+require(future)
+
+# set up parallelization, multisession for compatibility purposes, assuming 32GB RAM
+plan(&quot;multisession&quot;, earlySignal = TRUE, gc = TRUE)
+options(future.globals.maxSize = 32 * 1024 ^ 3)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = &#39;pdf&#39;)</code></pre>
+</div>
+<div id="load-expression-data" class="section level1">
+<h1>Load expression data</h1>
+<p>The input parameters should specify the location of the raw
+(unfiltered) g-zipped matrix output of cellranger for preprocessing and
+the name of the associated dataset, which will be carried forward into
+downstream analyses. This step also adds an identifier to the label for
+each cell to ensure they maintain the identity of their respective
+sample, regardless of file format. Uses a dash and underscore for string
+splitting downstream to produce metadata for each in terms of the
+condition and batch.</p>
+<pre class="r"><code># load the kallisto array
+array &lt;- Read10X(data.dir = path, strip.suffix = TRUE)
+colnames(array) &lt;- paste0(id, &quot;_&quot;, colnames(array))</code></pre>
+</div>
+<div id="barcode-filtration" class="section level1">
+<h1>Barcode filtration</h1>
+<p>Filters barcodes using emptyDrops, which compares likely non-empty
+droplets with ambient RNA profiles in droplets, determining whether a
+droplet is significantly more full than empty droplets. Droplets with
+less than 100 total counts are used to construct the ambient RNA profile
+and an FDR threshold below 0.001 are used to select putatively occupied
+droplets. All barcodes with greater than 1000 UMIs were further assumed
+non-empty.</p>
+<div id="call-cells-with-emptydrops" class="section level2 tabset">
+<h2 class="tabset">Call cells with emptyDrops</h2>
+<pre class="r"><code># run emptyDrops
+barcode_filter &lt;- emptyDrops(array, retain = 1000)
+barcode_filter$FDR[is.na(barcode_filter$FDR)] &lt;- 1
+knee_ranks &lt;- barcodeRanks(array)
+
+# export metrics
+plot_array &lt;- list(cbind.data.frame(knee_ranks$rank, 
+                                 knee_ranks$total, 
+                                 barcode_filter$FDR,
+                                 barcode_filter$FDR &lt; 0.001),
+                     sum(barcode_filter$FDR &lt; 0.001),
+                     (sum(array[,barcode_filter$FDR &lt; 0.001]) / sum(array)),
+                     knee_ranks@metadata$knee,
+                     knee_ranks@metadata$inflection)
+names(plot_array) &lt;- c(&quot;Metrics&quot;, &quot;Total&quot;, &quot;UMIs_in_cells&quot;, &quot;Knee_threshold&quot;, &quot;Inflection_threshold&quot;)
+colnames(plot_array$Metrics) &lt;- c(&quot;Rank&quot;, &quot;UMIs&quot;, &quot;FDR&quot;, &quot;Retain&quot;)
+rownames(plot_array$Metrics) &lt;- c(knee_ranks@rownames)
+
+# actually filter the array
+array &lt;- array[, plot_array$Metrics$FDR &lt; 0.001]
+
+cat(paste(plot_array$Total, &quot;barcodes retained&quot;),
+    paste0(round(plot_array$UMIs_in_cells*100, 2), &quot;% UMIs in cells&quot;), sep = &quot;\n&quot;)</code></pre>
+<pre><code>76883 barcodes retained
+95.1% UMIs in cells</code></pre>
+<div id="knee-plot" class="section level3">
+<h3>Knee plot</h3>
+<pre class="r"><code># remove duplicates, will crash notebook and computer if retained in plot
+plot_array$Metrics &lt;- plot_array$Metrics[!duplicated(plot_array$Metrics$Rank),]
+plot_array$Metrics &lt;- plot_array$Metrics[order(plot_array$Metrics$Rank),]
+
+# produce knee plot for output of emptyDrops
+knee_plot(plot_array)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/3-knee_plot-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="metrics" class="section level3">
+<h3>Metrics</h3>
+<pre class="r"><code># give first stage QC metrics
+cat(paste(&quot;Called barcodes:&quot;, length(colnames(array))), 
+    paste(&quot;Mean UMIs/called barcode:&quot;, round(sum(array)/length(colnames(array)), 2)),
+    paste(&quot;Mean Features/called barcode:&quot;, round(sum(array != 0)/length(colnames(array)), 2)),
+    paste(&quot;Percent reads in called barcodes:&quot;, round(plot_array$UMIs_in_cells*100, 2)), 
+    paste(&quot;Knee point:&quot;, plot_array$Knee_threshold),
+    paste(&quot;Inflection point:&quot;, plot_array$Inflection_threshold), sep = &quot;\n&quot;)</code></pre>
+<pre><code>Called barcodes: 76883
+Mean UMIs/called barcode: 1457.51
+Mean Features/called barcode: 549.59
+Percent reads in called barcodes: 95.1
+Knee point: 2913
+Inflection point: 831</code></pre>
+</div>
+</div>
+</div>
+<div id="format-into-seurat-object" class="section level1 tabset">
+<h1 class="tabset">Format into Seurat object</h1>
+<p>Seurat objects are by far the most versatile and easiest to perform
+pre-processing on, so all subsequent steps will work with
+Seurat-formatted data matrices. This step also uses aforementioned
+string splitting to extract the condition, and it also determines
+mitochondrial and ribosomal read proportion.</p>
+<pre class="r"><code>array &lt;- CreateSeuratObject(array)
+  
+# add non-nuclear read proportion metadata
+Mito_proportion &lt;- Matrix::colSums(array[grepl(&quot;^mt-|-mt-&quot;, rownames(array)),]) / array$nCount_RNA * 100
+array &lt;- AddMetaData(array, Mito_proportion, col.name = &quot;Mito_proportion&quot;)
+
+Ribo_proportion &lt;- Matrix::colSums(array[grepl(&quot;rpl|rps&quot;, rownames(array)),]) / array$nCount_RNA * 100
+array &lt;- AddMetaData(array, Ribo_proportion, col.name = &quot;Ribo_proportion&quot;)
+
+# add group information by string splitting ID, removing replicate
+array &lt;- AddMetaData(array, strsplit(id, &quot;-&quot;)[[1]][1], col.name = &quot;Region&quot;)
+
+track_data &lt;- c(&quot;post-emptyDrops&quot;, length(colnames(array)),
+                as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                round(mean(array$Mito_proportion), digits = 3), 
+                round(mean(array$Ribo_proportion), digits = 3))</code></pre>
+<div id="abridged-metrics" class="section level2">
+<h2>Abridged Metrics</h2>
+<pre class="r"><code>cat(paste(length(colnames(array)), &quot;called barcodes&quot;),
+    paste(round(mean(array$nCount_RNA), 2), &quot;mean counts per called barcode&quot;),
+    paste(round(mean(array$nFeature_RNA), 2), &quot;mean features per called barcode&quot;), sep = &quot;\n&quot;)</code></pre>
+<pre><code>76883 called barcodes
+1457.51 mean counts per called barcode
+549.59 mean features per called barcode</code></pre>
+</div>
+<div id="complete-metrics" class="section level2">
+<h2>Complete Metrics</h2>
+<pre class="r"><code>count_all(paste(id, &quot;called barcode&quot;), array)</code></pre>
+<pre><code>Min counts per pplCoA-1 called barcode 101
+Max counts per pplCoA-1 called barcode 68134
+Mean counts per pplCoA-1 called barcode 1457.51
+Median counts per pplCoA-1 called barcode 208
+Std. dev. counts per pplCoA-1 called barcode 4376.27
+Std. error counts per pplCoA-1 called barcode 15.78
+
+Min features per pplCoA-1 called barcode 92
+Max features per pplCoA-1 called barcode 8295
+Mean features per pplCoA-1 called barcode 549.59
+Median features per pplCoA-1 called barcode 186
+Std. dev. features per pplCoA-1 called barcode 1065.63
+Std. error features per pplCoA-1 called barcode 3.84
+
+Min mitochondrial proportion per pplCoA-1 called barcode 0
+Max mitochondrial proportion per pplCoA-1 called barcode 7.8
+Mean mitochondrial proportion per pplCoA-1 called barcode 0.29
+Median mitochondrial proportion per pplCoA-1 called barcode 0.01
+Std. dev. mitochondrial proportion per pplCoA-1 called barcode 0.42
+Std. error mitochondrial proportion per pplCoA-1 called barcode 0
+
+Min ribosomal proportion per pplCoA-1 called barcode 0
+Max ribosomal proportion per pplCoA-1 called barcode 4.93
+Mean ribosomal proportion per pplCoA-1 called barcode 0.52
+Median ribosomal proportion per pplCoA-1 called barcode 0.46
+Std. dev. ribosomal proportion per pplCoA-1 called barcode 0.54
+Std. error ribosomal proportion per pplCoA-1 called barcode 0</code></pre>
+</div>
+</div>
+<div id="quality-control" class="section level1">
+<h1>Quality control</h1>
+<div id="perform-complexity-filtering" class="section level2 tabset">
+<h2 class="tabset">Perform complexity filtering</h2>
+<p>Remove cells with fewer than 1000 features. Some differentially
+filter cells and glia, but doing both at 1000 should be far less
+complex, and sufficient for our purposes.</p>
+<pre class="r"><code># Store pre-filter population metrics for plotting
+plot_complex_array &lt;- cbind.data.frame(array$nCount_RNA, 
+                                       array$nFeature_RNA, 
+                                       array$nFeature_RNA &gt; 1000)
+colnames(plot_complex_array) &lt;- c(&quot;UMIs&quot;, &quot;Genes&quot;, &quot;&gt;1000 Genes&quot;)
+
+# Remove all cells with fewer than 1000 UMIs
+array &lt;- subset(array, subset = nFeature_RNA &gt;= 1000)
+
+track_data &lt;- rbind.data.frame(track_data,
+                               c(&quot;1000 features&quot;, length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))</code></pre>
+<div id="scatter" class="section level3">
+<h3>Scatter</h3>
+<pre class="r"><code>filter_plot(plot_complex_array, &quot;Genes&quot;, &quot;UMIs&quot;, &quot;&gt;1000 Genes&quot;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/9-complexity_plot-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="histogram" class="section level3">
+<h3>Histogram</h3>
+<pre class="r"><code>filter_histogram(plot_complex_array, &quot;Genes&quot;, &quot;&gt;1000 Genes&quot;, 20, 1000)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/10-complexity_histogram-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="metrics-1" class="section level3">
+<h3>Metrics</h3>
+<pre class="r"><code>cat(count_all(paste(id, &quot;nucleus with &gt;1000 features&quot;), array), 
+    paste(id, &quot;nuclei passing 1000-feature complexity filter:&quot;, length(colnames(array))), sep = &quot;\n&quot;)</code></pre>
+<pre><code>Min counts per pplCoA-1 nucleus with &gt;1000 features 1394
+Max counts per pplCoA-1 nucleus with &gt;1000 features 68134
+Mean counts per pplCoA-1 nucleus with &gt;1000 features 9810.24
+Median counts per pplCoA-1 nucleus with &gt;1000 features 6746
+Std. dev. counts per pplCoA-1 nucleus with &gt;1000 features 8210.63
+Std. error counts per pplCoA-1 nucleus with &gt;1000 features 82.22
+
+Min features per pplCoA-1 nucleus with &gt;1000 features 1000
+Max features per pplCoA-1 nucleus with &gt;1000 features 8295
+Mean features per pplCoA-1 nucleus with &gt;1000 features 2975.03
+Median features per pplCoA-1 nucleus with &gt;1000 features 2697
+Std. dev. features per pplCoA-1 nucleus with &gt;1000 features 1403.49
+Std. error features per pplCoA-1 nucleus with &gt;1000 features 14.05
+
+Min mitochondrial proportion per pplCoA-1 nucleus with &gt;1000 features 0
+Max mitochondrial proportion per pplCoA-1 nucleus with &gt;1000 features 0.84
+Mean mitochondrial proportion per pplCoA-1 nucleus with &gt;1000 features 0.03
+Median mitochondrial proportion per pplCoA-1 nucleus with &gt;1000 features 0.02
+Std. dev. mitochondrial proportion per pplCoA-1 nucleus with &gt;1000 features 0.04
+Std. error mitochondrial proportion per pplCoA-1 nucleus with &gt;1000 features 0
+
+Min ribosomal proportion per pplCoA-1 nucleus with &gt;1000 features 0
+Max ribosomal proportion per pplCoA-1 nucleus with &gt;1000 features 0.75
+Mean ribosomal proportion per pplCoA-1 nucleus with &gt;1000 features 0.17
+Median ribosomal proportion per pplCoA-1 nucleus with &gt;1000 features 0.15
+Std. dev. ribosomal proportion per pplCoA-1 nucleus with &gt;1000 features 0.09
+Std. error ribosomal proportion per pplCoA-1 nucleus with &gt;1000 features 0
+
+
+
+pplCoA-1 nuclei passing 1000-feature complexity filter: 9973</code></pre>
+</div>
+</div>
+<div id="perform-outlier-filtering" class="section level2 tabset">
+<h2 class="tabset">Perform outlier filtering</h2>
+<p>Remove cells that deviate from the median count/cell by more than 5
+median absolute deviations. This is mostly to remove potential doublets
+not detected by scDblFinder, as massive outliers could be cells of
+similar type loaded into the same droplet. The cutoff is extremely
+lenient to avoid accidentally removing real cells. Needs to be performed
+after complexity filtering, or else the cutoff will be artificially low
+and could remove non-outliers.</p>
+<pre class="r"><code># Store pre-filter population metrics for plotting
+plot_count_array &lt;- cbind.data.frame(array$nCount_RNA, 
+                                     array$nFeature_RNA, 
+                                     array$nCount_RNA &lt; median(array$nCount_RNA)+
+                                                        5*mad(array$nCount_RNA)) 
+colnames(plot_count_array) &lt;- c(&quot;UMIs&quot;, &quot;Genes&quot;, &quot;&lt;median+5xMAD&quot;)
+
+# Remove all cells with fewer than 1000 UMIs
+array &lt;- subset(array, subset = nCount_RNA &lt; median(array$nCount_RNA)+5*mad(array$nCount_RNA))
+
+track_data &lt;- rbind.data.frame(track_data,
+                               c(&quot;UMI outliers&quot;, length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))</code></pre>
+<div id="scatter-1" class="section level3">
+<h3>Scatter</h3>
+<pre class="r"><code>filter_plot(plot_count_array, &quot;Genes&quot;, &quot;UMIs&quot;, &quot;&lt;median+5xMAD&quot;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/13-outlier_plot-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="histogram-1" class="section level3">
+<h3>Histogram</h3>
+<pre class="r"><code>filter_histogram(plot_count_array, &quot;UMIs&quot;, &quot;&lt;median+5xMAD&quot;, 200,
+                 median(plot_count_array$UMIs)+5*mad(plot_count_array$UMIs))</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/14-outlier_histogram-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="metrics-2" class="section level3">
+<h3>Metrics</h3>
+<pre class="r"><code>cat(count_all(paste(id, &quot;nucleus passing all filters&quot;), array), 
+    paste(id, &quot;nuclei passing high outlier filtering:&quot;, length(colnames(array))), sep = &quot;\n&quot;)</code></pre>
+<pre><code>Min counts per pplCoA-1 nucleus passing all filters 1394
+Max counts per pplCoA-1 nucleus passing all filters 36108
+Mean counts per pplCoA-1 nucleus passing all filters 9446.07
+Median counts per pplCoA-1 nucleus passing all filters 6618
+Std. dev. counts per pplCoA-1 nucleus passing all filters 7427.71
+Std. error counts per pplCoA-1 nucleus passing all filters 74.78
+
+Min features per pplCoA-1 nucleus passing all filters 1000
+Max features per pplCoA-1 nucleus passing all filters 7090
+Mean features per pplCoA-1 nucleus passing all filters 2936.17
+Median features per pplCoA-1 nucleus passing all filters 2667
+Std. dev. features per pplCoA-1 nucleus passing all filters 1358.17
+Std. error features per pplCoA-1 nucleus passing all filters 13.67
+
+Min mitochondrial proportion per pplCoA-1 nucleus passing all filters 0
+Max mitochondrial proportion per pplCoA-1 nucleus passing all filters 0.84
+Mean mitochondrial proportion per pplCoA-1 nucleus passing all filters 0.03
+Median mitochondrial proportion per pplCoA-1 nucleus passing all filters 0.02
+Std. dev. mitochondrial proportion per pplCoA-1 nucleus passing all filters 0.04
+Std. error mitochondrial proportion per pplCoA-1 nucleus passing all filters 0
+
+Min ribosomal proportion per pplCoA-1 nucleus passing all filters 0
+Max ribosomal proportion per pplCoA-1 nucleus passing all filters 0.75
+Mean ribosomal proportion per pplCoA-1 nucleus passing all filters 0.18
+Median ribosomal proportion per pplCoA-1 nucleus passing all filters 0.16
+Std. dev. ribosomal proportion per pplCoA-1 nucleus passing all filters 0.09
+Std. error ribosomal proportion per pplCoA-1 nucleus passing all filters 0
+
+
+
+pplCoA-1 nuclei passing high outlier filtering: 9867</code></pre>
+</div>
+</div>
+<div id="mitochondrial-read-filter" class="section level2 tabset">
+<h2 class="tabset">Mitochondrial read filter</h2>
+<p>According to pipeComp, removing high ribosomal read outliers mildly
+increases pipeline performance if done downstream with SCTransform and
+in tandem with removing high mitochondrial read outliers. This cell
+filters out high outlier nuclei where their mitochondrial read
+proportion exceeds Q3+5xIQR. Median absolute deviation-based filtering
+is ideal, but the median is zero for many nuclear libraries, making it
+infeasible in many cases, so Q3 is used instead.</p>
+<pre class="r"><code># Store pre-filter population metrics for plotting
+plot_mito_array &lt;- cbind.data.frame(array$nCount_RNA, 
+                                    array$Mito_proportion,
+                                    array$Mito_proportion &lt;= quantile(array$Mito_proportion)[4]
+                                                             +5*IQR(array$Mito_proportion))
+colnames(plot_mito_array) &lt;- c(&quot;UMIs&quot;, &quot;Mito_proportion&quot;, &quot;&lt;Q3+5xIQR&quot;)
+
+# Remove all extreme high outliers for mitochondrial reads, defined as Q3+5*IQR, which is an EXTREMELY lenient standard 
+array &lt;- subset(array, subset = Mito_proportion &lt;= quantile(array$Mito_proportion)[4]+
+                                                   5*IQR(array$Mito_proportion))
+
+track_data &lt;- rbind.data.frame(track_data,
+                               c(&quot;Mito filter&quot;, length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))</code></pre>
+<div id="scatter-2" class="section level3">
+<h3>Scatter</h3>
+<pre class="r"><code>filter_plot(plot_mito_array, &quot;UMIs&quot;, &quot;Mito_proportion&quot;, &quot;&lt;Q3+5xIQR&quot;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/17-mito_plot-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="histogram-2" class="section level3">
+<h3>Histogram</h3>
+<pre class="r"><code>filter_histogram(plot_mito_array, &quot;Mito_proportion&quot;, &quot;&lt;Q3+5xIQR&quot;, .01, 
+                 quantile(plot_mito_array$Mito_proportion)[4]+5*IQR(plot_mito_array$Mito_proportion))</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/18-mito_histogram-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="metrics-3" class="section level3">
+<h3>Metrics</h3>
+<pre class="r"><code>cat(count_all(paste(id, &quot;nucleus passing mitochondrial read filter&quot;), array),
+    paste(id,  &quot;nuclei passing mitochondrial outlier filters:&quot;, length(colnames(array))), sep = &quot;\n&quot;)</code></pre>
+<pre><code>Min counts per pplCoA-1 nucleus passing mitochondrial read filter 1415
+Max counts per pplCoA-1 nucleus passing mitochondrial read filter 36108
+Mean counts per pplCoA-1 nucleus passing mitochondrial read filter 9479.79
+Median counts per pplCoA-1 nucleus passing mitochondrial read filter 6667
+Std. dev. counts per pplCoA-1 nucleus passing mitochondrial read filter 7430.05
+Std. error counts per pplCoA-1 nucleus passing mitochondrial read filter 74.99
+
+Min features per pplCoA-1 nucleus passing mitochondrial read filter 1000
+Max features per pplCoA-1 nucleus passing mitochondrial read filter 7090
+Mean features per pplCoA-1 nucleus passing mitochondrial read filter 2943.6
+Median features per pplCoA-1 nucleus passing mitochondrial read filter 2677.5
+Std. dev. features per pplCoA-1 nucleus passing mitochondrial read filter 1357.01
+Std. error features per pplCoA-1 nucleus passing mitochondrial read filter 13.7
+
+Min mitochondrial proportion per pplCoA-1 nucleus passing mitochondrial read filter 0
+Max mitochondrial proportion per pplCoA-1 nucleus passing mitochondrial read filter 0.21
+Mean mitochondrial proportion per pplCoA-1 nucleus passing mitochondrial read filter 0.03
+Median mitochondrial proportion per pplCoA-1 nucleus passing mitochondrial read filter 0.02
+Std. dev. mitochondrial proportion per pplCoA-1 nucleus passing mitochondrial read filter 0.03
+Std. error mitochondrial proportion per pplCoA-1 nucleus passing mitochondrial read filter 0
+
+Min ribosomal proportion per pplCoA-1 nucleus passing mitochondrial read filter 0
+Max ribosomal proportion per pplCoA-1 nucleus passing mitochondrial read filter 0.75
+Mean ribosomal proportion per pplCoA-1 nucleus passing mitochondrial read filter 0.18
+Median ribosomal proportion per pplCoA-1 nucleus passing mitochondrial read filter 0.16
+Std. dev. ribosomal proportion per pplCoA-1 nucleus passing mitochondrial read filter 0.09
+Std. error ribosomal proportion per pplCoA-1 nucleus passing mitochondrial read filter 0
+
+
+
+pplCoA-1 nuclei passing mitochondrial outlier filters: 9818</code></pre>
+</div>
+</div>
+<div id="perform-quality-filtering-ribosomal-reads"
+class="section level2 tabset">
+<h2 class="tabset">Perform quality filtering: ribosomal reads</h2>
+<p>Repeat this filtration with mitochondrial read proportion.</p>
+<pre class="r"><code># Store pre-filter population metrics for plotting
+plot_ribo_array &lt;- cbind.data.frame(array$nCount_RNA, 
+                                    array$Ribo_proportion,
+                                    array$Ribo_proportion &lt;= quantile(array$Ribo_proportion)[4]
+                                                             +5*IQR(array$Ribo_proportion))
+colnames(plot_ribo_array) &lt;- c(&quot;UMIs&quot;, &quot;Ribo_proportion&quot;, &quot;&lt;Q3+5xIQR&quot;)
+
+# Remove all extreme high outliers for mitochondrial reads, defined as Q3+5*IQR, which is an EXTREMELY lenient standard 
+array &lt;- subset(array, subset = Ribo_proportion &lt;= quantile(array$Ribo_proportion)[4]
+                                                   +5*IQR(array$Ribo_proportion))
+
+track_data &lt;- rbind.data.frame(track_data,
+                               c(&quot;Ribo filter&quot;, length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))</code></pre>
+<div id="scatter-3" class="section level3">
+<h3>Scatter</h3>
+<pre class="r"><code>filter_plot(plot_ribo_array, &quot;UMIs&quot;, &quot;Ribo_proportion&quot;, &quot;&lt;Q3+5xIQR&quot;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/21-ribo_plot-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="histogram-3" class="section level3">
+<h3>Histogram</h3>
+<pre class="r"><code>filter_histogram(plot_ribo_array, &quot;Ribo_proportion&quot;, &quot;&lt;Q3+5xIQR&quot;, .001, 
+                 quantile(plot_ribo_array$Ribo_proportion)[4]+5*IQR(plot_ribo_array$Ribo_proportion))</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/22-ribo_histogram-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="metrics-4" class="section level3">
+<h3>Metrics</h3>
+<pre class="r"><code>cat(count_all(paste(id, &quot;nucleus passing ribosomal read filter&quot;), array), 
+    paste(id,  &quot;nuclei passing ribosomal outlier filters:&quot;, length(colnames(array))), sep = &quot;\n&quot;)</code></pre>
+<pre><code>Min counts per pplCoA-1 nucleus passing ribosomal read filter 1415
+Max counts per pplCoA-1 nucleus passing ribosomal read filter 36108
+Mean counts per pplCoA-1 nucleus passing ribosomal read filter 9481.37
+Median counts per pplCoA-1 nucleus passing ribosomal read filter 6668
+Std. dev. counts per pplCoA-1 nucleus passing ribosomal read filter 7429.99
+Std. error counts per pplCoA-1 nucleus passing ribosomal read filter 74.99
+
+Min features per pplCoA-1 nucleus passing ribosomal read filter 1000
+Max features per pplCoA-1 nucleus passing ribosomal read filter 7090
+Mean features per pplCoA-1 nucleus passing ribosomal read filter 2943.98
+Median features per pplCoA-1 nucleus passing ribosomal read filter 2678
+Std. dev. features per pplCoA-1 nucleus passing ribosomal read filter 1356.89
+Std. error features per pplCoA-1 nucleus passing ribosomal read filter 13.7
+
+Min mitochondrial proportion per pplCoA-1 nucleus passing ribosomal read filter 0
+Max mitochondrial proportion per pplCoA-1 nucleus passing ribosomal read filter 0.21
+Mean mitochondrial proportion per pplCoA-1 nucleus passing ribosomal read filter 0.03
+Median mitochondrial proportion per pplCoA-1 nucleus passing ribosomal read filter 0.02
+Std. dev. mitochondrial proportion per pplCoA-1 nucleus passing ribosomal read filter 0.03
+Std. error mitochondrial proportion per pplCoA-1 nucleus passing ribosomal read filter 0
+
+Min ribosomal proportion per pplCoA-1 nucleus passing ribosomal read filter 0
+Max ribosomal proportion per pplCoA-1 nucleus passing ribosomal read filter 0.65
+Mean ribosomal proportion per pplCoA-1 nucleus passing ribosomal read filter 0.18
+Median ribosomal proportion per pplCoA-1 nucleus passing ribosomal read filter 0.16
+Std. dev. ribosomal proportion per pplCoA-1 nucleus passing ribosomal read filter 0.09
+Std. error ribosomal proportion per pplCoA-1 nucleus passing ribosomal read filter 0
+
+
+
+pplCoA-1 nuclei passing ribosomal outlier filters: 9816</code></pre>
+</div>
+</div>
+</div>
+<div id="remove-doublets" class="section level1 tabset">
+<h1 class="tabset">Remove doublets</h1>
+<p>According to pipeComp, the DoubletFinder package performs the best
+for doublet classification, creating artificial doublets and removing
+similar barcodes in gene expression space. scDblFinder is a more
+scalable implementation of this workflow.</p>
+<pre class="r"><code>sce &lt;- as.SingleCellExperiment(array) %&gt;%
+    scDblFinder
+
+# add DR to the SCE array for downstream plotting
+sce &lt;- scater::runPCA(sce)
+sce &lt;- scater::runTSNE(sce)
+sce &lt;- scater::runUMAP(sce)
+
+plot_array &lt;- cbind.data.frame(array$nCount_RNA, 
+                               array$nFeature_RNA,
+                               sce$scDblFinder.class)
+colnames(plot_array) &lt;- c(&quot;UMIs&quot;, &quot;Features&quot;, &quot;Doublet_status&quot;)
+
+# subset the actual array and the sce array for plotting
+array &lt;- subset(array, cells = colnames(array)[sce$scDblFinder.class == &quot;singlet&quot;])
+sce &lt;- sce[,sce$scDblFinder.class == &quot;singlet&quot;]  
+
+track_data &lt;- rbind.data.frame(track_data,
+                               c(&quot;Doublet filter&quot;, length(colnames(array)),
+                                 as.integer(mean(array$nCount_RNA)), as.integer(mean(array$nFeature_RNA)), 
+                                 round(mean(array$Mito_proportion), digits = 3), 
+                                 round(mean(array$Ribo_proportion), digits = 3)))
+colnames(track_data) &lt;-  c(&quot;Filter_step&quot;, &quot;Total_nuclei&quot;, 
+                           &quot;Mean_counts&quot;, &quot;Mean_features&quot;, 
+                           &quot;Mean_mito&quot;, &quot;Mean_ribo&quot;)
+track_data$Filter_step &lt;- factor(track_data$Filter_step, levels = track_data$Filter_step)
+for (i in 2:length(colnames(track_data))){
+  track_data[,i] &lt;- as.numeric(track_data[,i])
+}
+
+metrics_dr &lt;- c(&quot;scDblFinder.score&quot;, &quot;nCount_RNA&quot;, &quot;nFeature_RNA&quot;, 
+                &quot;Ribo_proportion&quot;, &quot;Mito_proportion&quot;)</code></pre>
+<div id="abridged-metrics-1" class="section level2">
+<h2>Abridged Metrics</h2>
+<pre class="r"><code>cat(paste(length(colnames(array)), &quot;pre-processed nuclei&quot;),
+    paste(round(mean(array$nCount_RNA), 2), &quot;mean counts per pre-processed nucleus&quot;),
+    paste(round(mean(array$nFeature_RNA), 2), &quot;mean features per pre-processed nucleus&quot;), sep = &quot;\n&quot;)</code></pre>
+<pre><code>9030 pre-processed nuclei
+8888.58 mean counts per pre-processed nucleus
+2820.45 mean features per pre-processed nucleus</code></pre>
+</div>
+<div id="complete-metrics-1" class="section level2">
+<h2>Complete Metrics</h2>
+<pre class="r"><code># get final metrics
+cat(count_all(paste(id, &quot;nuclei passing all preprocessing filters&quot;), array),
+    paste(id, &quot;nuclei passing all preprocessing filters:&quot;, length(colnames(array))), sep = &quot;\n&quot;)</code></pre>
+<pre><code>Min counts per pplCoA-1 nuclei passing all preprocessing filters 1415
+Max counts per pplCoA-1 nuclei passing all preprocessing filters 36030
+Mean counts per pplCoA-1 nuclei passing all preprocessing filters 8888.58
+Median counts per pplCoA-1 nuclei passing all preprocessing filters 6050
+Std. dev. counts per pplCoA-1 nuclei passing all preprocessing filters 7031.86
+Std. error counts per pplCoA-1 nuclei passing all preprocessing filters 74
+
+Min features per pplCoA-1 nuclei passing all preprocessing filters 1000
+Max features per pplCoA-1 nuclei passing all preprocessing filters 6490
+Mean features per pplCoA-1 nuclei passing all preprocessing filters 2820.45
+Median features per pplCoA-1 nuclei passing all preprocessing filters 2507
+Std. dev. features per pplCoA-1 nuclei passing all preprocessing filters 1296.07
+Std. error features per pplCoA-1 nuclei passing all preprocessing filters 13.64
+
+Min mitochondrial proportion per pplCoA-1 nuclei passing all preprocessing filters 0
+Max mitochondrial proportion per pplCoA-1 nuclei passing all preprocessing filters 0.21
+Mean mitochondrial proportion per pplCoA-1 nuclei passing all preprocessing filters 0.03
+Median mitochondrial proportion per pplCoA-1 nuclei passing all preprocessing filters 0.02
+Std. dev. mitochondrial proportion per pplCoA-1 nuclei passing all preprocessing filters 0.03
+Std. error mitochondrial proportion per pplCoA-1 nuclei passing all preprocessing filters 0
+
+Min ribosomal proportion per pplCoA-1 nuclei passing all preprocessing filters 0
+Max ribosomal proportion per pplCoA-1 nuclei passing all preprocessing filters 0.65
+Mean ribosomal proportion per pplCoA-1 nuclei passing all preprocessing filters 0.18
+Median ribosomal proportion per pplCoA-1 nuclei passing all preprocessing filters 0.16
+Std. dev. ribosomal proportion per pplCoA-1 nuclei passing all preprocessing filters 0.09
+Std. error ribosomal proportion per pplCoA-1 nuclei passing all preprocessing filters 0
+
+
+
+pplCoA-1 nuclei passing all preprocessing filters: 9030</code></pre>
+</div>
+</div>
+<div id="metric-visualization" class="section level1 tabset">
+<h1 class="tabset">Metric visualization</h1>
+<div id="pca" class="section level2 tabset">
+<h2 class="tabset">PCA</h2>
+<pre class="r"><code>src_list &lt;- lapply(metrics_dr, function(mdr) {
+    src &lt;- c(
+        &quot;### {{mdr}} {.unnumbered}&quot;,
+        &quot;```{r pca-metrics-{{mdr}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;plotPCA(sce, colour_by = &#39;{{mdr}}&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="scdblfinder.score" class="section level3 unnumbered">
+<h3 class="unnumbered">scDblFinder.score</h3>
+<pre class="r"><code>plotPCA(sce, colour_by = &#39;scDblFinder.score&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/pca-metrics-scDblFinder.score-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ncount_rna" class="section level3 unnumbered">
+<h3 class="unnumbered">nCount_RNA</h3>
+<pre class="r"><code>plotPCA(sce, colour_by = &#39;nCount_RNA&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/pca-metrics-nCount_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nfeature_rna" class="section level3 unnumbered">
+<h3 class="unnumbered">nFeature_RNA</h3>
+<pre class="r"><code>plotPCA(sce, colour_by = &#39;nFeature_RNA&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/pca-metrics-nFeature_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ribo_proportion" class="section level3 unnumbered">
+<h3 class="unnumbered">Ribo_proportion</h3>
+<pre class="r"><code>plotPCA(sce, colour_by = &#39;Ribo_proportion&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/pca-metrics-Ribo_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mito_proportion" class="section level3 unnumbered">
+<h3 class="unnumbered">Mito_proportion</h3>
+<pre class="r"><code>plotPCA(sce, colour_by = &#39;Mito_proportion&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/pca-metrics-Mito_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="tsne" class="section level2 tabset">
+<h2 class="tabset">tSNE</h2>
+<pre class="r"><code>src_list &lt;- lapply(metrics_dr, function(mdr) {
+    src &lt;- c(
+        &quot;### {{mdr}} {.unnumbered}&quot;,
+        &quot;```{r tsne-metrics-{{mdr}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;plotTSNE(sce, colour_by = &#39;{{mdr}}&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="scdblfinder.score-1" class="section level3 unnumbered">
+<h3 class="unnumbered">scDblFinder.score</h3>
+<pre class="r"><code>plotTSNE(sce, colour_by = &#39;scDblFinder.score&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/tsne-metrics-scDblFinder.score-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ncount_rna-1" class="section level3 unnumbered">
+<h3 class="unnumbered">nCount_RNA</h3>
+<pre class="r"><code>plotTSNE(sce, colour_by = &#39;nCount_RNA&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/tsne-metrics-nCount_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nfeature_rna-1" class="section level3 unnumbered">
+<h3 class="unnumbered">nFeature_RNA</h3>
+<pre class="r"><code>plotTSNE(sce, colour_by = &#39;nFeature_RNA&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/tsne-metrics-nFeature_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ribo_proportion-1" class="section level3 unnumbered">
+<h3 class="unnumbered">Ribo_proportion</h3>
+<pre class="r"><code>plotTSNE(sce, colour_by = &#39;Ribo_proportion&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/tsne-metrics-Ribo_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mito_proportion-1" class="section level3 unnumbered">
+<h3 class="unnumbered">Mito_proportion</h3>
+<pre class="r"><code>plotTSNE(sce, colour_by = &#39;Mito_proportion&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/tsne-metrics-Mito_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="umap" class="section level2 tabset">
+<h2 class="tabset">UMAP</h2>
+<pre class="r"><code>src_list &lt;- lapply(metrics_dr, function(mdr) {
+    src &lt;- c(
+        &quot;### {{mdr}} {.unnumbered}&quot;,
+        &quot;```{r umap-metrics-{{mdr}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;plotUMAP(sce, colour_by = &#39;{{mdr}}&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="scdblfinder.score-2" class="section level3 unnumbered">
+<h3 class="unnumbered">scDblFinder.score</h3>
+<pre class="r"><code>plotUMAP(sce, colour_by = &#39;scDblFinder.score&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/umap-metrics-scDblFinder.score-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ncount_rna-2" class="section level3 unnumbered">
+<h3 class="unnumbered">nCount_RNA</h3>
+<pre class="r"><code>plotUMAP(sce, colour_by = &#39;nCount_RNA&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/umap-metrics-nCount_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nfeature_rna-2" class="section level3 unnumbered">
+<h3 class="unnumbered">nFeature_RNA</h3>
+<pre class="r"><code>plotUMAP(sce, colour_by = &#39;nFeature_RNA&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/umap-metrics-nFeature_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ribo_proportion-2" class="section level3 unnumbered">
+<h3 class="unnumbered">Ribo_proportion</h3>
+<pre class="r"><code>plotUMAP(sce, colour_by = &#39;Ribo_proportion&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/umap-metrics-Ribo_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mito_proportion-2" class="section level3 unnumbered">
+<h3 class="unnumbered">Mito_proportion</h3>
+<pre class="r"><code>plotUMAP(sce, colour_by = &#39;Mito_proportion&#39;) + 
+          scale_colour_gradientn(colours = scatter_intensity_colors)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/umap-metrics-Mito_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="filter-progression" class="section level1 tabset">
+<h1 class="tabset">Filter progression</h1>
+<p>Shows the effect of each filter on the aggregate key metric of
+interest.</p>
+<pre class="r"><code>src_list &lt;- mapply(function(metric, label) {
+    src &lt;- c(
+        &quot;## {{label}} {.unnumbered}&quot;,
+        &quot;```{r progression-{{label}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;filter_progression(track_data, &#39;{{metric}}&#39;)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, c(&quot;Total_nuclei&quot;, &quot;Mean_counts&quot;, &quot;Mean_features&quot;, &quot;Mean_mito&quot;, &quot;Mean_ribo&quot;),
+   c(&quot;Total Nuclei&quot;, &quot;Mean UMIs&quot;, &quot;Mean Features&quot;, 
+     &quot;Mean Mitochodrial Proportion&quot;, &quot;Mean Ribosomal Proportion&quot;))
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="total-nuclei" class="section level2 unnumbered">
+<h2 class="unnumbered">Total Nuclei</h2>
+<pre class="r"><code>filter_progression(track_data, &#39;Total_nuclei&#39;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/progression-Total Nuclei-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mean-umis" class="section level2 unnumbered">
+<h2 class="unnumbered">Mean UMIs</h2>
+<pre class="r"><code>filter_progression(track_data, &#39;Mean_counts&#39;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/progression-Mean UMIs-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mean-features" class="section level2 unnumbered">
+<h2 class="unnumbered">Mean Features</h2>
+<pre class="r"><code>filter_progression(track_data, &#39;Mean_features&#39;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/progression-Mean Features-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mean-mitochodrial-proportion"
+class="section level2 unnumbered">
+<h2 class="unnumbered">Mean Mitochodrial Proportion</h2>
+<pre class="r"><code>filter_progression(track_data, &#39;Mean_mito&#39;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/progression-Mean Mitochodrial Proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mean-ribosomal-proportion" class="section level2 unnumbered">
+<h2 class="unnumbered">Mean Ribosomal Proportion</h2>
+<pre class="r"><code>filter_progression(track_data, &#39;Mean_ribo&#39;)</code></pre>
+<embed src="figure/sequencing-01E-preprocess_pplCoA-1_RNA.Rmd/progression-Mean Ribosomal Proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="save-pre-processed-matrix" class="section level1">
+<h1>Save pre-processed matrix</h1>
+<p>The output can now be passed to the next step of the pipeline,
+library merging and normalization.</p>
+<pre class="r"><code>saveRDS(array, file = paste0(output, id, &quot;_RNA_preprocess.rds&quot;))</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.1 (2022-06-23)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur ... 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats4    stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+ [1] future_1.28.0               knitr_1.40                 
+ [3] scater_1.24.0               scuttle_1.6.3              
+ [5] biomaRt_2.52.0              BUSpaRse_1.10.0            
+ [7] sp_1.5-0                    SeuratObject_4.1.2         
+ [9] Seurat_4.2.0                forcats_0.5.2              
+[11] stringr_1.4.1               dplyr_1.0.10               
+[13] purrr_0.3.5                 readr_2.1.3                
+[15] tidyr_1.2.1                 tibble_3.1.8               
+[17] ggplot2_3.3.6               tidyverse_1.3.2            
+[19] scDblFinder_1.10.0          DropletUtils_1.16.0        
+[21] SingleCellExperiment_1.18.1 SummarizedExperiment_1.26.1
+[23] Biobase_2.56.0              GenomicRanges_1.48.0       
+[25] GenomeInfoDb_1.32.4         IRanges_2.30.1             
+[27] S4Vectors_0.34.0            BiocGenerics_0.42.0        
+[29] MatrixGenerics_1.8.1        matrixStats_0.62.0         
+[31] colorspace_2.0-3            farver_2.1.1               
+[33] colorjam_0.0.23.900         jamba_0.0.87.900           
+[35] viridis_0.6.2               viridisLite_0.4.1          
+[37] workflowr_1.7.0            
+
+loaded via a namespace (and not attached):
+  [1] rappdirs_0.3.3            rtracklayer_1.56.1       
+  [3] scattermore_0.8           R.methodsS3_1.8.2        
+  [5] bit64_4.0.5               irlba_2.3.5.1            
+  [7] DelayedArray_0.22.0       R.utils_2.12.0           
+  [9] rpart_4.1.16              data.table_1.14.4        
+ [11] AnnotationFilter_1.20.0   KEGGREST_1.36.3          
+ [13] RCurl_1.98-1.9            generics_0.1.3           
+ [15] GenomicFeatures_1.48.4    ScaledMatrix_1.4.1       
+ [17] callr_3.7.2               cowplot_1.1.1            
+ [19] RSQLite_2.2.18            RANN_2.6.1               
+ [21] bit_4.0.4                 tzdb_0.3.0               
+ [23] spatstat.data_2.2-0       xml2_1.3.3               
+ [25] lubridate_1.8.0           httpuv_1.6.6             
+ [27] assertthat_0.2.1          gargle_1.2.1             
+ [29] xfun_0.34                 hms_1.1.2                
+ [31] jquerylib_0.1.4           evaluate_0.17            
+ [33] promises_1.2.0.1          progress_1.2.2           
+ [35] fansi_1.0.3               restfulr_0.0.15          
+ [37] dbplyr_2.2.1              readxl_1.4.1             
+ [39] igraph_1.3.5              DBI_1.1.3                
+ [41] htmlwidgets_1.5.4         spatstat.geom_2.4-0      
+ [43] googledrive_2.0.0         ellipsis_0.3.2           
+ [45] backports_1.4.1           deldir_1.0-6             
+ [47] sparseMatrixStats_1.8.0   vctrs_0.5.0              
+ [49] ensembldb_2.20.2          ROCR_1.0-11              
+ [51] abind_1.4-5               cachem_1.0.6             
+ [53] withr_2.5.0               BSgenome_1.64.0          
+ [55] progressr_0.11.0          sctransform_0.3.5        
+ [57] GenomicAlignments_1.32.1  prettyunits_1.1.1        
+ [59] scran_1.24.1              goftest_1.2-3            
+ [61] cluster_2.1.4             lazyeval_0.2.2           
+ [63] crayon_1.5.2              labeling_0.4.2           
+ [65] edgeR_3.38.4              pkgconfig_2.0.3          
+ [67] ProtGenerics_1.28.0       nlme_3.1-160             
+ [69] vipor_0.4.5               rlang_1.0.6              
+ [71] globals_0.16.1            lifecycle_1.0.3          
+ [73] miniUI_0.1.1.1            filelock_1.0.2           
+ [75] BiocFileCache_2.4.0       modelr_0.1.9             
+ [77] rsvd_1.0.5                polyclip_1.10-0          
+ [79] cellranger_1.1.0          rprojroot_2.0.3          
+ [81] lmtest_0.9-40             Matrix_1.5-1             
+ [83] Rhdf5lib_1.18.2           zoo_1.8-11               
+ [85] reprex_2.0.2              beeswarm_0.4.0           
+ [87] whisker_0.4               ggridges_0.5.4           
+ [89] processx_3.7.0            googlesheets4_1.0.1      
+ [91] png_0.1-7                 rjson_0.2.21             
+ [93] bitops_1.0-7              getPass_0.2-2            
+ [95] R.oo_1.25.0               KernSmooth_2.23-20       
+ [97] rhdf5filters_1.8.0        Biostrings_2.64.1        
+ [99] blob_1.2.3                DelayedMatrixStats_1.18.2
+[101] spatstat.random_2.2-0     parallelly_1.32.1        
+[103] beachmat_2.12.0           scales_1.2.1             
+[105] memoise_2.0.1             magrittr_2.0.3           
+[107] plyr_1.8.7                ica_1.0-3                
+[109] zlibbioc_1.42.0           compiler_4.2.1           
+[111] dqrng_0.3.0               BiocIO_1.6.0             
+[113] RColorBrewer_1.1-3        fitdistrplus_1.1-8       
+[115] Rsamtools_2.12.0          cli_3.4.1                
+[117] XVector_0.36.0            listenv_0.8.0            
+[119] patchwork_1.1.2           pbapply_1.5-0            
+[121] ps_1.7.1                  mgcv_1.8-41              
+[123] MASS_7.3-58.1             tidyselect_1.2.0         
+[125] stringi_1.7.8             highr_0.9                
+[127] yaml_2.3.6                BiocSingular_1.12.0      
+[129] locfit_1.5-9.6            ggrepel_0.9.1            
+[131] grid_4.2.1                sass_0.4.2               
+[133] tools_4.2.1               future.apply_1.9.1       
+[135] parallel_4.2.1            rstudioapi_0.14          
+[137] bluster_1.6.0             git2r_0.30.1             
+[139] metapod_1.4.0             gridExtra_2.3            
+[141] plyranges_1.16.0          Rtsne_0.16               
+[143] digest_0.6.30             BiocManager_1.30.18      
+[145] rgeos_0.5-9               shiny_1.7.2              
+[147] Rcpp_1.0.9                broom_1.0.1              
+[149] later_1.3.0               RcppAnnoy_0.0.19         
+[151] AnnotationDbi_1.58.0      httr_1.4.4               
+[153] tensor_1.5                rvest_1.0.3              
+[155] XML_3.99-0.11             fs_1.5.2                 
+[157] reticulate_1.26           splines_4.2.1            
+[159] uwot_0.1.14               statmod_1.4.37           
+[161] spatstat.utils_2.3-1      xgboost_1.6.0.1          
+[163] renv_0.15.4               plotly_4.10.0            
+[165] xtable_1.8-4              jsonlite_1.8.3           
+[167] zeallot_0.1.0             R6_2.5.1                 
+[169] pillar_1.8.1              htmltools_0.5.3          
+[171] mime_0.12                 glue_1.6.2               
+[173] fastmap_1.1.0             BiocParallel_1.30.4      
+[175] BiocNeighbors_1.14.0      codetools_0.2-18         
+[177] utf8_1.2.2                spatstat.sparse_2.1-1    
+[179] lattice_0.20-45           bslib_0.4.0              
+[181] curl_4.3.3                ggbeeswarm_0.6.0         
+[183] leiden_0.4.3              survival_3.4-0           
+[185] limma_3.52.4              rmarkdown_2.17           
+[187] munsell_0.5.0             rhdf5_2.40.0             
+[189] GenomeInfoDbData_1.2.8    HDF5Array_1.24.2         
+[191] haven_2.5.1               reshape2_1.4.4           
+[193] gtable_0.3.1              spatstat.core_2.4-4      </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
