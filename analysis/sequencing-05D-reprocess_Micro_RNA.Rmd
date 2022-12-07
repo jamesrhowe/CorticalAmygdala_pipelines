@@ -2,11 +2,10 @@
 author: "James Howe"
 params:
   id: "plCoA"
-  class: "GABAergic"
-  input_path: "output/sequencing/03-clusters-RNA/"
-  output_path: "output/sequencing/05-subcluster_process-RNA/"
-  dimn: 20
-title: "Transform subcluster datasets: `r params$id` `r params$class`"
+  class: "Micro"
+  input_path: "output/sequencing/04-subcluster_datasets-RNA/"
+  output_path: "output/sequencing/03-processed_datasets-RNA/"
+title: "Transform subclustered datasets (final): `r params$id` `r params$class`"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 ---
 
@@ -18,7 +17,6 @@ This notebook takes the subsetted array for all neurons, transforms/normalizes t
 id <- params$id
 input <- params$input_path
 output <- params$output_path
-dimn <- params$dimn
 cell_class <- params$class
 
 source("code/sequencing_misc.R")
@@ -43,7 +41,7 @@ knitr::opts_chunk$set(dev = 'pdf')
 Extracts all of the paths and their dataset names from the outputs of step 1, then puts them into a list for merging.  
 
 ```{r 1-read_data, message = FALSE, warning = FALSE}
-array <- readRDS(paste0(input, id, "_", cell_class, "_initial.rds"))
+array <- readRDS(paste0(input, id, "_", cell_class, "_class_RNA.rds"))
 
 plot_merge_array <- cbind.data.frame(array$nCount_RNA, 
                                array$nFeature_RNA,
@@ -229,8 +227,10 @@ cat(paste0("First 50 PCs explain ", round(plot_var_array$Cumulative_variance[50]
 
 ### Elbow Plot
 
-```{r 15-elbow, message = FALSE, warning = FALSE}
-ElbowPlot(array, ndims = 50)
+```{r 15-elbow, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 16}
+pc_info <- find_optimum_pcs(array)
+
+improved_elbow_plot(pc_info)
 ```
 
 ### Variance Explained
@@ -242,7 +242,7 @@ variance_explained_plot(plot_var_array)
 ### PC Loadings {.tabset}
 
 ```{r 17-pca-dim-loadings, message = FALSE, warning = FALSE, results = "hide"}
-src_list <- lapply(pc_list, function(pcs) {
+src_list <- lapply(c(1:2, pc_info$Optimal_PCs), function(pcs) {
     src <- c(
         "#### PC {{pcs}} Loadings {.unnumbered}",
         "```{r pca-loadings-{{pcs}}, message = FALSE, warning = FALSE}",
@@ -259,11 +259,11 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### PC Heatmaps {.tabset}
 
-```{r 18-pca-dim-heatmap, message = FALSE, warning = FALSE, results = "hide"}
-src_list <- lapply(pc_list, function(pcs) {
+```{r 18-pca-dim-heatmap, message = FALSE, warning = FALSE, results = "hide", dev = "png"}
+src_list <- lapply(c(1:2, pc_info$Optimal_PCs), function(pcs) {
     src <- c(
         "#### PC {{pcs}} Heatmap {.unnumbered}",
-        "```{r pca-heatmap-{{pcs}}, message = FALSE, warning = FALSE}",
+        "```{r pca-heatmap-{{pcs}}, message = FALSE, warning = FALSE, dev = 'png'}",
         "DimHeatmap(array, dims = {{pcs}}, balanced = TRUE, fast = FALSE) +
                     scale_fill_gradientn(colours = heatmap_colors) + 
                     labs(fill = 'PC Score')",  
@@ -282,8 +282,8 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 The top two principal components are generally unsuitable for visualizing single cell -omics data. As a result, non-linear dimensionality reduction incorporating all relevant top PCs must be used. This is implemented via tSNE or UMAP. Seurat's tSNE implementation is sufficient at default settings. via UMAP, using Seurat's native RunUMAP function, running uwot under the hood. The number of epochs has been increased to 1000 from defaults (because it increases stability), and the min.dist has been raised to 0.5 (because it makes global structure more legible).
 
 ```{r 19-tsne_umap, message = FALSE, warning = FALSE}
-array <- RunTSNE(array, verbose = FALSE, dims.use = 1:dimn)
-array <- RunUMAP(array, verbose = FALSE, dims = 1:dimn, n.epochs = 1000, min.dist = 0.5)
+array <- RunTSNE(array, verbose = FALSE, dims.use = 1:pc_info$Optimal_PCs)
+array <- RunUMAP(array, verbose = FALSE, dims = 1:pc_info$Optimal_PCs, n.epochs = 1000, min.dist = 0.5)
 ```
 
 ## Batch {.tabset}
@@ -437,6 +437,5 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 The output can now be passed to the next step of the pipeline, broad cell type classification.
 
 ```{r 28-save_output, message = FALSE, warning = FALSE}
-saveRDS(array, file = paste0(output, id, "_merged.rds"))
+saveRDS(array, file = paste0(output, id, "_", cell_class, "_reprocessed_RNA.rds"))
 ```
-
