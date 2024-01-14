@@ -1,0 +1,1819 @@
+---
+author: "James Howe"
+params:
+  dataset: "Topography (OFT)"
+  path: "data/behavior/topography_openfield/"
+title: "Behavioral analysis: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+# set up paths
+topography_id <- params$dataset
+topography_path <- params$path
+start_min <- params$start_min
+end_min <- params$end_min
+
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+
+topography_groups <- unlist(strsplit(Sys.glob(paste0(topography_path, "*")), topography_path))[c(FALSE, TRUE)]
+```
+
+# Load the data
+
+Names have to be given manually in most cases. Also for now copy into console because it does not load due to odd workspace issues. This loads all files in a directory and puts it into the correct format automatically.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+data_topography <- read_stim_data("oft", topography_groups, topography_path, topography_labels)
+
+data_topography <- list(data_topography$`aplCoA-stim`, data_topography$`aplCoA-control`, 
+                        data_topography$`mplCoA-stim`, data_topography$`mplCoA-control`, 
+                        data_topography$`pplCoA-stim`, data_topography$`pplCoA-control`)
+names(data_topography) <- c("aplCoA-stim", "aplCoA-control", 
+                            "mplCoA-stim", "mplCoA-control", 
+                            "pplCoA-stim", "pplCoA-control")
+```
+
+# Center Time-based metrics {.tabset}
+
+## All 5 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 2-center_all5_stats, message = FALSE, warning = FALSE}
+baseline_1_array_topography <- transform_openfield_centertime(data_topography, 
+                                                              "baseline_1", "Region", 1, 1200)
+treatment_1_array_topography <- transform_openfield_centertime(data_topography, 
+                                                     "treatment_1", "Region", 1, 1200)
+baseline_2_array_topography <- transform_openfield_centertime(data_topography, 
+                                                      "baseline_2", "Region", 1, 1200)
+treatment_2_array_topography <- transform_openfield_centertime(data_topography, 
+                                                       "treatment_2", "Region", 1, 1200)
+baseline_3_array_topography <- transform_openfield_centertime(data_topography, 
+                                                      "baseline_3", "Region", 1, 1200)
+
+centertime_group_topography <- group_array_openfield(data_topography, 
+                                             baseline_1_array_topography, 
+                                             treatment_1_array_topography, 
+                                             baseline_2_array_topography,
+                                             treatment_2_array_topography,
+                                             baseline_3_array_topography,
+                                             "CenterTime")
+
+centertime_mins <- transform_openfield_centertime_bymin(data_topography, "Region")
+```
+
+#### aplCoA
+
+```{r 3-aplCoA_centertime_stats, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- centertime_group_topography[centertime_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "CenterTime", 
+         baseline_1_CenterTime, treatment_1_CenterTime, baseline_2_CenterTime,
+         treatment_2_CenterTime, baseline_3_CenterTime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+aplCoA_group_topography$time <- factor(aplCoA_group_topography$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 4-pplCoA_centertime_stats, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- centertime_group_topography[centertime_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "CenterTime", 
+         baseline_1_CenterTime, treatment_1_CenterTime, baseline_2_CenterTime,
+         treatment_2_CenterTime, baseline_3_CenterTime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+pplCoA_group_topography$time <- factor(pplCoA_group_topography$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 5-aplCoA_center_anova, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 6-aplCoA_center_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "CenterTime")
+```
+
+##### T-test each
+
+```{r 7-aplCoA_ttest_centertimes, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline1"], 
+       y = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline1"])
+
+# Treatment1
+t.test(x = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Treatment1"], 
+       y = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Treatment1"])
+
+# Baseline2
+t.test(x = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline2"], 
+       y = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline2"])
+
+# Treatment2
+t.test(x = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Treatment2"], 
+       y = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Treatment2"])
+
+# Baseline3
+t.test(x = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline3"], 
+       y = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline3"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 8-pplCoA_center_anova, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 9-pplCoA_center_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "CenterTime")
+```
+
+##### T-test each
+
+```{r 10-pplCoA_ttest_centertimes, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline1"], 
+       y = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline1"])
+
+# Treatment1
+t.test(x = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Treatment1"], 
+       y = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Treatment1"])
+
+# Baseline2
+t.test(x = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline2"], 
+       y = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline2"])
+
+# Treatment2
+t.test(x = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Treatment2"], 
+       y = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Treatment2"])
+
+# Baseline3
+t.test(x = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline3"], 
+       y = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline3"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 11-aplCoA_center_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_oft_mins(centertime_mins[1:2], oft_center_label, anterior_color, topo_center_axes_min, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 12-pplCoA_center_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_oft_mins(centertime_mins[5:6], oft_center_label, posterior_color, topo_center_axes_min, chr2_blue)
+```
+
+## Baseline-Treatment Combined {.tabset}
+
+```{r 13-onoff_centertime_stats, message = FALSE, warning = FALSE}
+centertime_group_topography[,3] <- (centertime_group_topography[,3] + centertime_group_topography[,5] 
+                                    + centertime_group_topography[,7])/3 
+
+centertime_group_topography[,4] <- (centertime_group_topography[,4] + centertime_group_topography[,6])/2 
+centertime_group_topography <- centertime_group_topography[,1:4]
+
+colnames(centertime_group_topography)[3:4] <- c("baseline_centertime", "treatment_centertime")
+```
+
+### Summary statistics {.tabset}
+
+#### aplCoA
+
+```{r 14-aplCoA_centertime_stats_prepost, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- centertime_group_topography[centertime_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "CenterTime", 
+         baseline_centertime, treatment_centertime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("OFF", "ON")
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 15-pplCoA_centertime_stats_prepost, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- centertime_group_topography[centertime_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "CenterTime", 
+         baseline_centertime, treatment_centertime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("OFF", "ON")
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 16-aplCoA_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 17-aplCoA_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "CenterTime")
+```
+
+##### T-test each
+
+```{r 18-aplCoA_ttest_centertimes2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "OFF"], 
+       y = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "ON"], 
+       y = aplCoA_group_topography$CenterTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "ON"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 19-pplCoA_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 20-pplCoA_center_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "CenterTime")
+```
+
+```{r 21-pplCoA_ttest_centertimes2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "OFF"], 
+       y = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "ON"], 
+       y = pplCoA_group_topography$CenterTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 22-aplCoA_center_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(aplCoA_group_topography, oft_center_label, anterior_color, topo_center_axes, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 23-pplCoA_center_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(pplCoA_group_topography, oft_center_label, posterior_color, topo_center_axes, chr2_blue)
+```
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 24-centertime_setup_linear, message = FALSE, warning = FALSE}
+linear_group_topography <- cbind.data.frame(centertime_group_topography,
+                                              as.numeric(paste0("-", 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         "[|]")))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              centertime_group_topography$treatment_centertime -
+                                              centertime_group_topography$baseline_centertime,
+                                              unlist(strsplit(centertime_group_topography$group, 
+                                                              " "))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) <- c("id", "group", "baseline_centertime", "treatment_centertime", 
+                                       "ap_coords", "difference_centertime", "type")
+```
+
+#### eYFP
+
+```{r 25-centertime_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "eYFP", "difference_centertime", eyfp_green,
+                   ap_linear_centertime_axes, ap_linear_centertime_label)
+```
+
+#### ChR2
+
+```{r 26-centertime_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "ChR2", "difference_centertime", chr2_blue,
+                   ap_linear_centertime_axes, ap_linear_centertime_label)
+```
+
+#### Combined
+
+```{r 27-centertime_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4.8}
+dual_linear_plot(linear_group_topography, "difference_centertime", 
+                 ap_linear_centertime_axes, ap_linear_centertime_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 28-centertime_ancova_eyfp, message = FALSE, warning = FALSE}
+# gives results for controls
+ap_centertime_ancova <- lm(difference_centertime ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "eYFP",])
+
+summary(ap_centertime_ancova)
+```
+
+##### ChR2
+
+```{r 29-centertime_ancova_chr2, message = FALSE, warning = FALSE}
+ap_centertime_ancova <- lm(difference_centertime ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "ChR2",])
+
+summary(ap_centertime_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 30-centertime_ancova_comp, message = FALSE, warning = FALSE}
+ap_centertime_ancova <- lm(difference_centertime ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_centertime_ancova)
+```
+
+##### EMMeans
+
+```{r 31-centertime_emmeans_comp, message = FALSE, warning = FALSE}
+emtrends(ap_centertime_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+# Corner Time-based metrics {.tabset}
+
+## All 5 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 32-corner_all5_stats, message = FALSE, warning = FALSE}
+baseline_1_array_topography <- transform_openfield_cornertime(data_topography, 
+                                                              "baseline_1", "Corner", 1, 1200)
+treatment_1_array_topography <- transform_openfield_cornertime(data_topography, 
+                                                     "treatment_1", "Corner", 1, 1200)
+baseline_2_array_topography <- transform_openfield_cornertime(data_topography, 
+                                                      "baseline_2", "Corner", 1, 1200)
+treatment_2_array_topography <- transform_openfield_cornertime(data_topography, 
+                                                       "treatment_2", "Corner", 1, 1200)
+baseline_3_array_topography <- transform_openfield_cornertime(data_topography, 
+                                                      "baseline_3", "Corner", 1, 1200)
+
+cornertime_group_topography <- group_array_openfield(data_topography, 
+                                             baseline_1_array_topography, 
+                                             treatment_1_array_topography, 
+                                             baseline_2_array_topography,
+                                             treatment_2_array_topography,
+                                             baseline_3_array_topography,
+                                             "CornerTime")
+
+cornertime_mins <- transform_openfield_cornertime_bymin(data_topography, "Corner")
+```
+
+#### aplCoA
+
+```{r 33-aplCoA_cornertime_stats, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- cornertime_group_topography[cornertime_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "CornerTime", 
+         baseline_1_CornerTime, treatment_1_CornerTime, baseline_2_CornerTime,
+         treatment_2_CornerTime, baseline_3_CornerTime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+aplCoA_group_topography$time <- factor(aplCoA_group_topography$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 34-pplCoA_cornertime_stats, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- cornertime_group_topography[cornertime_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "CornerTime", 
+         baseline_1_CornerTime, treatment_1_CornerTime, baseline_2_CornerTime,
+         treatment_2_CornerTime, baseline_3_CornerTime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+pplCoA_group_topography$time <- factor(pplCoA_group_topography$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 35-aplCoA_corner_anova, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 36-aplCoA_open_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "CornerTime")
+```
+
+##### T-test each
+
+```{r 37-aplCoA_ttest_cornertimes, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline1"], 
+       y = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline1"])
+
+# Treatment1
+t.test(x = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Treatment1"], 
+       y = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Treatment1"])
+
+# Baseline2
+t.test(x = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline2"], 
+       y = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline2"])
+
+# Treatment2
+t.test(x = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Treatment2"], 
+       y = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Treatment2"])
+
+# Baseline3
+t.test(x = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline3"], 
+       y = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline3"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 38-pplCoA_corner_anova, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 39-pplCoA_corner_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "CornerTime")
+```
+
+##### T-test each
+
+```{r 40-pplCoA_corner_opentimes, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline1"], 
+       y = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline1"])
+
+# Treatment1
+t.test(x = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Treatment1"], 
+       y = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Treatment1"])
+
+# Baseline2
+t.test(x = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline2"], 
+       y = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline2"])
+
+# Treatment2
+t.test(x = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Treatment2"], 
+       y = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Treatment2"])
+
+# Baseline3
+t.test(x = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline3"], 
+       y = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline3"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 41-aplCoA_corner_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_oft_mins(cornertime_mins[1:2], oft_corner_label, anterior_color, topo_corner_axes_min, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 42-pplCoA_corner_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_oft_mins(cornertime_mins[5:6], oft_corner_label, posterior_color, topo_corner_axes_min, chr2_blue)
+```
+
+## Baseline-Treatment Combined {.tabset}
+
+```{r 43-onoff_cornertime_stats, message = FALSE, warning = FALSE}
+cornertime_group_topography[,3] <- (cornertime_group_topography[,3] + cornertime_group_topography[,5] 
+                                    + cornertime_group_topography[,7])/3 
+
+cornertime_group_topography[,4] <- (cornertime_group_topography[,4] + cornertime_group_topography[,6])/2 
+cornertime_group_topography <- cornertime_group_topography[,1:4]
+
+colnames(cornertime_group_topography)[3:4] <- c("baseline_cornertime", "treatment_cornertime")
+```
+
+### Summary statistics {.tabset}
+
+#### aplCoA
+
+```{r 44-aplCoA_centertime_stats_prepost, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- cornertime_group_topography[cornertime_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "CornerTime", 
+         baseline_cornertime, treatment_cornertime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("OFF", "ON")
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 45-pplCoA_cornertime_stats_prepost, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- cornertime_group_topography[cornertime_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "CornerTime", 
+         baseline_cornertime, treatment_cornertime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("OFF", "ON")
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 46-aplCoA_corner_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 47-aplCoA_corner_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "CornerTime")
+```
+
+##### T-test each
+
+```{r 48-aplCoA_ttest_centertimes2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "OFF"], 
+       y = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "ON"], 
+       y = aplCoA_group_topography$CornerTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "ON"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 49-pplCoA_corner_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 50-pplCoA_corner_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "CornerTime")
+```
+
+```{r 51-pplCoA_ttest_cornertimes2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "OFF"], 
+       y = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "ON"], 
+       y = pplCoA_group_topography$CornerTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 52-aplCoA_corner_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(aplCoA_group_topography, oft_corner_label, anterior_color, topo_corner_axes, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 53-pplCoA_corner_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(pplCoA_group_topography, oft_corner_label, posterior_color, topo_corner_axes, chr2_blue)
+```
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 54-cornertime_setup_linear, message = FALSE, warning = FALSE}
+linear_group_topography <- cbind.data.frame(cornertime_group_topography,
+                                              as.numeric(paste0("-", 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         "[|]")))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              cornertime_group_topography$treatment_cornertime -
+                                              cornertime_group_topography$baseline_cornertime,
+                                              unlist(strsplit(cornertime_group_topography$group, 
+                                                              " "))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) <- c("id", "group", "baseline_cornertime", "treatment_cornertime", 
+                                       "ap_coords", "difference_cornertime", "type")
+```
+
+#### eYFP
+
+```{r 55-cornertime_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "eYFP", "difference_cornertime", eyfp_green,
+                   ap_linear_cornertime_axes, ap_linear_cornertime_label)
+```
+
+#### ChR2
+
+```{r 56-cornertime_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "ChR2", "difference_cornertime", chr2_blue,
+                   ap_linear_cornertime_axes, ap_linear_cornertime_label)
+```
+
+#### Combined
+
+```{r 57-cornertime_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4.8}
+dual_linear_plot(linear_group_topography, "difference_cornertime", 
+                 ap_linear_cornertime_axes, ap_linear_cornertime_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 58-cornertime_ancova_eyfp, message = FALSE, warning = FALSE}
+# gives results for controls
+ap_cornertime_ancova <- lm(difference_cornertime ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "eYFP",])
+
+summary(ap_cornertime_ancova)
+```
+
+##### ChR2
+
+```{r 59-cornertime_ancova_chr2, message = FALSE, warning = FALSE}
+ap_cornertime_ancova <- lm(difference_cornertime ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "ChR2",])
+
+summary(ap_cornertime_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 60-cornertime_ancova_comp, message = FALSE, warning = FALSE}
+ap_cornertime_ancova <- lm(difference_cornertime ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_cornertime_ancova)
+```
+
+##### EMMeans
+
+```{r 61-cornertime_emmeans_comp, message = FALSE, warning = FALSE}
+emtrends(ap_cornertime_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+# Freezing-based metrics {.tabset}
+
+## All 5 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 62-open_all5_stats, message = FALSE, warning = FALSE}
+baseline_1_array_topography <- transform_openfield_mobility(data_topography, 
+                                                              "baseline_1", "Freezing", 1, 1200)
+treatment_1_array_topography <- transform_openfield_mobility(data_topography, 
+                                                     "treatment_1", "Freezing", 1, 1200)
+baseline_2_array_topography <- transform_openfield_mobility(data_topography, 
+                                                      "baseline_2", "Freezing", 1, 1200)
+treatment_2_array_topography <- transform_openfield_mobility(data_topography, 
+                                                       "treatment_2", "Freezing", 1, 1200)
+baseline_3_array_topography <- transform_openfield_mobility(data_topography, 
+                                                      "baseline_3", "Freezing", 1, 1200)
+
+freezing_group_topography <- group_array_openfield(data_topography, 
+                                             baseline_1_array_topography, 
+                                             treatment_1_array_topography, 
+                                             baseline_2_array_topography,
+                                             treatment_2_array_topography,
+                                             baseline_3_array_topography,
+                                             "Freezing")
+
+freezing_mins <- transform_openfield_mobility_bymin(data_topography, "Freezing")
+```
+
+#### aplCoA
+
+```{r 63-aplCoA_freezing_stats, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- freezing_group_topography[freezing_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "freezing", 
+         baseline_1_Freezing, treatment_1_Freezing, baseline_2_Freezing,
+         treatment_2_Freezing, baseline_3_Freezing) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+aplCoA_group_topography$time <- factor(aplCoA_group_topography$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(freezing, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 64-pplCoA_freezing_stats, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- freezing_group_topography[freezing_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "freezing", 
+         baseline_1_Freezing, treatment_1_Freezing, baseline_2_Freezing,
+         treatment_2_Freezing, baseline_3_Freezing) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+pplCoA_group_topography$time <- factor(pplCoA_group_topography$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(freezing, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 65-aplCoA_freezing_anova, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 66-aplCoA_open_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "freezing")
+```
+
+##### T-test each
+
+```{r 67-aplCoA_freezing_opentimes, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline1"], 
+       y = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline1"])
+
+# Treatment1
+t.test(x = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Treatment1"], 
+       y = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Treatment1"])
+
+# Baseline2
+t.test(x = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline2"], 
+       y = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline2"])
+
+# Treatment2
+t.test(x = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Treatment2"], 
+       y = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Treatment2"])
+
+# Baseline3
+t.test(x = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline3"], 
+       y = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline3"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 68-pplCoA_freezing_anova, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 69-pplCoA_freezing_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "freezing")
+```
+
+##### T-test each
+
+```{r 70-pplCoA_center_opentimes, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline1"], 
+       y = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline1"])
+
+# Treatment1
+t.test(x = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Treatment1"], 
+       y = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Treatment1"])
+
+# Baseline2
+t.test(x = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline2"], 
+       y = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline2"])
+
+# Treatment2
+t.test(x = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Treatment2"], 
+       y = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Treatment2"])
+
+# Baseline3
+t.test(x = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline3"], 
+       y = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline3"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 71-aplCoA_freezing_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_oft_mins(freezing_mins[1:2], oft_freeze_label, anterior_color, topo_freeze_axes_min, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 72-pplCoA_freezing_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_oft_mins(freezing_mins[5:6], oft_freeze_label, posterior_color, topo_freeze_axes_min, chr2_blue)
+```
+
+## Baseline-Treatment Combined {.tabset}
+
+```{r 73-onoff_freezing_stats, message = FALSE, warning = FALSE}
+freezing_group_topography[,3] <- (freezing_group_topography[,3] + freezing_group_topography[,5] 
+                                    + freezing_group_topography[,7])/3 
+
+freezing_group_topography[,4] <- (freezing_group_topography[,4] + freezing_group_topography[,6])/2 
+freezing_group_topography <- freezing_group_topography[,1:4]
+
+colnames(freezing_group_topography)[3:4] <- c("baseline_freezing", "treatment_freezing")
+```
+
+### Summary statistics {.tabset}
+
+#### aplCoA
+
+```{r 74-aplCoA_freezing_stats_prepost, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- freezing_group_topography[freezing_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "freezing", 
+         baseline_freezing, treatment_freezing) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("OFF", "ON")
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(freezing, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 75-pplCoA_freezing_stats_prepost, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- freezing_group_topography[freezing_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "freezing", 
+         baseline_freezing, treatment_freezing) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("OFF", "ON")
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(freezing, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 76-aplCoA_freezing_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 77-aplCoA_freezing_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "freezing")
+```
+
+##### T-test each
+
+```{r 78-aplCoA_ttest_freezing2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "OFF"], 
+       y = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "ON"], 
+       y = aplCoA_group_topography$freezing[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "ON"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 79-pplCoA_freezing_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 80-pplCoA_freezing_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "freezing")
+```
+
+##### T-tests each
+
+```{r 81-pplCoA_ttest_opentimes2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "OFF"], 
+       y = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "ON"], 
+       y = pplCoA_group_topography$freezing[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 82-aplCoA_freezing_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(aplCoA_group_topography, oft_freeze_label, anterior_color, topo_freeze_axes, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 83-pplCoA_freezing_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(pplCoA_group_topography, oft_freeze_label, posterior_color, topo_freeze_axes, chr2_blue)
+```
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 84-freezing_setup_linear, message = FALSE, warning = FALSE}
+linear_group_topography <- cbind.data.frame(freezing_group_topography,
+                                              as.numeric(paste0("-", 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         "[|]")))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              freezing_group_topography$treatment_freezing -
+                                              freezing_group_topography$baseline_freezing,
+                                              unlist(strsplit(freezing_group_topography$group, 
+                                                              " "))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) <- c("id", "group", "baseline_freezing", "treatment_freezing", 
+                                       "ap_coords", "difference_freezing", "type")
+```
+
+#### eYFP
+
+```{r 85-freezing_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "eYFP", "difference_freezing", eyfp_green,
+                   ap_linear_freezing_axes, ap_linear_freezing_label)
+```
+
+#### ChR2
+
+```{r 86-freezing_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "ChR2", "difference_freezing", chr2_blue,
+                   ap_linear_freezing_axes, ap_linear_freezing_label)
+```
+
+#### Combined
+
+```{r 87-freezing_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4.8}
+dual_linear_plot(linear_group_topography, "difference_freezing", 
+                 ap_linear_freezing_axes, ap_linear_freezing_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 88-freezing_ancova_eyfp, message = FALSE, warning = FALSE}
+# gives results for controls
+ap_freezing_ancova <- lm(difference_freezing ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "eYFP",])
+
+summary(ap_freezing_ancova)
+```
+
+##### ChR2
+
+```{r 89-freezing_ancova_chr2, message = FALSE, warning = FALSE}
+ap_freezing_ancova <- lm(difference_freezing ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "ChR2",])
+
+summary(ap_freezing_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 90-freezing_ancova_comp, message = FALSE, warning = FALSE}
+ap_freezing_ancova <- lm(difference_freezing ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_freezing_ancova)
+```
+
+##### EMMeans
+
+```{r 90-freezing_emmeans_comp, message = FALSE, warning = FALSE}
+emtrends(ap_freezing_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+# Distance-based metrics {.tabset}
+
+## All 5 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 91-distance_all5_stats, message = FALSE, warning = FALSE}
+baseline_1_array_topography <- transform_epm_openentry(data_topography, 
+                                                       "baseline_1", "Distance", 1, 1200)
+treatment_1_array_topography <- transform_epm_openentry(data_topography, 
+                                                       "treatment_1", "Distance", 1, 1200)
+baseline_2_array_topography <- transform_epm_openentry(data_topography, 
+                                                       "baseline_2", "Distance", 1, 1200)
+treatment_2_array_topography <- transform_epm_openentry(data_topography, 
+                                                       "treatment_2", "Distance", 1, 1200)
+baseline_3_array_topography <- transform_epm_openentry(data_topography, 
+                                                       "baseline_3", "Distance", 1, 1200)
+
+distance_group_topography <- group_array_openfield(data_topography, 
+                                             baseline_1_array_topography, 
+                                             treatment_1_array_topography, 
+                                             baseline_2_array_topography,
+                                             treatment_2_array_topography,
+                                             baseline_3_array_topography,
+                                             "Distance")
+
+distance_mins <- transform_openfield_distance_bymin(data_topography, "Distance")
+distance_mins <- lapply(distance_mins, function(x) cbind.data.frame(x[, 1:2], x$Distance / 100))
+```
+
+#### aplCoA
+
+```{r 92-aplCoA_distance_stats, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- distance_group_topography[distance_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_1_Distance, treatment_1_Distance, baseline_2_Distance,
+         treatment_2_Distance, baseline_3_Distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+aplCoA_group_topography$time <- factor(aplCoA_group_topography$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+aplCoA_group_topography$distance <- aplCoA_group_topography$distance / 100
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 93-pplCoA_distance_stats, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- distance_group_topography[distance_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_1_Distance, treatment_1_Distance, baseline_2_Distance,
+         treatment_2_Distance, baseline_3_Distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+pplCoA_group_topography$time <- factor(pplCoA_group_topography$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+pplCoA_group_topography$distance <- pplCoA_group_topography$distance / 100
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 94-aplCoA_distance_anova, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 95-aplCoA_distance_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "distance")
+```
+
+##### T-test each
+
+```{r 96-aplCoA_distance_opentimes, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline1"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline1"])
+
+# Treatment1
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Treatment1"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Treatment1"])
+
+# Baseline2
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline2"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline2"])
+
+# Treatment2
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Treatment2"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Treatment2"])
+
+# Baseline3
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "Baseline3"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "Baseline3"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 97-pplCoA_distance_anova, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 98-pplCoA_distance_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "distance")
+```
+
+##### T-test each
+
+```{r 99-pplCoA_distance_opentimes, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline1"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline1"])
+
+# Treatment1
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Treatment1"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Treatment1"])
+
+# Baseline2
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline2"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline2"])
+
+# Treatment2
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Treatment2"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Treatment2"])
+
+# Baseline3
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "Baseline3"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "Baseline3"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 100-aplCoA_dist_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_oft_mins(distance_mins[1:2], oft_dist_label, anterior_color, topo_oft_dist_axes_min, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 101-pplCoA_dist_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(pplCoA_group_topography, oft_dist_label, posterior_color, topo_oft_dist_axes, chr2_blue)
+bg_oft_mins(distance_mins[5:6], oft_dist_label, posterior_color, topo_oft_dist_axes_min, chr2_blue)
+```
+
+## Baseline-Treatment Combined {.tabset}
+
+```{r 102-onoff_distance_stats, message = FALSE, warning = FALSE}
+distance_group_topography[,3] <- (distance_group_topography[,3] + distance_group_topography[,5] 
+                                    + distance_group_topography[,7])/3 
+
+distance_group_topography[,4] <- (distance_group_topography[,4] + distance_group_topography[,6])/2 
+distance_group_topography <- distance_group_topography[,1:4]
+
+colnames(distance_group_topography)[3:4] <- c("baseline_distance", "treatment_distance")
+```
+
+### Summary statistics {.tabset}
+
+#### aplCoA
+
+```{r 103-aplCoA_dist_stats_prepost, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- distance_group_topography[distance_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_distance, treatment_distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("OFF", "ON")
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+aplCoA_group_topography$distance <- aplCoA_group_topography$distance / 100
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 104-pplCoA_dist_stats_prepost, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- distance_group_topography[distance_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_distance, treatment_distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("OFF", "ON")
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+pplCoA_group_topography$distance <- pplCoA_group_topography$distance / 100
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 105-aplCoA_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 106-aplCoA_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "distance")
+```
+
+##### T-test each
+
+```{r 107-aplCoA_ttest_distances2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "OFF"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "ON"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "ON"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 108-pplCoA_dist_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 86-pplCoA_dist_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "distance")
+```
+
+##### T-test each
+
+```{r 109-pplCoA_ttest_distances2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "OFF"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "ON"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 110-aplCoA_dist_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(aplCoA_group_topography, oft_dist_label, anterior_color, topo_oft_dist_axes, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 111-pplCoA_dist_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(pplCoA_group_topography, oft_dist_label, posterior_color, topo_oft_dist_axes, chr2_blue)
+```
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 112-distance_setup_linear, message = FALSE, warning = FALSE}
+linear_group_topography <- cbind.data.frame(distance_group_topography,
+                                              as.numeric(paste0("-", 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         "[|]")))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              distance_group_topography$treatment_distance -
+                                              distance_group_topography$baseline_distance,
+                                              unlist(strsplit(distance_group_topography$group, 
+                                                              " "))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) <- c("id", "group", "baseline_distance", "treatment_distance", 
+                                       "ap_coords", "difference_distance", "type")
+
+linear_group_topography$baseline_distance <- linear_group_topography$baseline_distance / 100
+linear_group_topography$treatment_distance <- linear_group_topography$treatment_distance / 100
+linear_group_topography$difference_distance <- linear_group_topography$difference_distance / 100
+```
+
+#### eYFP
+
+```{r 113-distance_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "eYFP", "difference_distance", eyfp_green,
+                   ap_linear_oft_distance_axes, ap_linear_oft_distance_label)
+```
+
+#### ChR2
+
+```{r 114-distance_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "ChR2", "difference_distance", chr2_blue,
+                   ap_linear_oft_distance_axes, ap_linear_oft_distance_label)
+```
+
+#### Combined
+
+```{r 115-distance_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4.8}
+dual_linear_plot(linear_group_topography, "difference_distance", 
+                 ap_linear_oft_distance_axes, ap_linear_oft_distance_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 116-distance_ancova_eyfp, message = FALSE, warning = FALSE}
+# gives results for controls
+ap_distance_ancova <- lm(difference_distance ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "eYFP",])
+
+summary(ap_distance_ancova)
+```
+
+##### ChR2
+
+```{r 117-opentime_ancova_chr2, message = FALSE, warning = FALSE}
+ap_distance_ancova <- lm(difference_distance ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "ChR2",])
+
+summary(ap_distance_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 118-distance_ancova_comp, message = FALSE, warning = FALSE}
+ap_distance_ancova <- lm(difference_distance ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_distance_ancova)
+```
+
+##### EMMeans
+
+```{r 119-opentime_emmeans_comp, message = FALSE, warning = FALSE}
+emtrends(ap_distance_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+# Heatmaps {.tabset}
+
+```{r 120-get_heatmaps, message = FALSE, warning = FALSE}
+full_heatmap <- get_heatmap_openfield(data_topography, "full")
+baseline_heatmap <- get_heatmap_openfield(data_topography, "baseline_all")
+treatment_heatmap <- get_heatmap_openfield(data_topography, "treatment_all")
+
+heatmap_diff <- get_heatmap_openfield_diff(data_topography)
+```
+
+## aplCoA {.tabset}
+
+### eYFP {.tabset}
+
+#### Full
+
+```{r 121-aplCoA_eyfp_full_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(full_heatmap$`aplCoA-control`)
+```
+
+#### OFF
+
+```{r 122-aplCoA_eyfp_off_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(baseline_heatmap$`aplCoA-control`)
+```
+
+#### ON
+
+```{r 123-aplCoA_eyfp_on_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(treatment_heatmap$`aplCoA-control`)
+```
+
+#### Difference
+
+```{r 124-aplCoA_eyfp_diff_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield_diff(heatmap_diff$`aplCoA-control`)
+```
+
+### ChR2 {.tabset}
+
+#### Full
+
+```{r 125-aplCoA_chr2_full_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(full_heatmap$`aplCoA-stim`)
+```
+
+#### OFF
+
+```{r 126-aplCoA_chr2_off_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(baseline_heatmap$`aplCoA-stim`)
+```
+
+#### ON
+
+```{r 127-aplCoa_chr2_on_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(treatment_heatmap$`aplCoA-stim`)
+```
+
+#### Difference
+
+```{r 128-aplCoA_chr2_diff_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield_diff(heatmap_diff$`aplCoA-stim`)
+```
+
+## pplCoA {.tabset}
+
+### eYFP {.tabset}
+
+#### Full
+
+```{r 129-pplCoA_eyfp_full_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(full_heatmap$`pplCoA-control`)
+```
+
+#### OFF
+
+```{r 130-pplCoA_eyfp_off_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(baseline_heatmap$`pplCoA-control`)
+```
+
+#### ON
+
+```{r 131-pplCoA_eyfp_on_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(treatment_heatmap$`pplCoA-control`)
+```
+
+#### Difference
+
+```{r 132-pplCoA_eyfp_diff_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield_diff(heatmap_diff$`pplCoA-control`)
+```
+
+### ChR2 {.tabset}
+
+#### Full
+
+```{r 133-pplCoA_chr2_full_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(full_heatmap$`pplCoA-stim`)
+```
+
+#### OFF
+
+```{r 134-pplCoA_chr2_off_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(baseline_heatmap$`pplCoA-stim`)
+```
+
+#### ON
+
+```{r 135-pplCoA_chr2_on_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield(treatment_heatmap$`pplCoA-stim`)
+```
+
+#### Difference
+
+```{r 136-pplCoA_chr2_diff_heatmap, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_heatmap_openfield_diff(heatmap_diff$`pplCoA-stim`)
+```
+
+## Scale bars {.tabset}
+
+### Absolute {.tabset}
+
+#### Horizontal
+
+```{r 137-scale_bar_horizontal, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_legend <- plot_heatmap_openfield_legend(treatment_heatmap$`pplCoA-stim`, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+#### Vertical
+
+```{r 138-scale_bar_vertical, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_legend <- plot_heatmap_openfield_legend(treatment_heatmap$`pplCoA-stim`, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+### Relative {.tabset}
+
+#### Horizontal
+
+```{r 139-scale_bar_horizontal_diff, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_legend <- plot_heatmap_openfield_legend_diff(heatmap_diff$`pplCoA-stim`, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+#### Vertical
+
+```{r 140-scale_bar_vertical_diff, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.8}
+plot_legend <- plot_heatmap_openfield_legend_diff(heatmap_diff$`pplCoA-stim`, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
