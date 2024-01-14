@@ -1,0 +1,578 @@
+---
+author: "James Howe"
+params:
+  dataset: "Topography (4quad)"
+  path: "data/behavior/topography/"
+title: "Behavioral analysis: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+# set up paths
+topography_id <- params$dataset
+topography_path <- params$path
+
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+
+topography_groups <- unlist(strsplit(Sys.glob(paste0(topography_path, "*")), topography_path))[c(FALSE, TRUE)]
+```
+
+# Load the data
+
+Names have to be given manually in most cases. Also for now copy into console because it does not load due to odd workspace issues. This loads all files in a directory and puts it into the correct format automatically.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+data_topography <- read_stim_data("4quad", topography_groups, topography_path, topography_labels)
+
+data_topography <- list(data_topography$`aplCoA-stim`, data_topography$`aplCoA-control`, 
+                        data_topography$`mplCoA-stim`, data_topography$`mplCoA-control`, 
+                        data_topography$`pplCoA-stim`, data_topography$`pplCoA-control`)
+names(data_topography) <- c("aplCoA-stim", "aplCoA-control", 
+                            "mplCoA-stim", "mplCoA-control", 
+                            "pplCoA-stim", "pplCoA-control")
+```
+
+# Performance Index metrics {.tabset}
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 2-pi_calculate, message = FALSE, warning = FALSE}
+baseline_array_topography <- transform_pi(data_topography, "baseline", "Quadrant", 1, 2400)
+treatment_array_topography <- transform_pi(data_topography, "treatment", "Quadrant", 1, 2881)
+
+pi_dataframe_topography_linear <- linear_array(data_topography, baseline_array_topography,
+                                               treatment_array_topography, "pi")
+
+pi_group_topography <- group_array(data_topography, 
+                                   baseline_array_topography, 
+                                   treatment_array_topography, "pi")
+```
+
+#### eYFP
+
+```{r 3-pi_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(pi_dataframe_topography_linear, "eYFP", "difference_pi", eyfp_green, 
+                   ap_linear_pi_axes, ap_linear_pi_label)
+```
+
+#### ChR2
+
+```{r 4-pi_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(pi_dataframe_topography_linear, "ChR2", "difference_pi", chr2_blue, 
+                   ap_linear_pi_axes, ap_linear_pi_label)
+```
+
+#### Combined
+
+```{r 5-pi_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 5}
+dual_linear_plot(pi_dataframe_topography_linear, "difference_pi", 
+                 ap_linear_pi_axes, ap_linear_pi_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 6-pi_ancova_eyfp, message = FALSE, warning = FALSE}
+# gives results for controls
+ap_pi_ancova <- lm(difference_pi ~ ap_coords, 
+                   data = pi_dataframe_topography_linear[pi_dataframe_topography_linear$type == "eYFP",])
+
+summary(ap_pi_ancova)
+```
+
+##### ChR2
+
+```{r 7-pi_ancova_chr2, message = FALSE, warning = FALSE}
+ap_pi_ancova <- lm(difference_pi ~ ap_coords, 
+                   data = pi_dataframe_topography_linear[pi_dataframe_topography_linear$type == "ChR2",])
+
+summary(ap_pi_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 8-pi_ancova_comp, message = FALSE, warning = FALSE}
+pi_dataframe_topography_linear$type <- relevel(pi_dataframe_topography_linear$type, ref = "eYFP")
+ap_pi_ancova <- lm(difference_pi ~ ap_coords * type, data = pi_dataframe_topography_linear)
+
+summary(ap_pi_ancova)
+```
+
+##### EMMeans
+
+```{r 9-pi_emmeans_comp, message = FALSE, warning = FALSE}
+emtrends(ap_pi_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+## Repeated Measures {.tabset}
+
+### Summary statistics {.tabset}
+
+#### Anterior
+
+```{r 10-anterior_pi_stats, message = FALSE, warning = FALSE}
+anterior_group_topography <- pi_group_topography[pi_group_topography$group 
+                                                 %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(anterior_group_topography$time) <- c("OFF", "ON")
+
+anterior_group_topography$group <- factor(anterior_group_topography$group, 
+                                          levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(anterior_group_topography$group) <- c("eYFP", "ChR2")
+
+anterior_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+#### Posterior
+
+```{r 11-posterior_pi_stats, message = FALSE, warning = FALSE}
+posterior_group_topography <- pi_group_topography[pi_group_topography$group 
+                                                  %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(posterior_group_topography$time) <- c("OFF", "ON")
+
+posterior_group_topography$group <- factor(posterior_group_topography$group, 
+                                           levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(posterior_group_topography$group) <- c("eYFP", "ChR2")
+
+posterior_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+### Two-way repeated-measures ANOVA {.tabset}
+
+#### Anterior {.tabset}
+
+##### ANOVA
+
+```{r 12-pi_anova_anterior, message = FALSE, warning = FALSE}
+display_anova(anterior_group_topography, "PI")
+```
+
+##### Pairwise comparisons
+
+```{r 13-pi_pairwise_anterior, message = FALSE, warning = FALSE}
+pairwise_comp_anova(anterior_group_topography, "PI")
+```
+
+#### Posterior {.tabset}
+
+##### ANOVA
+
+```{r 14-pi_anova_posterior, message = FALSE, warning = FALSE}
+display_anova(posterior_group_topography, "PI")
+```
+
+##### Pairwise comparisons
+
+```{r 15-pi_pairwise_posterior, message = FALSE, warning = FALSE}
+pairwise_comp_anova(posterior_group_topography, "PI")
+```
+
+### Plots {.tabset}
+
+#### Anterior
+
+```{r 16-anterior_pi_bars_paired, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 2, fig.height = 3.2}
+bg_twogroup(anterior_group_topography, rm_pi_label, anterior_color, ap_pi_axes, chr2_blue)
+```
+
+#### Posterior
+
+```{r 17-posterior_pi_bars_paired, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 2, fig.height = 3.2}
+bg_twogroup(posterior_group_topography, rm_pi_label, posterior_color, ap_pi_axes, chr2_blue)
+```
+
+## Difference {.tabset}
+
+### Summary statistics {.tabset}
+
+#### Anterior
+
+```{r 18-anterior_pi_diff_stats, message = FALSE, warning = FALSE}
+anterior_group_topography <- cbind.data.frame(anterior_group_topography$id[1:                                                                             (length(rownames(anterior_group_topography))/2)],
+                                        anterior_group_topography$group[1:                                                                          (length(rownames(anterior_group_topography))/2)],
+                               anterior_group_topography$PI[(length(rownames(anterior_group_topography))/2)+1:
+                                                               (length(rownames(anterior_group_topography))/2)] -
+                                          anterior_group_topography$PI[1:                                                                         (length(rownames(anterior_group_topography))/2)])
+
+colnames(anterior_group_topography) <- c("id", "group", "PI")
+
+anterior_group_topography %>%
+  group_by(group) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+#### Posterior
+
+```{r 19-posterior_pi_diff_stats, message = FALSE, warning = FALSE}
+posterior_group_topography <- cbind.data.frame(posterior_group_topography$id[1:                                                                             (length(rownames(posterior_group_topography))/2)],
+                                        posterior_group_topography$group[1:                                                                          (length(rownames(posterior_group_topography))/2)],
+                               posterior_group_topography$PI[(length(rownames(posterior_group_topography))/2)+1:
+                                                             (length(rownames(posterior_group_topography))/2)] -
+                                          posterior_group_topography$PI[1:                                                                         (length(rownames(posterior_group_topography))/2)])
+
+colnames(posterior_group_topography) <- c("id", "group", "PI")
+
+posterior_group_topography %>%
+  group_by(group) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+### T-tests {.tabset}
+
+#### Anterior
+
+```{r 20-anterior_pi_diff_ttest, message = FALSE, warning = FALSE}
+t.test(x = anterior_group_topography$PI[anterior_group_topography$group %in% "eYFP"], 
+       y = anterior_group_topography$PI[anterior_group_topography$group %in% "ChR2"])
+```
+
+#### Posterior
+
+```{r 21-posterior_pi_diff_ttest, message = FALSE, warning = FALSE}
+t.test(x = posterior_group_topography$PI[posterior_group_topography$group %in% "eYFP"], 
+       y = posterior_group_topography$PI[posterior_group_topography$group %in% "ChR2"])
+```
+
+### Graphs {.tabset}
+
+#### Anterior
+
+```{r 22-anterior_diff_graph, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.4, fig.height = 3}
+bg_diff(anterior_group_topography, diff_pi_label, anterior_color, ap_pi_axes, chr2_blue)
+```
+
+#### Posterior
+
+```{r 23-posterior_diff_graph, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.4, fig.height = 3}
+bg_diff(posterior_group_topography, diff_pi_label, posterior_color, ap_pi_axes, chr2_blue)
+```
+
+# Port Distance metrics
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 24-pd_calculate, message = FALSE, warning = FALSE}
+baseline_array_topography_pd <- transform_pd(data_topography, "baseline", "PortDistance", 1, 2400)
+treatment_array_topography_pd <- transform_pd(data_topography, "treatment", "PortDistance", 1, 2881)
+
+pd_dataframe_topography_linear <- linear_array(data_topography, baseline_array_topography_pd,
+                                               treatment_array_topography_pd, "pd")
+
+pd_group_topography <- group_array(data_topography, 
+                                   baseline_array_topography_pd, 
+                                   treatment_array_topography_pd, "pd")
+```
+
+#### eYFP
+
+```{r 25-pd_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(pd_dataframe_topography_linear, "eYFP", "difference_pd", eyfp_green, 
+                   ap_linear_pd_axes, ap_linear_pd_label)
+```
+
+#### ChR2
+
+```{r 26-pd_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(pd_dataframe_topography_linear, "ChR2", "difference_pd", chr2_blue, 
+                   ap_linear_pd_axes, ap_linear_pd_label)
+```
+
+#### Combined
+
+```{r 27-pd_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 5}
+dual_linear_plot(pd_dataframe_topography_linear, "difference_pd", 
+                 ap_linear_pd_axes, ap_linear_pd_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 28-pd_ancova_eyfp, warning = FALSE, message = FALSE}
+ap_pd_ancova <- lm(difference_pd ~ ap_coords, 
+                   data = pd_dataframe_topography_linear[pd_dataframe_topography_linear$type == "eYFP",])
+
+summary(ap_pd_ancova)
+```
+
+##### ChR2
+
+```{r 29-pd_ancova_chr2, message = FALSE, warning = FALSE}
+ap_pd_ancova <- lm(difference_pd ~ ap_coords, 
+                   data = pd_dataframe_topography_linear[pd_dataframe_topography_linear$type == "ChR2",])
+
+summary(ap_pd_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 30-pd_ancova_comp, message = FALSE, warning = FALSE}
+pd_dataframe_topography_linear$type <- relevel(pd_dataframe_topography_linear$type, ref = "eYFP")
+ap_pd_ancova <- lm(difference_pd ~ ap_coords * type, data = pd_dataframe_topography_linear)
+
+summary(ap_pd_ancova)
+```
+
+##### EMMeans
+
+```{r 31-pd_comparison, message = FALSE, warning = FALSE}
+emtrends(ap_pd_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+## Repeated Measures {.tabset}
+
+### Summary statistics {.tabset}
+
+#### Anterior
+
+```{r 32-anterior_pd_rm_stats, message = FALSE, warning = FALSE}
+anterior_group_topography <- pd_group_topography[pd_group_topography$group 
+                                                 %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(anterior_group_topography$time) <- c("OFF", "ON")
+
+anterior_group_topography$group <- factor(anterior_group_topography$group, 
+                                          levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(anterior_group_topography$group) <- c("eYFP", "ChR2")
+
+anterior_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(PD, type = "mean_se")
+```
+
+#### Posterior
+
+```{r 33-posterior_pd_rm_stats, message = FALSE, warning = FALSE}
+posterior_group_topography <- pd_group_topography[pd_group_topography$group 
+                                                 %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(posterior_group_topography$time) <- c("OFF", "ON")
+
+posterior_group_topography$group <- factor(posterior_group_topography$group, 
+                                          levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(posterior_group_topography$group) <- c("eYFP", "ChR2")
+
+posterior_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(PD, type = "mean_se")
+```
+
+### Two-way repeated-measures ANOVA {.tabset}
+
+#### Anterior {.tabset}
+
+##### ANOVA
+
+```{r 34-pd_anova_anterior, message = FALSE, warning = FALSE}
+display_anova(anterior_group_topography, "PD")
+```
+
+##### Pairwise comparisons
+
+```{r 35-pd_pairwise_anterior, message = FALSE, warning = FALSE}
+pairwise_comp_anova(anterior_group_topography, "PD")
+```
+
+#### Posterior {.tabset}
+
+##### ANOVA
+
+```{r 36-pd_anova_posterior, message = FALSE, warning = FALSE}
+display_anova(posterior_group_topography, "PD")
+```
+
+##### Pairwise comparisons
+
+```{r 37-pd_pairwise_posterior, message = FALSE, warning = FALSE}
+pairwise_comp_anova(posterior_group_topography, "PD")
+```
+
+### Plots {.tabset}
+
+#### Anterior
+
+```{r 38-anterior_pd_bars_paired, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 2, fig.height = 3.2}
+bg_twogroup_nobar(anterior_group_topography, rm_pd_label, anterior_color, ap_pd_axes, chr2_blue, 0)
+```
+
+#### Posterior
+
+```{r 39-posterior_pd_bars_paired, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 2, fig.height = 3.2}
+bg_twogroup_nobar(posterior_group_topography, rm_pd_label, posterior_color, ap_pd_axes, chr2_blue, 0)
+```
+
+## Difference {.tabset}
+
+### Summary statistics {.tabset}
+
+#### Anterior
+
+```{r 40-anterior_pd_diff_stats, message = FALSE, warning = FALSE}
+anterior_group_topography <- cbind.data.frame(anterior_group_topography$id[1:                                                                             (length(rownames(anterior_group_topography))/2)],
+                                        anterior_group_topography$group[1:                                                                          (length(rownames(anterior_group_topography))/2)],
+                               anterior_group_topography$PD[(length(rownames(anterior_group_topography))/2)+1:
+                                                               (length(rownames(anterior_group_topography))/2)] -
+                                          anterior_group_topography$PD[1:                                                                         (length(rownames(anterior_group_topography))/2)])
+
+colnames(anterior_group_topography) <- c("id", "group", "PD")
+
+anterior_group_topography %>%
+  group_by(group) %>%
+  get_summary_stats(PD, type = "mean_se")
+```
+
+#### Posterior
+
+```{r 41-posterior_pd_diff_stats, message = FALSE, warning = FALSE}
+posterior_group_topography <- cbind.data.frame(posterior_group_topography$id[1:                                                                             (length(rownames(posterior_group_topography))/2)],
+                                        posterior_group_topography$group[1:                                                                          (length(rownames(posterior_group_topography))/2)],
+                               posterior_group_topography$PD[(length(rownames(posterior_group_topography))/2)+1:
+                                                             (length(rownames(posterior_group_topography))/2)] -
+                                          posterior_group_topography$PD[1:                                                                         (length(rownames(posterior_group_topography))/2)])
+
+colnames(posterior_group_topography) <- c("id", "group", "PD")
+
+posterior_group_topography %>%
+  group_by(group) %>%
+  get_summary_stats(PD, type = "mean_se")
+```
+
+### T-tests {.tabset}
+
+#### Anterior
+
+```{r 42-anterior_pd_diff_ttest, message = FALSE, warning = FALSE}
+t.test(x = anterior_group_topography$PD[anterior_group_topography$group %in% "eYFP"], 
+       y = anterior_group_topography$PD[anterior_group_topography$group %in% "ChR2"])
+```
+
+#### Posterior
+
+```{r 43-posterior_pd_diff_ttest, message = FALSE, warning = FALSE}
+t.test(x = posterior_group_topography$PD[posterior_group_topography$group %in% "eYFP"], 
+       y = posterior_group_topography$PD[posterior_group_topography$group %in% "ChR2"])
+```
+
+### Graphs {.tabset}
+
+#### Anterior
+
+```{r 44-anterior_diff_graph_pd, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.3, fig.height = 3}
+bg_diff(anterior_group_topography, diff_pd_label, anterior_color, ap_pd_axes_diff, chr2_blue)
+```
+
+#### Posterior
+
+```{r 45-posterior_diff_graph_pd, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.3, fig.height = 3}
+bg_diff(posterior_group_topography, diff_pd_label, posterior_color, ap_pd_axes_diff, chr2_blue)
+```
+
+# Heatmap {.tabset}
+
+Generates a heatmap for each group. Sums all groups together at baseline and at treatment, and applies a gaussian smooth filter to both. It then subtracts the baseline from the treatment to identify the difference between treatment and baseline for all groups. 
+
+```{r 46-heatmap_generate, message = FALSE, warning = FALSE}
+heatmap_list <- get_heatmap(data_topography)
+```
+
+## Anterior eYFP
+
+```{r 47-heatmap_anterior_eyfp, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list$`aplCoA-control`)
+```
+
+## Anterior ChR2
+
+```{r 48-heatmap_anterior_chr2, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list$`aplCoA-stim`)
+```
+
+## Posterior eYFP
+
+```{r 49-heatmap_posterior_eyfp, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list$`pplCoA-control`)
+```
+
+## Posterior ChR2
+
+```{r 50-heatmap_posterior_chr2, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list$`pplCoA-stim`)
+```
+
+## Scale bars {.tabset}
+
+### Horizontal
+
+```{r 51-scale_bar_horizontal_diff, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 1.8}
+plot_legend <- plot_heatmap_legend(heatmap_list$`aplCoA-stim`, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+### Vertical
+
+```{r 52-scale_bar_vertical_diff, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 1.8}
+plot_legend <- plot_heatmap_legend(heatmap_list$`aplCoA-stim`, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+# Paths {.tabset}
+
+## ChR2 {.tabset}
+
+### Anterior
+
+```{r 53-path_anterior_chr2, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_path(data_topography$`aplCoA-stim`$`aplCoA ChR2|1.46_az_020314_1_02.27.14-LR.txt`, anterior_color)
+```
+
+### Posterior
+
+```{r 54-path_posterior_chr2, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_path(data_topography$`pplCoA-stim`$`pplCoA ChR2|2.46_210504_plCoAp-ChR2-1-LR.txt`, posterior_color)
+```
+
+## eYFP {.tabset}
+
+### Anterior
+
+```{r 55-path_anterior_eyfp, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_path(data_topography$`aplCoA-control`$`aplCoA eYFP|1.22_210430_plCoAa-eYFP-10-LR.txt`, control_color)
+```
+
+### Posterior
+
+```{r 56-path_posterior_eyfp, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_path(data_topography$`pplCoA-control`$`pplCoA eYFP|2.46_062321_plCoAp-eYFP-11-LR.txt`, control_color) 
+```
