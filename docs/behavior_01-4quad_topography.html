@@ -1,0 +1,2777 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Behavioral analysis: Topography (4quad)</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Behavioral analysis: Topography
+(4quad)</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">13 January, 2024</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-01-13
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree842d9c3c3965a379c4e8fc45ecfb5f831db1ca93targetblank842d9c3a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93" target="_blank">842d9c3</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree842d9c3c3965a379c4e8fc45ecfb5f831db1ca93targetblank842d9c3a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93" target="_blank">842d9c3</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/rnascope/
+    Ignored:    data/sequencing/
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/08A-merge_rd1_ATAC.Rmd
+    Untracked:  analysis/behavior_02-epm_topography.Rmd
+    Untracked:  analysis/behavior_03-openfield_topography.Rmd
+    Untracked:  analysis/behavior_03-projections.Rmd
+    Untracked:  analysis/behavior_04-4quad_genetics.Rmd
+    Untracked:  analysis/behavior_04-projections_silencing_tmt.Rmd
+    Untracked:  analysis/behavior_05-projections_silencing_2PE.Rmd
+    Untracked:  analysis/behavior_06-genes_silencing_tmt.Rmd
+    Untracked:  analysis/behavior_07-genes_silencing_2PE.Rmd
+    Untracked:  analysis/behavior_09-epm_topography.Rmd
+    Untracked:  analysis/behavior_10-epm_projections.Rmd
+    Untracked:  analysis/behavior_12-openfield_projections.Rmd
+    Untracked:  analysis/behavior_13-openfield_genes_silence.Rmd
+    Untracked:  analysis/behavior_14-openfield_projections_silence.Rmd
+    Untracked:  analysis/behavior_15-epm_genes_silence.Rmd
+    Untracked:  analysis/projections.Rmd
+    Untracked:  analysis/rnascope.Rmd
+    Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02D-Neuron_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02E-reprocess_Glut_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02F-reprocess_GABA_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02G-Glut_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-03A-merge_filtered_RNA.Rmd
+    Untracked:  analysis/sequencing-03B-initial_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04-initial_deg.Rmd
+    Untracked:  analysis/sequencing-04A-reprocess_Neuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04B-reprocess_Nonneuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04C-Neuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04D-Nonneuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05C-reprocess_Astro_RNA.Rmd
+    Untracked:  analysis/sequencing-05L-Glut_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05M-GABA_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05N-Astro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05O-Macro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05P-NFOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05Q-MOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05R-ABC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05S-VLMC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05T-Immune_classification+labeling_RNA.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Astro.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_GABAergic.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Glutamatergic.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Microglia.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Neuron.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Nonneuron.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_OLG.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_OPC.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_VLMC.Rmd
+    Untracked:  analysis/sequencing-06A-merged_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
+    Untracked:  analysis/sequencing-06B-merged_deg_discovery_RNA.Rmd
+    Untracked:  analysis/sequencing-07A-preprocess_aplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07B-preprocess_aplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07C-preprocess_aplCoA-2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07D-preprocess_pplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07E-preprocess_pplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07F-preprocess_pplCoA-2_ATAC.Rmd
+    Untracked:  code/sequencing-color_scales.R
+    Untracked:  code/sequencing-plot_functions.R
+    Untracked:  code/sequencing_misc.R
+    Untracked:  output/sequencing/
+
+Unstaged changes:
+    Modified:   analysis/behavior_01-4quad_topography.Rmd
+    Modified:   analysis/sequencing-02A-merge_rd1_RNA.Rmd
+    Modified:   analysis/sequencing-03-initial_classification.Rmd
+    Modified:   analysis/sequencing-05A-reprocess_Glut_RNA.Rmd
+    Modified:   code/behavior-plot_functions.R
+    Modified:   renv/settings.dcf
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/behavior_01-4quad_topography.Rmd</code>) and HTML
+(<code>docs/behavior_01-4quad_topography.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/analysis/behavior_01-4quad_topography.Rmd" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+<td>
+Added 4-quad topography plots.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is a notebook that processes 4-quad data and outputs analyses
+and figures for publication.</p>
+<pre class="r"><code># set up paths
+topography_id &lt;- params$dataset
+topography_path &lt;- params$path
+
+source(&quot;code/behavior-refs.R&quot;)</code></pre>
+<pre><code>Loading required package: MASS</code></pre>
+<pre><code>Loading required package: tidyverse</code></pre>
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.3     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+✖ dplyr::select() masks MASS::select()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+Loading required package: colorRamps
+
+Loading required package: RColorBrewer
+
+Loading required package: spatstat
+
+Loading required package: spatstat.data
+
+Loading required package: spatstat.geom
+
+spatstat.geom 3.2-5
+
+
+Attaching package: &#39;spatstat.geom&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    area
+
+
+Loading required package: spatstat.random
+
+spatstat.random 3.1-6
+
+Loading required package: spatstat.explore
+
+Loading required package: nlme
+
+
+Attaching package: &#39;nlme&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    collapse
+
+
+spatstat.explore 3.2-3
+
+Loading required package: spatstat.model
+
+Loading required package: rpart
+
+spatstat.model 3.2-6
+
+Loading required package: spatstat.linnet
+
+spatstat.linnet 3.1-1
+
+
+spatstat 3.0-6 
+For an introduction to spatstat, type &#39;beginner&#39; 
+
+
+Loading required package: viridis
+
+Loading required package: viridisLite
+
+Loading required package: cowplot
+
+
+Attaching package: &#39;cowplot&#39;
+
+
+The following object is masked from &#39;package:lubridate&#39;:
+
+    stamp
+
+
+Loading required package: grid
+
+
+Attaching package: &#39;grid&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    as.mask
+
+
+Loading required package: gridExtra
+
+
+Attaching package: &#39;gridExtra&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    combine
+
+
+Loading required package: colorspace
+
+
+Attaching package: &#39;colorspace&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    coords
+
+
+Loading required package: scales
+
+
+Attaching package: &#39;scales&#39;
+
+
+The following object is masked from &#39;package:viridis&#39;:
+
+    viridis_pal
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    rescale
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    discard
+
+
+The following object is masked from &#39;package:readr&#39;:
+
+    col_factor
+
+
+
+Attaching package: &#39;zoo&#39;
+
+
+The following objects are masked from &#39;package:base&#39;:
+
+    as.Date, as.Date.numeric
+
+
+Loading required package: carData
+
+
+Attaching package: &#39;car&#39;
+
+
+The following object is masked from &#39;package:spatstat.model&#39;:
+
+    bc
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    ellipse
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    recode
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    some
+
+
+Loading required package: mvtnorm
+
+Loading required package: survival
+
+Loading required package: TH.data
+
+
+Attaching package: &#39;TH.data&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    geyser
+
+
+
+Attaching package: &#39;rstatix&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    select
+
+
+The following object is masked from &#39;package:stats&#39;:
+
+    filter
+
+
+
+Attaching package: &#39;ggpubr&#39;
+
+
+The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend
+
+
+The following objects are masked from &#39;package:spatstat.geom&#39;:
+
+    border, rotate</code></pre>
+<pre class="r"><code>source(&quot;code/behavior-misc_processes.R&quot;)
+source(&quot;code/behavior-plot_functions.R&quot;)
+
+topography_groups &lt;- unlist(strsplit(Sys.glob(paste0(topography_path, &quot;*&quot;)), topography_path))[c(FALSE, TRUE)]</code></pre>
+</div>
+<div id="load-the-data" class="section level1">
+<h1>Load the data</h1>
+<p>Names have to be given manually in most cases. Also for now copy into
+console because it does not load due to odd workspace issues. This loads
+all files in a directory and puts it into the correct format
+automatically.</p>
+<pre class="r"><code>data_topography &lt;- read_stim_data(&quot;4quad&quot;, topography_groups, topography_path, topography_labels)
+
+data_topography &lt;- list(data_topography$`aplCoA-stim`, data_topography$`aplCoA-control`, 
+                        data_topography$`mplCoA-stim`, data_topography$`mplCoA-control`, 
+                        data_topography$`pplCoA-stim`, data_topography$`pplCoA-control`)
+names(data_topography) &lt;- c(&quot;aplCoA-stim&quot;, &quot;aplCoA-control&quot;, 
+                            &quot;mplCoA-stim&quot;, &quot;mplCoA-control&quot;, 
+                            &quot;pplCoA-stim&quot;, &quot;pplCoA-control&quot;)</code></pre>
+</div>
+<div id="performance-index-metrics" class="section level1 tabset">
+<h1 class="tabset">Performance Index metrics</h1>
+<div id="linear" class="section level2 tabset">
+<h2 class="tabset">Linear</h2>
+<div id="ap-scatter-plot" class="section level3 tabset">
+<h3 class="tabset">AP scatter plot</h3>
+<pre class="r"><code>baseline_array_topography &lt;- transform_pi(data_topography, &quot;baseline&quot;, &quot;Quadrant&quot;, 1, 2400)
+treatment_array_topography &lt;- transform_pi(data_topography, &quot;treatment&quot;, &quot;Quadrant&quot;, 1, 2881)
+
+pi_dataframe_topography_linear &lt;- linear_array(data_topography, baseline_array_topography,
+                                               treatment_array_topography, &quot;pi&quot;)
+
+pi_group_topography &lt;- group_array(data_topography, 
+                                   baseline_array_topography, 
+                                   treatment_array_topography, &quot;pi&quot;)</code></pre>
+<div id="eyfp" class="section level4">
+<h4>eYFP</h4>
+<pre class="r"><code>single_linear_plot(pi_dataframe_topography_linear, &quot;eYFP&quot;, &quot;difference_pi&quot;, eyfp_green, 
+                   ap_linear_pi_axes, ap_linear_pi_label)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/3-pi_scatter_plot_eyfp-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-3-pi_scatter_plot_eyfp-1">
+Past versions of 3-pi_scatter_plot_eyfp-1.pdf
+</button>
+</p>
+<div id="fig-3-pi_scatter_plot_eyfp-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/3-pi_scatter_plot_eyfp-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="chr2" class="section level4">
+<h4>ChR2</h4>
+<pre class="r"><code>single_linear_plot(pi_dataframe_topography_linear, &quot;ChR2&quot;, &quot;difference_pi&quot;, chr2_blue, 
+                   ap_linear_pi_axes, ap_linear_pi_label)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/4-pi_scatter_plot_chr2-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-4-pi_scatter_plot_chr2-1">
+Past versions of 4-pi_scatter_plot_chr2-1.pdf
+</button>
+</p>
+<div id="fig-4-pi_scatter_plot_chr2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/4-pi_scatter_plot_chr2-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="combined" class="section level4">
+<h4>Combined</h4>
+<pre class="r"><code>dual_linear_plot(pi_dataframe_topography_linear, &quot;difference_pi&quot;, 
+                 ap_linear_pi_axes, ap_linear_pi_label)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/5-pi_scatter_plot_combined-1.pdf" width="508.8" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-5-pi_scatter_plot_combined-1">
+Past versions of 5-pi_scatter_plot_combined-1.pdf
+</button>
+</p>
+<div id="fig-5-pi_scatter_plot_combined-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/5-pi_scatter_plot_combined-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div id="statistics" class="section level3 tabset">
+<h3 class="tabset">Statistics</h3>
+<div id="summary-of-linear-regressions" class="section level4 tabset">
+<h4 class="tabset">Summary of linear regressions</h4>
+<div id="eyfp-1" class="section level5">
+<h5>eYFP</h5>
+<pre class="r"><code># gives results for controls
+ap_pi_ancova &lt;- lm(difference_pi ~ ap_coords, 
+                   data = pi_dataframe_topography_linear[pi_dataframe_topography_linear$type == &quot;eYFP&quot;,])
+
+summary(ap_pi_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_pi ~ ap_coords, data = pi_dataframe_topography_linear[pi_dataframe_topography_linear$type == 
+    &quot;eYFP&quot;, ])
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.42112 -0.14745 -0.01116  0.11436  0.35266 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)  0.17840    0.18118   0.985    0.334
+ap_coords    0.09093    0.09593   0.948    0.352
+
+Residual standard error: 0.1893 on 26 degrees of freedom
+Multiple R-squared:  0.0334,    Adjusted R-squared:  -0.003775 
+F-statistic: 0.8985 on 1 and 26 DF,  p-value: 0.3519</code></pre>
+</div>
+<div id="chr2-1" class="section level5">
+<h5>ChR2</h5>
+<pre class="r"><code>ap_pi_ancova &lt;- lm(difference_pi ~ ap_coords, 
+                   data = pi_dataframe_topography_linear[pi_dataframe_topography_linear$type == &quot;ChR2&quot;,])
+
+summary(ap_pi_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_pi ~ ap_coords, data = pi_dataframe_topography_linear[pi_dataframe_topography_linear$type == 
+    &quot;ChR2&quot;, ])
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.49780 -0.17350  0.06307  0.17651  0.48271 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  -1.0885     0.3122  -3.487 0.002825 ** 
+ap_coords    -0.6610     0.1599  -4.133 0.000696 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 0.2682 on 17 degrees of freedom
+Multiple R-squared:  0.5012,    Adjusted R-squared:  0.4718 
+F-statistic: 17.08 on 1 and 17 DF,  p-value: 0.0006957</code></pre>
+</div>
+</div>
+<div id="comparison-of-regression-lines" class="section level4 tabset">
+<h4 class="tabset">Comparison of regression lines</h4>
+<div id="ancova" class="section level5">
+<h5>ANCOVA</h5>
+<pre class="r"><code>pi_dataframe_topography_linear$type &lt;- relevel(pi_dataframe_topography_linear$type, ref = &quot;eYFP&quot;)
+ap_pi_ancova &lt;- lm(difference_pi ~ ap_coords * type, data = pi_dataframe_topography_linear)
+
+summary(ap_pi_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_pi ~ ap_coords * type, data = pi_dataframe_topography_linear)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.49780 -0.14762  0.03744  0.13785  0.48271 
+
+Coefficients:
+                   Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)         0.17840    0.21423   0.833 0.409588    
+ap_coords           0.09093    0.11343   0.802 0.427184    
+typeChR2           -1.26691    0.33733  -3.756 0.000515 ***
+ap_coords:typeChR2 -0.75193    0.17518  -4.292 9.86e-05 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 0.2239 on 43 degrees of freedom
+Multiple R-squared:  0.4221,    Adjusted R-squared:  0.3818 
+F-statistic: 10.47 on 3 and 43 DF,  p-value: 2.695e-05</code></pre>
+</div>
+<div id="emmeans" class="section level5">
+<h5>EMMeans</h5>
+<pre class="r"><code>emtrends(ap_pi_ancova, pairwise ~ type, var = &quot;ap_coords&quot;)</code></pre>
+<pre><code>$emtrends
+ type ap_coords.trend    SE df lower.CL upper.CL
+ eYFP          0.0909 0.113 43   -0.138    0.320
+ ChR2         -0.6610 0.133 43   -0.930   -0.392
+
+Confidence level used: 0.95 
+
+$contrasts
+ contrast    estimate    SE df t.ratio p.value
+ eYFP - ChR2    0.752 0.175 43   4.292  0.0001</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div id="repeated-measures" class="section level2 tabset">
+<h2 class="tabset">Repeated Measures</h2>
+<div id="summary-statistics" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="anterior" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>anterior_group_topography &lt;- pi_group_topography[pi_group_topography$group 
+                                                 %in% c(&quot;aplCoA ChR2&quot;, &quot;aplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PI&quot;, baseline_pi, treatment_pi) %&gt;%
+  convert_as_factor(group, time)
+levels(anterior_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+anterior_group_topography$group &lt;- factor(anterior_group_topography$group, 
+                                          levels = c(&quot;aplCoA eYFP&quot;, &quot;aplCoA ChR2&quot;))
+levels(anterior_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+anterior_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PI, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"PI","4":"10","5":"0.007","6":"0.034"},{"1":"eYFP","2":"ON","3":"PI","4":"10","5":"0.024","6":"0.044"},{"1":"ChR2","2":"OFF","3":"PI","4":"6","5":"0.050","6":"0.034"},{"1":"ChR2","2":"ON","3":"PI","4":"6","5":"-0.188","6":"0.084"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="posterior" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>posterior_group_topography &lt;- pi_group_topography[pi_group_topography$group 
+                                                  %in% c(&quot;pplCoA ChR2&quot;, &quot;pplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PI&quot;, baseline_pi, treatment_pi) %&gt;%
+  convert_as_factor(group, time)
+levels(posterior_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+posterior_group_topography$group &lt;- factor(posterior_group_topography$group, 
+                                           levels = c(&quot;pplCoA eYFP&quot;, &quot;pplCoA ChR2&quot;))
+levels(posterior_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+posterior_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PI, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"PI","4":"10","5":"-0.066","6":"0.022"},{"1":"eYFP","2":"ON","3":"PI","4":"10","5":"-0.120","6":"0.067"},{"1":"ChR2","2":"OFF","3":"PI","4":"9","5":"0.005","6":"0.039"},{"1":"ChR2","2":"ON","3":"PI","4":"9","5":"0.403","6":"0.084"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="two-way-repeated-measures-anova" class="section level3 tabset">
+<h3 class="tabset">Two-way repeated-measures ANOVA</h3>
+<div id="anterior-1" class="section level4 tabset">
+<h4 class="tabset">Anterior</h4>
+<div id="anova" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(anterior_group_topography, &quot;PI&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"14","4":"2.126","5":"0.167","6":"","7":"0.092","_rn_":"1"},{"1":"time","2":"1","3":"14","4":"7.446","5":"0.016","6":"*","7":"0.149","_rn_":"2"},{"1":"group:time","2":"1","3":"14","4":"9.848","5":"0.007","6":"*","7":"0.188","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(anterior_group_topography, &quot;PI&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"0.01664451","7":"-0.1006799","8":"0.13396893","9":"0.7690","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.23852260","7":"-0.4399725","8":"-0.03707274","9":"0.0248","10":"*","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="posterior-1" class="section level4 tabset">
+<h4 class="tabset">Posterior</h4>
+<div id="anova-1" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(posterior_group_topography, &quot;PI&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"17","4":"30.118","5":"0.00004","6":"*","7":"0.441","_rn_":"1"},{"1":"time","2":"1","3":"17","4":"8.091","5":"0.01100","6":"*","7":"0.209","_rn_":"2"},{"1":"group:time","2":"1","3":"17","4":"14.037","5":"0.00200","6":"*","7":"0.314","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-1" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(posterior_group_topography, &quot;PI&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.05447212","7":"-0.2020530","8":"0.09310874","9":"0.448000","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"0.39800037","7":"0.2018779","8":"0.59412285","9":"0.000548","10":"***","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+<div id="plots" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="anterior-2" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>bg_twogroup(anterior_group_topography, rm_pi_label, anterior_color, ap_pi_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/16-anterior_pi_bars_paired-1.pdf" width="192" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-16-anterior_pi_bars_paired-1">
+Past versions of 16-anterior_pi_bars_paired-1.pdf
+</button>
+</p>
+<div id="fig-16-anterior_pi_bars_paired-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/16-anterior_pi_bars_paired-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="posterior-2" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>bg_twogroup(posterior_group_topography, rm_pi_label, posterior_color, ap_pi_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/17-posterior_pi_bars_paired-1.pdf" width="192" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-17-posterior_pi_bars_paired-1">
+Past versions of 17-posterior_pi_bars_paired-1.pdf
+</button>
+</p>
+<div id="fig-17-posterior_pi_bars_paired-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/17-posterior_pi_bars_paired-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="difference" class="section level2 tabset">
+<h2 class="tabset">Difference</h2>
+<div id="summary-statistics-1" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="anterior-3" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>anterior_group_topography &lt;- cbind.data.frame(anterior_group_topography$id[1:                                                                             (length(rownames(anterior_group_topography))/2)],
+                                        anterior_group_topography$group[1:                                                                          (length(rownames(anterior_group_topography))/2)],
+                               anterior_group_topography$PI[(length(rownames(anterior_group_topography))/2)+1:
+                                                               (length(rownames(anterior_group_topography))/2)] -
+                                          anterior_group_topography$PI[1:                                                                         (length(rownames(anterior_group_topography))/2)])
+
+colnames(anterior_group_topography) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;PI&quot;)
+
+anterior_group_topography %&gt;%
+  group_by(group) %&gt;%
+  get_summary_stats(PI, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PI","3":"10","4":"0.017","5":"0.043"},{"1":"ChR2","2":"PI","3":"6","4":"-0.239","5":"0.077"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="posterior-3" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>posterior_group_topography &lt;- cbind.data.frame(posterior_group_topography$id[1:                                                                             (length(rownames(posterior_group_topography))/2)],
+                                        posterior_group_topography$group[1:                                                                          (length(rownames(posterior_group_topography))/2)],
+                               posterior_group_topography$PI[(length(rownames(posterior_group_topography))/2)+1:
+                                                             (length(rownames(posterior_group_topography))/2)] -
+                                          posterior_group_topography$PI[1:                                                                         (length(rownames(posterior_group_topography))/2)])
+
+colnames(posterior_group_topography) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;PI&quot;)
+
+posterior_group_topography %&gt;%
+  group_by(group) %&gt;%
+  get_summary_stats(PI, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PI","3":"10","4":"-0.054","5":"0.079"},{"1":"ChR2","2":"PI","3":"9","4":"0.398","5":"0.092"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="t-tests" class="section level3 tabset">
+<h3 class="tabset">T-tests</h3>
+<div id="anterior-4" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>t.test(x = anterior_group_topography$PI[anterior_group_topography$group %in% &quot;eYFP&quot;], 
+       y = anterior_group_topography$PI[anterior_group_topography$group %in% &quot;ChR2&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  anterior_group_topography$PI[anterior_group_topography$group %in% &quot;eYFP&quot;] and anterior_group_topography$PI[anterior_group_topography$group %in% &quot;ChR2&quot;]
+t = 2.8814, df = 8.1627, p-value = 0.02004
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 0.05166312 0.45867110
+sample estimates:
+  mean of x   mean of y 
+ 0.01664451 -0.23852260 </code></pre>
+</div>
+<div id="posterior-4" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>t.test(x = posterior_group_topography$PI[posterior_group_topography$group %in% &quot;eYFP&quot;], 
+       y = posterior_group_topography$PI[posterior_group_topography$group %in% &quot;ChR2&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  posterior_group_topography$PI[posterior_group_topography$group %in% &quot;eYFP&quot;] and posterior_group_topography$PI[posterior_group_topography$group %in% &quot;ChR2&quot;]
+t = -3.7257, df = 16.275, p-value = 0.001793
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.7095722 -0.1953727
+sample estimates:
+  mean of x   mean of y 
+-0.05447212  0.39800037 </code></pre>
+</div>
+</div>
+<div id="graphs" class="section level3 tabset">
+<h3 class="tabset">Graphs</h3>
+<div id="anterior-5" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>bg_diff(anterior_group_topography, diff_pi_label, anterior_color, ap_pi_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/22-anterior_diff_graph-1.pdf" width="134.4" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-22-anterior_diff_graph-1">
+Past versions of 22-anterior_diff_graph-1.pdf
+</button>
+</p>
+<div id="fig-22-anterior_diff_graph-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/22-anterior_diff_graph-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="posterior-5" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>bg_diff(posterior_group_topography, diff_pi_label, posterior_color, ap_pi_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/23-posterior_diff_graph-1.pdf" width="134.4" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-23-posterior_diff_graph-1">
+Past versions of 23-posterior_diff_graph-1.pdf
+</button>
+</p>
+<div id="fig-23-posterior_diff_graph-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/23-posterior_diff_graph-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="port-distance-metrics" class="section level1">
+<h1>Port Distance metrics</h1>
+<div id="linear-1" class="section level2 tabset">
+<h2 class="tabset">Linear</h2>
+<div id="ap-scatter-plot-1" class="section level3 tabset">
+<h3 class="tabset">AP scatter plot</h3>
+<pre class="r"><code>baseline_array_topography_pd &lt;- transform_pd(data_topography, &quot;baseline&quot;, &quot;PortDistance&quot;, 1, 2400)
+treatment_array_topography_pd &lt;- transform_pd(data_topography, &quot;treatment&quot;, &quot;PortDistance&quot;, 1, 2881)
+
+pd_dataframe_topography_linear &lt;- linear_array(data_topography, baseline_array_topography_pd,
+                                               treatment_array_topography_pd, &quot;pd&quot;)
+
+pd_group_topography &lt;- group_array(data_topography, 
+                                   baseline_array_topography_pd, 
+                                   treatment_array_topography_pd, &quot;pd&quot;)</code></pre>
+<div id="eyfp-2" class="section level4">
+<h4>eYFP</h4>
+<pre class="r"><code>single_linear_plot(pd_dataframe_topography_linear, &quot;eYFP&quot;, &quot;difference_pd&quot;, eyfp_green, 
+                   ap_linear_pd_axes, ap_linear_pd_label)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/25-pd_scatter_plot_eyfp-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-25-pd_scatter_plot_eyfp-1">
+Past versions of 25-pd_scatter_plot_eyfp-1.pdf
+</button>
+</p>
+<div id="fig-25-pd_scatter_plot_eyfp-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/25-pd_scatter_plot_eyfp-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="chr2-2" class="section level4">
+<h4>ChR2</h4>
+<pre class="r"><code>single_linear_plot(pd_dataframe_topography_linear, &quot;ChR2&quot;, &quot;difference_pd&quot;, chr2_blue, 
+                   ap_linear_pd_axes, ap_linear_pd_label)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/26-pd_scatter_plot_chr2-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-26-pd_scatter_plot_chr2-1">
+Past versions of 26-pd_scatter_plot_chr2-1.pdf
+</button>
+</p>
+<div id="fig-26-pd_scatter_plot_chr2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/26-pd_scatter_plot_chr2-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="combined-1" class="section level4">
+<h4>Combined</h4>
+<pre class="r"><code>dual_linear_plot(pd_dataframe_topography_linear, &quot;difference_pd&quot;, 
+                 ap_linear_pd_axes, ap_linear_pd_label)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/27-pd_scatter_plot_combined-1.pdf" width="508.8" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-27-pd_scatter_plot_combined-1">
+Past versions of 27-pd_scatter_plot_combined-1.pdf
+</button>
+</p>
+<div id="fig-27-pd_scatter_plot_combined-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/27-pd_scatter_plot_combined-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div id="statistics-1" class="section level3 tabset">
+<h3 class="tabset">Statistics</h3>
+<div id="summary-of-linear-regressions-1" class="section level4 tabset">
+<h4 class="tabset">Summary of linear regressions</h4>
+<div id="eyfp-3" class="section level5">
+<h5>eYFP</h5>
+<pre class="r"><code>ap_pd_ancova &lt;- lm(difference_pd ~ ap_coords, 
+                   data = pd_dataframe_topography_linear[pd_dataframe_topography_linear$type == &quot;eYFP&quot;,])
+
+summary(ap_pd_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_pd ~ ap_coords, data = pd_dataframe_topography_linear[pd_dataframe_topography_linear$type == 
+    &quot;eYFP&quot;, ])
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-3.4980 -1.4795  0.1111  1.0147  5.0981 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)   -2.808      1.953  -1.438    0.162
+ap_coords     -1.316      1.034  -1.273    0.214
+
+Residual standard error: 2.041 on 26 degrees of freedom
+Multiple R-squared:  0.05866,   Adjusted R-squared:  0.02245 
+F-statistic:  1.62 on 1 and 26 DF,  p-value: 0.2143</code></pre>
+</div>
+<div id="chr2-3" class="section level5">
+<h5>ChR2</h5>
+<pre class="r"><code>ap_pd_ancova &lt;- lm(difference_pd ~ ap_coords, 
+                   data = pd_dataframe_topography_linear[pd_dataframe_topography_linear$type == &quot;ChR2&quot;,])
+
+summary(ap_pd_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_pd ~ ap_coords, data = pd_dataframe_topography_linear[pd_dataframe_topography_linear$type == 
+    &quot;ChR2&quot;, ])
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-9.0533 -2.0368  0.1832  2.2620  5.3012 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)  
+(Intercept)    7.018      4.244   1.653   0.1166  
+ap_coords      4.976      2.174   2.289   0.0352 *
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 3.647 on 17 degrees of freedom
+Multiple R-squared:  0.2355,    Adjusted R-squared:  0.1906 
+F-statistic: 5.237 on 1 and 17 DF,  p-value: 0.03518</code></pre>
+</div>
+</div>
+<div id="comparison-of-regression-lines-1"
+class="section level4 tabset">
+<h4 class="tabset">Comparison of regression lines</h4>
+<div id="ancova-1" class="section level5">
+<h5>ANCOVA</h5>
+<pre class="r"><code>pd_dataframe_topography_linear$type &lt;- relevel(pd_dataframe_topography_linear$type, ref = &quot;eYFP&quot;)
+ap_pd_ancova &lt;- lm(difference_pd ~ ap_coords * type, data = pd_dataframe_topography_linear)
+
+summary(ap_pd_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_pd ~ ap_coords * type, data = pd_dataframe_topography_linear)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-9.0533 -1.5284  0.1566  1.4541  5.3012 
+
+Coefficients:
+                   Estimate Std. Error t value Pr(&gt;|t|)   
+(Intercept)          -2.808      2.669  -1.052  0.29854   
+ap_coords            -1.316      1.413  -0.932  0.35671   
+typeChR2              9.826      4.202   2.338  0.02408 * 
+ap_coords:typeChR2    6.293      2.182   2.884  0.00611 **
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 2.789 on 43 degrees of freedom
+Multiple R-squared:  0.2767,    Adjusted R-squared:  0.2263 
+F-statistic: 5.484 on 3 and 43 DF,  p-value: 0.002789</code></pre>
+</div>
+<div id="emmeans-1" class="section level5">
+<h5>EMMeans</h5>
+<pre class="r"><code>emtrends(ap_pd_ancova, pairwise ~ type, var = &quot;ap_coords&quot;)</code></pre>
+<pre><code>$emtrends
+ type ap_coords.trend   SE df lower.CL upper.CL
+ eYFP           -1.32 1.41 43    -4.17     1.53
+ ChR2            4.98 1.66 43     1.62     8.33
+
+Confidence level used: 0.95 
+
+$contrasts
+ contrast    estimate   SE df t.ratio p.value
+ eYFP - ChR2    -6.29 2.18 43  -2.884  0.0061</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div id="repeated-measures-1" class="section level2 tabset">
+<h2 class="tabset">Repeated Measures</h2>
+<div id="summary-statistics-2" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="anterior-6" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>anterior_group_topography &lt;- pd_group_topography[pd_group_topography$group 
+                                                 %in% c(&quot;aplCoA ChR2&quot;, &quot;aplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PD&quot;, baseline_pd, treatment_pd) %&gt;%
+  convert_as_factor(group, time)
+levels(anterior_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+anterior_group_topography$group &lt;- factor(anterior_group_topography$group, 
+                                          levels = c(&quot;aplCoA eYFP&quot;, &quot;aplCoA ChR2&quot;))
+levels(anterior_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+anterior_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PD, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"PD","4":"10","5":"38.968","6":"0.456"},{"1":"eYFP","2":"ON","3":"PD","4":"10","5":"38.171","6":"0.608"},{"1":"ChR2","2":"OFF","3":"PD","4":"6","5":"39.006","6":"0.398"},{"1":"ChR2","2":"ON","3":"PD","4":"6","5":"40.897","6":"0.636"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="posterior-6" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>posterior_group_topography &lt;- pd_group_topography[pd_group_topography$group 
+                                                 %in% c(&quot;pplCoA ChR2&quot;, &quot;pplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PD&quot;, baseline_pd, treatment_pd) %&gt;%
+  convert_as_factor(group, time)
+levels(posterior_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+posterior_group_topography$group &lt;- factor(posterior_group_topography$group, 
+                                          levels = c(&quot;pplCoA eYFP&quot;, &quot;pplCoA ChR2&quot;))
+levels(posterior_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+posterior_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PD, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"PD","4":"10","5":"40.278","6":"0.459"},{"1":"eYFP","2":"ON","3":"PD","4":"10","5":"40.755","6":"0.783"},{"1":"ChR2","2":"OFF","3":"PD","4":"9","5":"39.898","6":"0.589"},{"1":"ChR2","2":"ON","3":"PD","4":"9","5":"35.921","6":"0.854"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="two-way-repeated-measures-anova-1"
+class="section level3 tabset">
+<h3 class="tabset">Two-way repeated-measures ANOVA</h3>
+<div id="anterior-7" class="section level4 tabset">
+<h4 class="tabset">Anterior</h4>
+<div id="anova-2" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(anterior_group_topography, &quot;PD&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"14","4":"3.980","5":"0.066","6":"","7":"0.172","_rn_":"1"},{"1":"time","2":"1","3":"14","4":"1.704","5":"0.213","6":"","7":"0.032","_rn_":"2"},{"1":"group:time","2":"1","3":"14","4":"10.280","5":"0.006","6":"*","7":"0.164","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-2" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(anterior_group_topography, &quot;PD&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.7968036","7":"-2.3930652","8":"0.799458","9":"0.3080","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"1.8911677","7":"0.2192618","8":"3.563074","9":"0.0304","10":"*","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="posterior-7" class="section level4 tabset">
+<h4 class="tabset">Posterior</h4>
+<div id="anova-3" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(posterior_group_topography, &quot;PD&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"17","4":"11.274","5":"0.004","6":"*","7":"0.298","_rn_":"1"},{"1":"time","2":"1","3":"17","4":"9.044","5":"0.008","6":"*","7":"0.161","_rn_":"2"},{"1":"group:time","2":"1","3":"17","4":"14.637","5":"0.001","6":"*","7":"0.237","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-3" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(posterior_group_topography, &quot;PD&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"0.4763243","7":"-1.430708","8":"2.383357","9":"0.60600","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-3.9769469","7":"-6.175850","8":"-1.778044","9":"0.00146","10":"**","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+<div id="plots-1" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="anterior-8" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>bg_twogroup_nobar(anterior_group_topography, rm_pd_label, anterior_color, ap_pd_axes, chr2_blue, 0)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/38-anterior_pd_bars_paired-1.pdf" width="192" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-38-anterior_pd_bars_paired-1">
+Past versions of 38-anterior_pd_bars_paired-1.pdf
+</button>
+</p>
+<div id="fig-38-anterior_pd_bars_paired-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/38-anterior_pd_bars_paired-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="posterior-8" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>bg_twogroup_nobar(posterior_group_topography, rm_pd_label, posterior_color, ap_pd_axes, chr2_blue, 0)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/39-posterior_pd_bars_paired-1.pdf" width="192" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-39-posterior_pd_bars_paired-1">
+Past versions of 39-posterior_pd_bars_paired-1.pdf
+</button>
+</p>
+<div id="fig-39-posterior_pd_bars_paired-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/39-posterior_pd_bars_paired-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="difference-1" class="section level2 tabset">
+<h2 class="tabset">Difference</h2>
+<div id="summary-statistics-3" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="anterior-9" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>anterior_group_topography &lt;- cbind.data.frame(anterior_group_topography$id[1:                                                                             (length(rownames(anterior_group_topography))/2)],
+                                        anterior_group_topography$group[1:                                                                          (length(rownames(anterior_group_topography))/2)],
+                               anterior_group_topography$PD[(length(rownames(anterior_group_topography))/2)+1:
+                                                               (length(rownames(anterior_group_topography))/2)] -
+                                          anterior_group_topography$PD[1:                                                                         (length(rownames(anterior_group_topography))/2)])
+
+colnames(anterior_group_topography) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;PD&quot;)
+
+anterior_group_topography %&gt;%
+  group_by(group) %&gt;%
+  get_summary_stats(PD, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PD","3":"10","4":"-0.797","5":"0.479"},{"1":"ChR2","2":"PD","3":"6","4":"1.891","5":"0.736"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="posterior-9" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>posterior_group_topography &lt;- cbind.data.frame(posterior_group_topography$id[1:                                                                             (length(rownames(posterior_group_topography))/2)],
+                                        posterior_group_topography$group[1:                                                                          (length(rownames(posterior_group_topography))/2)],
+                               posterior_group_topography$PD[(length(rownames(posterior_group_topography))/2)+1:
+                                                             (length(rownames(posterior_group_topography))/2)] -
+                                          posterior_group_topography$PD[1:                                                                         (length(rownames(posterior_group_topography))/2)])
+
+colnames(posterior_group_topography) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;PD&quot;)
+
+posterior_group_topography %&gt;%
+  group_by(group) %&gt;%
+  get_summary_stats(PD, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PD","3":"10","4":"0.476","5":"0.749"},{"1":"ChR2","2":"PD","3":"9","4":"-3.977","5":"0.902"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="t-tests-1" class="section level3 tabset">
+<h3 class="tabset">T-tests</h3>
+<div id="anterior-10" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>t.test(x = anterior_group_topography$PD[anterior_group_topography$group %in% &quot;eYFP&quot;], 
+       y = anterior_group_topography$PD[anterior_group_topography$group %in% &quot;ChR2&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  anterior_group_topography$PD[anterior_group_topography$group %in% &quot;eYFP&quot;] and anterior_group_topography$PD[anterior_group_topography$group %in% &quot;ChR2&quot;]
+t = -3.061, df = 9.2138, p-value = 0.01319
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.6674162 -0.7085265
+sample estimates:
+ mean of x  mean of y 
+-0.7968036  1.8911677 </code></pre>
+</div>
+<div id="posterior-10" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>t.test(x = posterior_group_topography$PD[posterior_group_topography$group %in% &quot;eYFP&quot;], 
+       y = posterior_group_topography$PD[posterior_group_topography$group %in% &quot;ChR2&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  posterior_group_topography$PD[posterior_group_topography$group %in% &quot;eYFP&quot;] and posterior_group_topography$PD[posterior_group_topography$group %in% &quot;ChR2&quot;]
+t = 3.7975, df = 16.047, p-value = 0.001574
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 1.967857 6.938686
+sample estimates:
+ mean of x  mean of y 
+ 0.4763243 -3.9769469 </code></pre>
+</div>
+</div>
+<div id="graphs-1" class="section level3 tabset">
+<h3 class="tabset">Graphs</h3>
+<div id="anterior-11" class="section level4">
+<h4>Anterior</h4>
+<pre class="r"><code>bg_diff(anterior_group_topography, diff_pd_label, anterior_color, ap_pd_axes_diff, chr2_blue)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/44-anterior_diff_graph_pd-1.pdf" width="124.8" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-44-anterior_diff_graph_pd-1">
+Past versions of 44-anterior_diff_graph_pd-1.pdf
+</button>
+</p>
+<div id="fig-44-anterior_diff_graph_pd-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/44-anterior_diff_graph_pd-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="posterior-11" class="section level4">
+<h4>Posterior</h4>
+<pre class="r"><code>bg_diff(posterior_group_topography, diff_pd_label, posterior_color, ap_pd_axes_diff, chr2_blue)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/45-posterior_diff_graph_pd-1.pdf" width="124.8" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-45-posterior_diff_graph_pd-1">
+Past versions of 45-posterior_diff_graph_pd-1.pdf
+</button>
+</p>
+<div id="fig-45-posterior_diff_graph_pd-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/45-posterior_diff_graph_pd-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="heatmap" class="section level1 tabset">
+<h1 class="tabset">Heatmap</h1>
+<p>Generates a heatmap for each group. Sums all groups together at
+baseline and at treatment, and applies a gaussian smooth filter to both.
+It then subtracts the baseline from the treatment to identify the
+difference between treatment and baseline for all groups.</p>
+<pre class="r"><code>heatmap_list &lt;- get_heatmap(data_topography)</code></pre>
+<div id="anterior-eyfp" class="section level2">
+<h2>Anterior eYFP</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list$`aplCoA-control`)</code></pre>
+<p><img src="figure/behavior_01-4quad_topography.Rmd/47-heatmap_anterior_eyfp-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-47-heatmap_anterior_eyfp-1">
+Past versions of 47-heatmap_anterior_eyfp-1.svg
+</button>
+</p>
+<div id="fig-47-heatmap_anterior_eyfp-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/47-heatmap_anterior_eyfp-1.svg" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="anterior-chr2" class="section level2">
+<h2>Anterior ChR2</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list$`aplCoA-stim`)</code></pre>
+<p><img src="figure/behavior_01-4quad_topography.Rmd/48-heatmap_anterior_chr2-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-48-heatmap_anterior_chr2-1">
+Past versions of 48-heatmap_anterior_chr2-1.svg
+</button>
+</p>
+<div id="fig-48-heatmap_anterior_chr2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/48-heatmap_anterior_chr2-1.svg" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="posterior-eyfp" class="section level2">
+<h2>Posterior eYFP</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list$`pplCoA-control`)</code></pre>
+<p><img src="figure/behavior_01-4quad_topography.Rmd/49-heatmap_posterior_eyfp-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-49-heatmap_posterior_eyfp-1">
+Past versions of 49-heatmap_posterior_eyfp-1.svg
+</button>
+</p>
+<div id="fig-49-heatmap_posterior_eyfp-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/49-heatmap_posterior_eyfp-1.svg" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="posterior-chr2" class="section level2">
+<h2>Posterior ChR2</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list$`pplCoA-stim`)</code></pre>
+<p><img src="figure/behavior_01-4quad_topography.Rmd/50-heatmap_posterior_chr2-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-50-heatmap_posterior_chr2-1">
+Past versions of 50-heatmap_posterior_chr2-1.svg
+</button>
+</p>
+<div id="fig-50-heatmap_posterior_chr2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/50-heatmap_posterior_chr2-1.svg" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="scale-bars" class="section level2 tabset">
+<h2 class="tabset">Scale bars</h2>
+<div id="horizontal" class="section level3">
+<h3>Horizontal</h3>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_legend(heatmap_list$`aplCoA-stim`, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/51-scale_bar_horizontal_diff-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-51-scale_bar_horizontal_diff-1">
+Past versions of 51-scale_bar_horizontal_diff-1.pdf
+</button>
+</p>
+<div id="fig-51-scale_bar_horizontal_diff-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/51-scale_bar_horizontal_diff-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="vertical" class="section level3">
+<h3>Vertical</h3>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_legend(heatmap_list$`aplCoA-stim`, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_01-4quad_topography.Rmd/52-scale_bar_vertical_diff-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-52-scale_bar_vertical_diff-1">
+Past versions of 52-scale_bar_vertical_diff-1.pdf
+</button>
+</p>
+<div id="fig-52-scale_bar_vertical_diff-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/52-scale_bar_vertical_diff-1.pdf" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="paths" class="section level1 tabset">
+<h1 class="tabset">Paths</h1>
+<div id="chr2-4" class="section level2 tabset">
+<h2 class="tabset">ChR2</h2>
+<div id="anterior-12" class="section level3">
+<h3>Anterior</h3>
+<pre class="r"><code>plot_path(data_topography$`aplCoA-stim`$`aplCoA ChR2|1.46_az_020314_1_02.27.14-LR.txt`, anterior_color)</code></pre>
+<p><img src="figure/behavior_01-4quad_topography.Rmd/53-path_anterior_chr2-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-53-path_anterior_chr2-1">
+Past versions of 53-path_anterior_chr2-1.svg
+</button>
+</p>
+<div id="fig-53-path_anterior_chr2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/53-path_anterior_chr2-1.svg" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="posterior-12" class="section level3">
+<h3>Posterior</h3>
+<pre class="r"><code>plot_path(data_topography$`pplCoA-stim`$`pplCoA ChR2|2.46_210504_plCoAp-ChR2-1-LR.txt`, posterior_color)</code></pre>
+<p><img src="figure/behavior_01-4quad_topography.Rmd/54-path_posterior_chr2-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-54-path_posterior_chr2-1">
+Past versions of 54-path_posterior_chr2-1.svg
+</button>
+</p>
+<div id="fig-54-path_posterior_chr2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/54-path_posterior_chr2-1.svg" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div id="eyfp-4" class="section level2 tabset">
+<h2 class="tabset">eYFP</h2>
+<div id="anterior-13" class="section level3">
+<h3>Anterior</h3>
+<pre class="r"><code>plot_path(data_topography$`aplCoA-control`$`aplCoA eYFP|1.22_210430_plCoAa-eYFP-10-LR.txt`, control_color)</code></pre>
+<p><img src="figure/behavior_01-4quad_topography.Rmd/55-path_anterior_eyfp-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-55-path_anterior_eyfp-1">
+Past versions of 55-path_anterior_eyfp-1.svg
+</button>
+</p>
+<div id="fig-55-path_anterior_eyfp-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/55-path_anterior_eyfp-1.svg" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="posterior-13" class="section level3">
+<h3>Posterior</h3>
+<pre class="r"><code>plot_path(data_topography$`pplCoA-control`$`pplCoA eYFP|2.46_062321_plCoAp-eYFP-11-LR.txt`, control_color) </code></pre>
+<p><img src="figure/behavior_01-4quad_topography.Rmd/56-path_posterior_eyfp-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-56-path_posterior_eyfp-1">
+Past versions of 56-path_posterior_eyfp-1.svg
+</button>
+</p>
+<div id="fig-56-path_posterior_eyfp-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/842d9c3c3965a379c4e8fc45ecfb5f831db1ca93/docs/figure/behavior_01-4quad_topography.Rmd/56-path_posterior_eyfp-1.svg" target="_blank">842d9c3</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.1.2
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Los_Angeles
+tzcode source: internal
+
+attached base packages:
+[1] grid      stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+ [1] knitr_1.44             ggpubr_0.6.0           emmeans_1.8.8         
+ [4] rstatix_0.7.2          multcomp_1.4-25        TH.data_1.1-2         
+ [7] survival_3.5-7         mvtnorm_1.2-3          car_3.1-2             
+[10] carData_3.0-5          gmodels_2.18.1.1       zoo_1.8-12            
+[13] scales_1.2.1           colorspace_2.1-0       gridExtra_2.3         
+[16] cowplot_1.1.1          viridis_0.6.4          viridisLite_0.4.2     
+[19] spatstat_3.0-6         spatstat.linnet_3.1-1  spatstat.model_3.2-6  
+[22] rpart_4.1.19           spatstat.explore_3.2-3 nlme_3.1-163          
+[25] spatstat.random_3.1-6  spatstat.geom_3.2-5    spatstat.data_3.0-1   
+[28] RColorBrewer_1.1-3     colorRamps_2.3.1       lubridate_1.9.3       
+[31] forcats_1.0.0          stringr_1.5.0          dplyr_1.1.3           
+[34] purrr_1.0.2            readr_2.1.4            tidyr_1.3.0           
+[37] tibble_3.2.1           ggplot2_3.4.3          tidyverse_2.0.0       
+[40] MASS_7.3-60            workflowr_1.7.1       
+
+loaded via a namespace (and not attached):
+ [1] deldir_1.0-9          sandwich_3.0-2        rlang_1.1.1          
+ [4] magrittr_2.0.3        git2r_0.32.0          compiler_4.3.1       
+ [7] getPass_0.2-2         mgcv_1.9-0            gdata_2.19.0         
+[10] reshape2_1.4.4        callr_3.7.3           vctrs_0.6.3          
+[13] pkgconfig_2.0.3       fastmap_1.1.1         backports_1.4.1      
+[16] labeling_0.4.3        utf8_1.2.3            promises_1.2.1       
+[19] rmarkdown_2.25        tzdb_0.4.0            ps_1.7.5             
+[22] xfun_0.40             cachem_1.0.8          jsonlite_1.8.7       
+[25] goftest_1.2-3         later_1.3.1           spatstat.utils_3.0-3 
+[28] broom_1.0.5           R6_2.5.1              bslib_0.5.1          
+[31] stringi_1.7.12        estimability_1.4.1    jquerylib_0.1.4      
+[34] Rcpp_1.0.11           tensor_1.5            httpuv_1.6.11        
+[37] Matrix_1.6-1.1        splines_4.3.1         timechange_0.2.0     
+[40] tidyselect_1.2.0      rstudioapi_0.15.0     abind_1.4-5          
+[43] yaml_2.3.7            codetools_0.2-19      processx_3.8.2       
+[46] plyr_1.8.9            lattice_0.21-9        withr_2.5.1          
+[49] evaluate_0.22         polyclip_1.10-6       pillar_1.9.0         
+[52] BiocManager_1.30.22   whisker_0.4.1         renv_0.15.4          
+[55] generics_0.1.3        rprojroot_2.0.3       hms_1.1.3            
+[58] munsell_0.5.0         xtable_1.8-4          gtools_3.9.4         
+[61] glue_1.6.2            tools_4.3.1           ggsignif_0.6.4       
+[64] fs_1.6.3              cli_3.6.1             spatstat.sparse_3.0-2
+[67] fansi_1.0.4           gtable_0.3.4          sass_0.4.7           
+[70] digest_0.6.33         farver_2.1.1          htmltools_0.5.6      
+[73] lifecycle_1.0.3       httr_1.4.7           </code></pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

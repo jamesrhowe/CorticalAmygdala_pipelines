@@ -1,0 +1,2948 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Behavioral analysis: Topography (EPM)</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Behavioral analysis: Topography (EPM)</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">13 January, 2024</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-01-13
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestreeb1538ca185c1a046d3ab66145497876963687059targetblankb1538caa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/b1538ca185c1a046d3ab66145497876963687059" target="_blank">b1538ca</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestreeb1538ca185c1a046d3ab66145497876963687059targetblankb1538caa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/b1538ca185c1a046d3ab66145497876963687059" target="_blank">b1538ca</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/rnascope/
+    Ignored:    data/sequencing/
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/08A-merge_rd1_ATAC.Rmd
+    Untracked:  analysis/behavior_02-epm_topography.Rmd
+    Untracked:  analysis/behavior_03-openfield_topography.Rmd
+    Untracked:  analysis/behavior_03-projections.Rmd
+    Untracked:  analysis/behavior_04-4quad_genetics.Rmd
+    Untracked:  analysis/behavior_04-projections_silencing_tmt.Rmd
+    Untracked:  analysis/behavior_05-projections_silencing_2PE.Rmd
+    Untracked:  analysis/behavior_06-genes_silencing_tmt.Rmd
+    Untracked:  analysis/behavior_07-genes_silencing_2PE.Rmd
+    Untracked:  analysis/behavior_09-epm_topography.Rmd
+    Untracked:  analysis/behavior_10-epm_projections.Rmd
+    Untracked:  analysis/behavior_12-openfield_projections.Rmd
+    Untracked:  analysis/behavior_13-openfield_genes_silence.Rmd
+    Untracked:  analysis/behavior_14-openfield_projections_silence.Rmd
+    Untracked:  analysis/behavior_15-epm_genes_silence.Rmd
+    Untracked:  analysis/projections.Rmd
+    Untracked:  analysis/rnascope.Rmd
+    Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02D-Neuron_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02E-reprocess_Glut_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02F-reprocess_GABA_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02G-Glut_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-03A-merge_filtered_RNA.Rmd
+    Untracked:  analysis/sequencing-03B-initial_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04-initial_deg.Rmd
+    Untracked:  analysis/sequencing-04A-reprocess_Neuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04B-reprocess_Nonneuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04C-Neuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04D-Nonneuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05C-reprocess_Astro_RNA.Rmd
+    Untracked:  analysis/sequencing-05L-Glut_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05M-GABA_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05N-Astro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05O-Macro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05P-NFOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05Q-MOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05R-ABC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05S-VLMC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05T-Immune_classification+labeling_RNA.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Astro.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_GABAergic.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Glutamatergic.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Microglia.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Neuron.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Nonneuron.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_OLG.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_OPC.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_VLMC.Rmd
+    Untracked:  analysis/sequencing-06A-merged_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
+    Untracked:  analysis/sequencing-06B-merged_deg_discovery_RNA.Rmd
+    Untracked:  analysis/sequencing-07A-preprocess_aplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07B-preprocess_aplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07C-preprocess_aplCoA-2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07D-preprocess_pplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07E-preprocess_pplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07F-preprocess_pplCoA-2_ATAC.Rmd
+    Untracked:  code/sequencing-color_scales.R
+    Untracked:  code/sequencing-plot_functions.R
+    Untracked:  code/sequencing_misc.R
+    Untracked:  output/sequencing/
+
+Unstaged changes:
+    Modified:   analysis/sequencing-02A-merge_rd1_RNA.Rmd
+    Modified:   analysis/sequencing-03-initial_classification.Rmd
+    Modified:   analysis/sequencing-05A-reprocess_Glut_RNA.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is a notebook that processes EPM data and outputs analyses and
+figures for publication.</p>
+<pre class="r"><code># set up paths
+topography_id &lt;- params$dataset
+topography_path &lt;- params$path
+start_min &lt;- params$start_min
+end_min &lt;- params$end_min
+
+source(&quot;code/behavior-refs.R&quot;)</code></pre>
+<pre><code>Loading required package: MASS</code></pre>
+<pre><code>Loading required package: tidyverse</code></pre>
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.3     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+✖ dplyr::select() masks MASS::select()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+Loading required package: colorRamps
+
+Loading required package: RColorBrewer
+
+Loading required package: spatstat
+
+Loading required package: spatstat.data
+
+Loading required package: spatstat.geom
+
+spatstat.geom 3.2-5
+
+
+Attaching package: &#39;spatstat.geom&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    area
+
+
+Loading required package: spatstat.random
+
+spatstat.random 3.1-6
+
+Loading required package: spatstat.explore
+
+Loading required package: nlme
+
+
+Attaching package: &#39;nlme&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    collapse
+
+
+spatstat.explore 3.2-3
+
+Loading required package: spatstat.model
+
+Loading required package: rpart
+
+spatstat.model 3.2-6
+
+Loading required package: spatstat.linnet
+
+spatstat.linnet 3.1-1
+
+
+spatstat 3.0-6 
+For an introduction to spatstat, type &#39;beginner&#39; 
+
+
+Loading required package: viridis
+
+Loading required package: viridisLite
+
+Loading required package: cowplot
+
+
+Attaching package: &#39;cowplot&#39;
+
+
+The following object is masked from &#39;package:lubridate&#39;:
+
+    stamp
+
+
+Loading required package: grid
+
+
+Attaching package: &#39;grid&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    as.mask
+
+
+Loading required package: gridExtra
+
+
+Attaching package: &#39;gridExtra&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    combine
+
+
+Loading required package: colorspace
+
+
+Attaching package: &#39;colorspace&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    coords
+
+
+Loading required package: scales
+
+
+Attaching package: &#39;scales&#39;
+
+
+The following object is masked from &#39;package:viridis&#39;:
+
+    viridis_pal
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    rescale
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    discard
+
+
+The following object is masked from &#39;package:readr&#39;:
+
+    col_factor
+
+
+
+Attaching package: &#39;zoo&#39;
+
+
+The following objects are masked from &#39;package:base&#39;:
+
+    as.Date, as.Date.numeric
+
+
+Loading required package: carData
+
+
+Attaching package: &#39;car&#39;
+
+
+The following object is masked from &#39;package:spatstat.model&#39;:
+
+    bc
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    ellipse
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    recode
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    some
+
+
+Loading required package: mvtnorm
+
+Loading required package: survival
+
+Loading required package: TH.data
+
+
+Attaching package: &#39;TH.data&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    geyser
+
+
+
+Attaching package: &#39;rstatix&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    select
+
+
+The following object is masked from &#39;package:stats&#39;:
+
+    filter
+
+
+
+Attaching package: &#39;ggpubr&#39;
+
+
+The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend
+
+
+The following objects are masked from &#39;package:spatstat.geom&#39;:
+
+    border, rotate</code></pre>
+<pre class="r"><code>source(&quot;code/behavior-misc_processes.R&quot;)
+source(&quot;code/behavior-plot_functions.R&quot;)
+
+topography_groups &lt;- unlist(strsplit(Sys.glob(paste0(topography_path, &quot;*&quot;)), topography_path))[c(FALSE, TRUE)]</code></pre>
+</div>
+<div id="load-the-data" class="section level1">
+<h1>Load the data</h1>
+<p>Names have to be given manually in most cases. Also for now copy into
+console because it does not load due to odd workspace issues. This loads
+all files in a directory and puts it into the correct format
+automatically.</p>
+<pre class="r"><code>data_topography &lt;- read_stim_data(&quot;epm&quot;, topography_groups, topography_path, topography_labels)
+
+data_topography &lt;- list(data_topography$`aplCoA-stim`, data_topography$`aplCoA-control`, 
+                        data_topography$`mplCoA-stim`, data_topography$`mplCoA-control`, 
+                        data_topography$`pplCoA-stim`, data_topography$`pplCoA-control`)
+names(data_topography) &lt;- c(&quot;aplCoA-stim&quot;, &quot;aplCoA-control&quot;, 
+                            &quot;mplCoA-stim&quot;, &quot;mplCoA-control&quot;, 
+                            &quot;pplCoA-stim&quot;, &quot;pplCoA-control&quot;)</code></pre>
+</div>
+<div id="time-based-metrics" class="section level1 tabset">
+<h1 class="tabset">Time-based metrics</h1>
+<div id="all-3" class="section level2 tabset">
+<h2 class="tabset">All 3</h2>
+<div id="summary-statistics" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<pre class="r"><code>baseline_pre_array_topography &lt;- transform_epm_opentime(data_topography, 
+                                                        &quot;baseline_pre&quot;, &quot;Region&quot;, 1, 1200)
+treatment_array_topography &lt;- transform_epm_opentime(data_topography, 
+                                                     &quot;treatment&quot;, &quot;Region&quot;, 1, 1200)
+baseline_post_array_topography &lt;- transform_epm_opentime(data_topography, 
+                                                         &quot;baseline_post&quot;, &quot;Region&quot;, 1, 1200)
+
+opentime_group_topography &lt;- group_array_epm(data_topography, 
+                                             baseline_pre_array_topography, 
+                                             treatment_array_topography, 
+                                             baseline_post_array_topography,
+                                             &quot;opentime&quot;)
+
+opentime_mins &lt;- transform_epm_opentime_bymin(data_topography, &quot;Region&quot;)</code></pre>
+<div id="aplcoa" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>aplCoA_group_topography &lt;- opentime_group_topography[opentime_group_topography$group 
+                                     %in% c(&quot;aplCoA ChR2&quot;, &quot;aplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, 
+         baseline_pre_opentime, treatment_opentime, baseline_post_opentime) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+aplCoA_group_topography$time &lt;- factor(aplCoA_group_topography$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+aplCoA_group_topography$group &lt;- factor(aplCoA_group_topography$group, 
+                                   levels = c(&quot;aplCoA eYFP&quot;, &quot;aplCoA ChR2&quot;))
+levels(aplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+aplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"OpenTime","4":"6","5":"0.180","6":"0.038"},{"1":"eYFP","2":"STIM","3":"OpenTime","4":"6","5":"0.181","6":"0.029"},{"1":"eYFP","2":"POST","3":"OpenTime","4":"6","5":"0.221","6":"0.070"},{"1":"ChR2","2":"PRE","3":"OpenTime","4":"6","5":"0.262","6":"0.063"},{"1":"ChR2","2":"STIM","3":"OpenTime","4":"6","5":"0.338","6":"0.065"},{"1":"ChR2","2":"POST","3":"OpenTime","4":"6","5":"0.262","6":"0.049"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pplcoa" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>pplCoA_group_topography &lt;- opentime_group_topography[opentime_group_topography$group 
+                                     %in% c(&quot;pplCoA ChR2&quot;, &quot;pplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, 
+         baseline_pre_opentime, treatment_opentime, baseline_post_opentime) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+pplCoA_group_topography$time &lt;- factor(pplCoA_group_topography$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+pplCoA_group_topography$group &lt;- factor(pplCoA_group_topography$group, 
+                                   levels = c(&quot;pplCoA eYFP&quot;, &quot;pplCoA ChR2&quot;))
+levels(pplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+pplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"OpenTime","4":"6","5":"0.134","6":"0.051"},{"1":"eYFP","2":"STIM","3":"OpenTime","4":"6","5":"0.177","6":"0.045"},{"1":"eYFP","2":"POST","3":"OpenTime","4":"6","5":"0.160","6":"0.025"},{"1":"ChR2","2":"PRE","3":"OpenTime","4":"10","5":"0.109","6":"0.025"},{"1":"ChR2","2":"STIM","3":"OpenTime","4":"10","5":"0.186","6":"0.037"},{"1":"ChR2","2":"POST","3":"OpenTime","4":"10","5":"0.167","6":"0.018"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="aplcoa-1" class="section level4 tabset">
+<h4 class="tabset">aplCoA</h4>
+<div id="anova" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(aplCoA_group_topography, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"10","4":"2.627","5":"0.136","6":"","7":"0.129","_rn_":"1"},{"1":"time","2":"2","3":"20","4":"0.384","5":"0.686","6":"","7":"0.017","_rn_":"2"},{"1":"group:time","2":"2","3":"20","4":"0.887","5":"0.427","6":"","7":"0.037","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(aplCoA_group_topography, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"0.0012500000","7":"-0.1790535","8":"0.1815535","9":"1.000","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"0.0412500000","7":"-0.1390535","8":"0.2215535","9":"0.825","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"0.0400000000","7":"-0.1403035","8":"0.2203035","9":"0.835","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"0.0759722222","7":"-0.1417791","8":"0.2937235","9":"0.645","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"0.0001388889","7":"-0.2176124","8":"0.2178902","9":"1.000","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.0758333333","7":"-0.2935846","8":"0.1419179","9":"0.646","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;PRE&quot;], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;PRE&quot;] and aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;PRE&quot;]
+t = -1.1207, df = 8.2857, p-value = 0.2938
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.2508157  0.0860935
+sample estimates:
+mean of x mean of y 
+0.1795833 0.2619444 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;STIM&quot;], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;STIM&quot;] and aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;STIM&quot;]
+t = -2.2134, df = 6.9588, p-value = 0.0627
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.32509786  0.01093119
+sample estimates:
+mean of x mean of y 
+0.1808333 0.3379167 </code></pre>
+<pre class="r"><code># POST
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;POST&quot;], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;POST&quot;] and aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;POST&quot;]
+t = -0.48173, df = 8.9794, p-value = 0.6415
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.2350232  0.1525232
+sample estimates:
+mean of x mean of y 
+0.2208333 0.2620833 </code></pre>
+</div>
+</div>
+<div id="pplcoa-1" class="section level4 tabset">
+<h4 class="tabset">pplCoA</h4>
+<div id="anova-1" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(pplCoA_group_topography, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"14","4":"0.005","5":"0.944","6":"","7":"0.000241","_rn_":"1"},{"1":"time","2":"2","3":"28","4":"3.157","5":"0.058","6":"","7":"0.071000","_rn_":"2"},{"1":"group:time","2":"2","3":"28","4":"0.319","5":"0.729","6":"","7":"0.008000","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-1" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(pplCoA_group_topography, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"0.04263889","7":"-0.11204262","8":"0.19732040","9":"0.758","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"0.02513889","7":"-0.12954262","8":"0.17982040","9":"0.907","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.01750000","7":"-0.17218151","8":"0.13718151","9":"0.954","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"0.07733333","7":"-0.02052078","8":"0.17518744","9":"0.142","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"0.05808333","7":"-0.03977078","8":"0.15593744","9":"0.320","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.01925000","7":"-0.11710411","8":"0.07860411","9":"0.878","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-1" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;PRE&quot;], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;PRE&quot;] and pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;PRE&quot;]
+t = 0.44259, df = 7.4356, p-value = 0.6706
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.1085414  0.1592636
+sample estimates:
+mean of x mean of y 
+0.1344444 0.1090833 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;STIM&quot;], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;STIM&quot;] and pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;STIM&quot;]
+t = -0.15918, df = 11.22, p-value = 0.8764
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.1380808  0.1194141
+sample estimates:
+mean of x mean of y 
+0.1770833 0.1864167 </code></pre>
+<pre class="r"><code># POST
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;POST&quot;], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;POST&quot;] and pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;POST&quot;]
+t = -0.24809, df = 9.9228, p-value = 0.8091
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.07576339  0.06059672
+sample estimates:
+mean of x mean of y 
+0.1595833 0.1671667 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="aplcoa-2" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>#bg_epm_prepost(aplCoA_group_topography, epm_opentime_label, anterior_color, topo_ot_axes, chr2_blue)
+bg_epm_mins(opentime_mins[1:2], epm_opentime_label, anterior_color, topo_ot_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/15-aplCoA_open_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pplcoa-2" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>#bg_epm_prepost(pplCoA_group_topography, epm_opentime_label, posterior_color, topo_ot_axes, chr2_blue)
+bg_epm_mins(opentime_mins[5:6], epm_opentime_label, posterior_color, topo_ot_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/16-pplCoA_open_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="pre-post-combined" class="section level2 tabset">
+<h2 class="tabset">Pre-Post Combined</h2>
+<pre class="r"><code>opentime_group_topography[,3] &lt;- (opentime_group_topography[,3] + opentime_group_topography[,5])/2 
+opentime_group_topography &lt;- opentime_group_topography[,1:4]
+
+colnames(opentime_group_topography)[3] &lt;- &quot;baseline_opentime&quot; </code></pre>
+<div id="summary-statistics-1" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="aplcoa-3" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>aplCoA_group_topography &lt;- opentime_group_topography[opentime_group_topography$group 
+                                     %in% c(&quot;aplCoA ChR2&quot;, &quot;aplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, 
+         baseline_opentime, treatment_opentime) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+aplCoA_group_topography$group &lt;- factor(aplCoA_group_topography$group, 
+                                   levels = c(&quot;aplCoA eYFP&quot;, &quot;aplCoA ChR2&quot;))
+levels(aplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+aplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"OpenTime","4":"6","5":"0.200","6":"0.043"},{"1":"eYFP","2":"ON","3":"OpenTime","4":"6","5":"0.181","6":"0.029"},{"1":"ChR2","2":"OFF","3":"OpenTime","4":"6","5":"0.262","6":"0.051"},{"1":"ChR2","2":"ON","3":"OpenTime","4":"6","5":"0.338","6":"0.065"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pplcoa-3" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>pplCoA_group_topography &lt;- opentime_group_topography[opentime_group_topography$group 
+                                     %in% c(&quot;pplCoA ChR2&quot;, &quot;pplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, 
+         baseline_opentime, treatment_opentime) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+pplCoA_group_topography$group &lt;- factor(pplCoA_group_topography$group, 
+                                   levels = c(&quot;pplCoA eYFP&quot;, &quot;pplCoA ChR2&quot;))
+levels(pplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+pplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"OpenTime","4":"6","5":"0.147","6":"0.033"},{"1":"eYFP","2":"ON","3":"OpenTime","4":"6","5":"0.177","6":"0.045"},{"1":"ChR2","2":"OFF","3":"OpenTime","4":"10","5":"0.138","6":"0.017"},{"1":"ChR2","2":"ON","3":"OpenTime","4":"10","5":"0.186","6":"0.037"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-1" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="aplcoa-4" class="section level4 tabset">
+<h4 class="tabset">aplCoA</h4>
+<div id="anova-2" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(aplCoA_group_topography, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"10","4":"3.684","5":"0.084","6":"","7":"0.201","_rn_":"1"},{"1":"time","2":"1","3":"10","4":"0.525","5":"0.485","6":"","7":"0.016","_rn_":"2"},{"1":"group:time","2":"1","3":"10","4":"1.492","5":"0.250","6":"","7":"0.045","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-2" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(aplCoA_group_topography, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.01937500","7":"-0.1353612","8":"0.09661118","9":"0.718","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"0.07590278","7":"-0.1083028","8":"0.26010838","9":"0.380","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-2" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;OFF&quot;], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;OFF&quot;] and aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;OFF&quot;]
+t = -0.92052, df = 9.698, p-value = 0.3796
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.21204025  0.08842914
+sample estimates:
+mean of x mean of y 
+0.2002083 0.2620139 </code></pre>
+<pre class="r"><code># ON
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;ON&quot;], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;ON&quot;] and aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;ON&quot;]
+t = -2.2134, df = 6.9588, p-value = 0.0627
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.32509786  0.01093119
+sample estimates:
+mean of x mean of y 
+0.1808333 0.3379167 </code></pre>
+</div>
+</div>
+<div id="pplcoa-4" class="section level4 tabset">
+<h4 class="tabset">pplCoA</h4>
+<div id="anova-3" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(pplCoA_group_topography, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"14","4":"0.0000259","5":"0.996","6":"","7":"1.51e-06","_rn_":"1"},{"1":"time","2":"1","3":"14","4":"3.5510000","5":"0.080","6":"","7":"4.50e-02","_rn_":"2"},{"1":"group:time","2":"1","3":"14","4":"0.1920000","5":"0.668","6":"","7":"3.00e-03","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-3" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(pplCoA_group_topography, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"0.03006944","7":"-0.09435077","8":"0.1544897","9":"0.602","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"0.04829167","7":"-0.03807173","8":"0.1346551","9":"0.255","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-3" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;OFF&quot;], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;OFF&quot;] and pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;OFF&quot;]
+t = 0.24016, df = 7.8496, p-value = 0.8164
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.07674568  0.09452345
+sample estimates:
+mean of x mean of y 
+0.1470139 0.1381250 </code></pre>
+<pre class="r"><code># ON
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;ON&quot;], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;ON&quot;] and pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;ON&quot;]
+t = -0.15918, df = 11.22, p-value = 0.8764
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.1380808  0.1194141
+sample estimates:
+mean of x mean of y 
+0.1770833 0.1864167 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-1" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="aplcoa-5" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>bg_twogroup(aplCoA_group_topography, epm_opentime_label, anterior_color, topo_ot_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/22-aplCoA_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pplcoa-5" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>bg_twogroup(pplCoA_group_topography, epm_opentime_label, posterior_color, topo_ot_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/23-pplCoA_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="linear" class="section level2 tabset">
+<h2 class="tabset">Linear</h2>
+<div id="ap-scatter-plot" class="section level3 tabset">
+<h3 class="tabset">AP scatter plot</h3>
+<pre class="r"><code>linear_group_topography &lt;- cbind.data.frame(opentime_group_topography,
+                                              as.numeric(paste0(&quot;-&quot;, 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         &quot;[|]&quot;)))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              opentime_group_topography$treatment_opentime -
+                                              opentime_group_topography$baseline_opentime,
+                                              unlist(strsplit(opentime_group_topography$group, 
+                                                              &quot; &quot;))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;baseline_opentime&quot;, &quot;treatment_opentime&quot;, 
+                                       &quot;ap_coords&quot;, &quot;difference_opentime&quot;, &quot;type&quot;)</code></pre>
+<div id="eyfp" class="section level4">
+<h4>eYFP</h4>
+<pre class="r"><code>single_linear_plot(linear_group_topography, &quot;eYFP&quot;, &quot;difference_opentime&quot;, eyfp_green,
+                   ap_linear_opentime_axes, ap_linear_opentime_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/25-opentime_scatter_plot_eyfp-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="chr2" class="section level4">
+<h4>ChR2</h4>
+<pre class="r"><code>single_linear_plot(linear_group_topography, &quot;ChR2&quot;, &quot;difference_opentime&quot;, chr2_blue,
+                   ap_linear_opentime_axes, ap_linear_opentime_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/26-opentime_scatter_plot_chr2-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="combined" class="section level4">
+<h4>Combined</h4>
+<pre class="r"><code>dual_linear_plot(linear_group_topography, &quot;difference_opentime&quot;, 
+                 ap_linear_opentime_axes, ap_linear_opentime_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/27-opentime_scatter_plot_combined-1.pdf" width="460.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="statistics" class="section level3 tabset">
+<h3 class="tabset">Statistics</h3>
+<div id="summary-of-linear-regressions" class="section level4 tabset">
+<h4 class="tabset">Summary of linear regressions</h4>
+<div id="eyfp-1" class="section level5">
+<h5>eYFP</h5>
+<pre class="r"><code># gives results for controls
+ap_opentime_ancova &lt;- lm(difference_opentime ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == &quot;eYFP&quot;,])
+
+summary(ap_opentime_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_opentime ~ ap_coords, data = linear_group_topography[linear_group_topography$type == 
+    &quot;eYFP&quot;, ])
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.09964 -0.07804  0.01751  0.06017  0.11126 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept) -0.05582    0.08561  -0.652    0.523
+ap_coords   -0.03062    0.04447  -0.689    0.500
+
+Residual standard error: 0.07373 on 17 degrees of freedom
+Multiple R-squared:  0.02714,   Adjusted R-squared:  -0.03009 
+F-statistic: 0.4742 on 1 and 17 DF,  p-value: 0.5004</code></pre>
+</div>
+<div id="chr2-1" class="section level5">
+<h5>ChR2</h5>
+<pre class="r"><code>ap_opentime_ancova &lt;- lm(difference_opentime ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == &quot;ChR2&quot;,])
+
+summary(ap_opentime_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_opentime ~ ap_coords, data = linear_group_topography[linear_group_topography$type == 
+    &quot;ChR2&quot;, ])
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.23508 -0.05918 -0.02370  0.03943  0.26569 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)  0.01856    0.13791   0.135    0.895
+ap_coords   -0.01762    0.06825  -0.258    0.800
+
+Residual standard error: 0.1182 on 16 degrees of freedom
+Multiple R-squared:  0.004148,  Adjusted R-squared:  -0.05809 
+F-statistic: 0.06665 on 1 and 16 DF,  p-value: 0.7996</code></pre>
+</div>
+</div>
+<div id="comparison-of-regression-lines" class="section level4 tabset">
+<h4 class="tabset">Comparison of regression lines</h4>
+<div id="ancova" class="section level5">
+<h5>ANCOVA</h5>
+<pre class="r"><code>ap_opentime_ancova &lt;- lm(difference_opentime ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_opentime_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_opentime ~ ap_coords * type, data = linear_group_topography)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.23508 -0.05950 -0.01646  0.06013  0.26569 
+
+Coefficients:
+                   Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)         0.01856    0.11416   0.163    0.872
+ap_coords          -0.01762    0.05650  -0.312    0.757
+typeeYFP           -0.07437    0.16108  -0.462    0.647
+ap_coords:typeeYFP -0.01300    0.08171  -0.159    0.875
+
+Residual standard error: 0.09786 on 33 degrees of freedom
+Multiple R-squared:  0.08133,   Adjusted R-squared:  -0.002187 
+F-statistic: 0.9738 on 3 and 33 DF,  p-value: 0.4168</code></pre>
+</div>
+<div id="emmeans" class="section level5">
+<h5>EMMeans</h5>
+<pre class="r"><code>emtrends(ap_opentime_ancova, pairwise ~ type, var = &quot;ap_coords&quot;)</code></pre>
+<pre><code>$emtrends
+ type ap_coords.trend     SE df lower.CL upper.CL
+ ChR2         -0.0176 0.0565 33   -0.133   0.0973
+ eYFP         -0.0306 0.0590 33   -0.151   0.0895
+
+Confidence level used: 0.95 
+
+$contrasts
+ contrast    estimate     SE df t.ratio p.value
+ ChR2 - eYFP    0.013 0.0817 33   0.159  0.8746</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="entry-based-metrics" class="section level1 tabset">
+<h1 class="tabset">Entry-based metrics</h1>
+<div id="all-3-1" class="section level2 tabset">
+<h2 class="tabset">All 3</h2>
+<div id="summary-statistics-2" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<pre class="r"><code>baseline_pre_array_topography &lt;- transform_epm_openentry(data_topography, 
+                                                        &quot;baseline_pre&quot;, &quot;OpenEntry&quot;, 1, 1200)
+treatment_array_topography &lt;- transform_epm_openentry(data_topography, 
+                                                     &quot;treatment&quot;, &quot;OpenEntry&quot;, 1, 1200)
+baseline_post_array_topography &lt;- transform_epm_openentry(data_topography, 
+                                                         &quot;baseline_post&quot;, &quot;OpenEntry&quot;, 1, 1200)
+
+openentry_group_topography &lt;- group_array_epm(data_topography, 
+                                             baseline_pre_array_topography, 
+                                             treatment_array_topography, 
+                                             baseline_post_array_topography,
+                                             &quot;openentry&quot;)
+
+openentry_mins &lt;- transform_epm_openentry_bymin(data_topography, &quot;OpenEntry&quot;)</code></pre>
+<div id="aplcoa-6" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>aplCoA_group_topography &lt;- openentry_group_topography[openentry_group_topography$group 
+                                     %in% c(&quot;aplCoA ChR2&quot;, &quot;aplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;openentry&quot;, 
+         baseline_pre_openentry, treatment_openentry, baseline_post_openentry) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+aplCoA_group_topography$time &lt;- factor(aplCoA_group_topography$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+aplCoA_group_topography$group &lt;- factor(aplCoA_group_topography$group, 
+                                   levels = c(&quot;aplCoA eYFP&quot;, &quot;aplCoA ChR2&quot;))
+levels(aplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+aplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(openentry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"openentry","4":"6","5":"10.500","6":"2.045"},{"1":"eYFP","2":"STIM","3":"openentry","4":"6","5":"8.667","6":"1.498"},{"1":"eYFP","2":"POST","3":"openentry","4":"6","5":"9.667","6":"2.231"},{"1":"ChR2","2":"PRE","3":"openentry","4":"6","5":"11.667","6":"1.892"},{"1":"ChR2","2":"STIM","3":"openentry","4":"6","5":"14.000","6":"2.221"},{"1":"ChR2","2":"POST","3":"openentry","4":"6","5":"10.167","6":"1.515"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pplcoa-6" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>pplCoA_group_topography &lt;- openentry_group_topography[openentry_group_topography$group 
+                                     %in% c(&quot;pplCoA ChR2&quot;, &quot;pplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;openentry&quot;, 
+         baseline_pre_openentry, treatment_openentry, baseline_post_openentry) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+pplCoA_group_topography$time &lt;- factor(pplCoA_group_topography$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+pplCoA_group_topography$group &lt;- factor(pplCoA_group_topography$group, 
+                                   levels = c(&quot;pplCoA eYFP&quot;, &quot;pplCoA ChR2&quot;))
+levels(pplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+pplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(openentry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"openentry","4":"6","5":"11.167","6":"3.177"},{"1":"eYFP","2":"STIM","3":"openentry","4":"6","5":"9.833","6":"1.447"},{"1":"eYFP","2":"POST","3":"openentry","4":"6","5":"9.667","6":"1.961"},{"1":"ChR2","2":"PRE","3":"openentry","4":"10","5":"9.700","6":"1.317"},{"1":"ChR2","2":"STIM","3":"openentry","4":"10","5":"10.000","6":"1.513"},{"1":"ChR2","2":"POST","3":"openentry","4":"10","5":"8.700","6":"0.932"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-2" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="aplcoa-7" class="section level4 tabset">
+<h4 class="tabset">aplCoA</h4>
+<div id="anova-4" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(aplCoA_group_topography, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"10","4":"1.357","5":"0.271","6":"","7":"0.068","_rn_":"1"},{"1":"time","2":"2","3":"20","4":"0.450","5":"0.644","6":"","7":"0.020","_rn_":"2"},{"1":"group:time","2":"2","3":"20","4":"1.349","5":"0.282","6":"","7":"0.058","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-4" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(aplCoA_group_topography, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"-1.8333333","7":"-8.995809","8":"5.329143","9":"0.787","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"-0.8333333","7":"-7.995809","8":"6.329143","9":"0.951","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"1.0000000","7":"-6.162476","8":"8.162476","9":"0.930","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"2.3333333","7":"-4.638203","8":"9.304870","9":"0.667","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"-1.5000000","7":"-8.471536","8":"5.471536","9":"0.844","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"-3.8333333","7":"-10.804870","8":"3.138203","9":"0.352","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-4" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;PRE&quot;], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;PRE&quot;] and aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;PRE&quot;]
+t = -0.41878, df = 9.9395, p-value = 0.6843
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -7.379114  5.045780
+sample estimates:
+mean of x mean of y 
+ 10.50000  11.66667 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;STIM&quot;], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;STIM&quot;] and aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;STIM&quot;]
+t = -1.9907, df = 8.7694, p-value = 0.07855
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -11.4183494   0.7516827
+sample estimates:
+mean of x mean of y 
+ 8.666667 14.000000 </code></pre>
+<pre class="r"><code># POST
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;POST&quot;], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;POST&quot;] and aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;POST&quot;]
+t = -0.18541, df = 8.8017, p-value = 0.8571
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.621392  5.621392
+sample estimates:
+mean of x mean of y 
+ 9.666667 10.166667 </code></pre>
+</div>
+</div>
+<div id="pplcoa-7" class="section level4 tabset">
+<h4 class="tabset">pplCoA</h4>
+<div id="anova-5" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(pplCoA_group_topography, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"14","4":"0.145","5":"0.709","6":"","7":"0.007","_rn_":"1"},{"1":"time","2":"2","3":"28","4":"0.549","5":"0.584","6":"","7":"0.013","_rn_":"2"},{"1":"group:time","2":"2","3":"28","4":"0.244","5":"0.785","6":"","7":"0.006","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-5" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(pplCoA_group_topography, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"-1.3333333","7":"-9.825468","8":"7.158801","9":"0.913","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"-1.5000000","7":"-9.992134","8":"6.992134","9":"0.891","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.1666667","7":"-8.658801","8":"8.325468","9":"0.999","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"0.3000000","7":"-4.177214","8":"4.777214","9":"0.985","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"-1.0000000","7":"-5.477214","8":"3.477214","9":"0.845","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"-1.3000000","7":"-5.777214","8":"3.177214","9":"0.754","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-5" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;PRE&quot;], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;PRE&quot;] and pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;PRE&quot;]
+t = 0.42644, df = 6.755, p-value = 0.683
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.726191  9.659524
+sample estimates:
+mean of x mean of y 
+ 11.16667   9.70000 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;STIM&quot;], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;STIM&quot;] and pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;STIM&quot;]
+t = -0.079606, df = 13.165, p-value = 0.9377
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.683949  4.350616
+sample estimates:
+mean of x mean of y 
+ 9.833333 10.000000 </code></pre>
+<pre class="r"><code># POST
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;POST&quot;], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;POST&quot;] and pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;POST&quot;]
+t = 0.44531, df = 7.3052, p-value = 0.669
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.123223  6.056557
+sample estimates:
+mean of x mean of y 
+ 9.666667  8.700000 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-2" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="aplcoa-8" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>#bg_epm_prepost(aplCoA_group_topography, epm_entry_label, anterior_color, topo_entry_axes, chr2_blue)
+bg_epm_mins(openentry_mins[1:2], epm_entry_label, anterior_color, topo_entry_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/41-aplCoA_entry_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pplcoa-8" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>#bg_epm_prepost(pplCoA_group_topography, epm_entry_label, posterior_color, topo_entry_axes, chr2_blue)
+bg_epm_mins(openentry_mins[5:6], epm_entry_label, posterior_color, topo_entry_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/42-pplCoA_entry_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="pre-post-combined-1" class="section level2 tabset">
+<h2 class="tabset">Pre-Post Combined</h2>
+<pre class="r"><code>openentry_group_topography[,3] &lt;- (openentry_group_topography[,3] + openentry_group_topography[,5])/2 
+openentry_group_topography &lt;- openentry_group_topography[,1:4]
+
+colnames(openentry_group_topography)[3] &lt;- &quot;baseline_openentry&quot; </code></pre>
+<div id="summary-statistics-3" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="aplcoa-9" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>aplCoA_group_topography &lt;- openentry_group_topography[openentry_group_topography$group 
+                                     %in% c(&quot;aplCoA ChR2&quot;, &quot;aplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;openentry&quot;, 
+         baseline_openentry, treatment_openentry) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+aplCoA_group_topography$group &lt;- factor(aplCoA_group_topography$group, 
+                                   levels = c(&quot;aplCoA eYFP&quot;, &quot;aplCoA ChR2&quot;))
+levels(aplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+aplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(openentry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"openentry","4":"6","5":"10.083","6":"2.014"},{"1":"eYFP","2":"ON","3":"openentry","4":"6","5":"8.667","6":"1.498"},{"1":"ChR2","2":"OFF","3":"openentry","4":"6","5":"10.917","6":"1.405"},{"1":"ChR2","2":"ON","3":"openentry","4":"6","5":"14.000","6":"2.221"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pplcoa-9" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>pplCoA_group_topography &lt;- openentry_group_topography[openentry_group_topography$group 
+                                     %in% c(&quot;pplCoA ChR2&quot;, &quot;pplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;openentry&quot;, 
+         baseline_openentry, treatment_openentry) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+pplCoA_group_topography$group &lt;- factor(pplCoA_group_topography$group, 
+                                   levels = c(&quot;pplCoA eYFP&quot;, &quot;pplCoA ChR2&quot;))
+levels(pplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+pplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(openentry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"openentry","4":"6","5":"10.417","6":"2.521"},{"1":"eYFP","2":"ON","3":"openentry","4":"6","5":"9.833","6":"1.447"},{"1":"ChR2","2":"OFF","3":"openentry","4":"10","5":"9.200","6":"0.870"},{"1":"ChR2","2":"ON","3":"openentry","4":"10","5":"10.000","6":"1.513"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-3" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="aplcoa-10" class="section level4 tabset">
+<h4 class="tabset">aplCoA</h4>
+<div id="anova-6" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(aplCoA_group_topography, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"10","4":"2.435","5":"0.150","6":"","7":"0.126","_rn_":"1"},{"1":"time","2":"1","3":"10","4":"0.257","5":"0.623","6":"","7":"0.010","_rn_":"2"},{"1":"group:time","2":"1","3":"10","4":"1.875","5":"0.201","6":"","7":"0.071","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-6" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(aplCoA_group_topography, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"-1.416667","7":"-7.009867","8":"4.176534","9":"0.585","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"3.083333","7":"-2.772453","8":"8.939120","9":"0.268","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-6" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;OFF&quot;], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;OFF&quot;] and aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;OFF&quot;]
+t = -0.33934, df = 8.9338, p-value = 0.7422
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.394837  4.728170
+sample estimates:
+mean of x mean of y 
+ 10.08333  10.91667 </code></pre>
+<pre class="r"><code># ON
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;ON&quot;], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;ON&quot;] and aplCoA_group_topography$openentry[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;ON&quot;]
+t = -1.9907, df = 8.7694, p-value = 0.07855
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -11.4183494   0.7516827
+sample estimates:
+mean of x mean of y 
+ 8.666667 14.000000 </code></pre>
+</div>
+</div>
+<div id="pplcoa-10" class="section level4 tabset">
+<h4 class="tabset">pplCoA</h4>
+<div id="anova-7" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(pplCoA_group_topography, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"14","4":"0.072","5":"0.792","6":"","7":"0.004000","_rn_":"1"},{"1":"time","2":"1","3":"14","4":"0.010","5":"0.922","6":"","7":"0.000167","_rn_":"2"},{"1":"group:time","2":"1","3":"14","4":"0.401","5":"0.537","6":"","7":"0.007000","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-7" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(pplCoA_group_topography, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.5833333","7":"-7.060817","8":"5.894150","9":"0.845","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"0.8000000","7":"-2.866428","8":"4.466428","9":"0.652","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-7" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;OFF&quot;], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;OFF&quot;] and pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;OFF&quot;]
+t = 0.45617, df = 6.2122, p-value = 0.6638
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.255909  7.689242
+sample estimates:
+mean of x mean of y 
+ 10.41667   9.20000 </code></pre>
+<pre class="r"><code># ON
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;ON&quot;], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;ON&quot;] and pplCoA_group_topography$openentry[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;ON&quot;]
+t = -0.079606, df = 13.165, p-value = 0.9377
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.683949  4.350616
+sample estimates:
+mean of x mean of y 
+ 9.833333 10.000000 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-3" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="aplcoa-11" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>bg_twogroup(aplCoA_group_topography, epm_entry_label, anterior_color, topo_entry_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/51-aplCoA_entry_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pplcoa-11" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>bg_twogroup(pplCoA_group_topography, epm_entry_label, posterior_color, topo_entry_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/52-pplCoA_entry_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="linear-1" class="section level2 tabset">
+<h2 class="tabset">Linear</h2>
+<div id="ap-scatter-plot-1" class="section level3 tabset">
+<h3 class="tabset">AP scatter plot</h3>
+<pre class="r"><code>linear_group_topography &lt;- cbind.data.frame(openentry_group_topography,
+                                              as.numeric(paste0(&quot;-&quot;, 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         &quot;[|]&quot;)))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              openentry_group_topography$treatment_openentry -
+                                              openentry_group_topography$baseline_openentry,
+                                              unlist(strsplit(openentry_group_topography$group, 
+                                                              &quot; &quot;))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;baseline_openentry&quot;, &quot;treatment_openentry&quot;, 
+                                       &quot;ap_coords&quot;, &quot;difference_openentry&quot;, &quot;type&quot;)</code></pre>
+<div id="eyfp-2" class="section level4">
+<h4>eYFP</h4>
+<pre class="r"><code>single_linear_plot(linear_group_topography, &quot;eYFP&quot;, &quot;difference_openentry&quot;, eyfp_green,
+                   ap_linear_entry_axes, ap_linear_entry_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/54-openentry_scatter_plot_eyfp-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="chr2-2" class="section level4">
+<h4>ChR2</h4>
+<pre class="r"><code>single_linear_plot(linear_group_topography, &quot;ChR2&quot;, &quot;difference_openentry&quot;, chr2_blue,
+                   ap_linear_entry_axes, ap_linear_entry_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/55-openentry_scatter_plot_chr2-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="combined-1" class="section level4">
+<h4>Combined</h4>
+<pre class="r"><code>dual_linear_plot(linear_group_topography, &quot;difference_openentry&quot;, 
+                 ap_linear_entry_axes, ap_linear_entry_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/56-openentry_scatter_plot_combined-1.pdf" width="460.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="statistics-1" class="section level3 tabset">
+<h3 class="tabset">Statistics</h3>
+<div id="summary-of-linear-regressions-1" class="section level4 tabset">
+<h4 class="tabset">Summary of linear regressions</h4>
+<div id="eyfp-3" class="section level5">
+<h5>eYFP</h5>
+<pre class="r"><code># gives results for controls
+ap_openentry_ancova &lt;- lm(difference_openentry ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == &quot;eYFP&quot;,])
+
+summary(ap_openentry_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_openentry ~ ap_coords, data = linear_group_topography[linear_group_topography$type == 
+    &quot;eYFP&quot;, ])
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-8.4067 -2.5558 -0.8815  3.7488  6.5428 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)  -0.7611     4.6951  -0.162    0.873
+ap_coords     0.2102     2.4386   0.086    0.932
+
+Residual standard error: 4.043 on 17 degrees of freedom
+Multiple R-squared:  0.000437,  Adjusted R-squared:  -0.05836 
+F-statistic: 0.007432 on 1 and 17 DF,  p-value: 0.9323</code></pre>
+</div>
+<div id="chr2-3" class="section level5">
+<h5>ChR2</h5>
+<pre class="r"><code>ap_openentry_ancova &lt;- lm(difference_openentry ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == &quot;ChR2&quot;,])
+
+summary(ap_openentry_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_openentry ~ ap_coords, data = linear_group_topography[linear_group_topography$type == 
+    &quot;ChR2&quot;, ])
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-9.3388 -2.6999 -0.3434  2.9344  9.9344 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)    5.796      5.568   1.041    0.313
+ap_coords      2.045      2.756   0.742    0.469
+
+Residual standard error: 4.773 on 16 degrees of freedom
+Multiple R-squared:  0.03326,   Adjusted R-squared:  -0.02716 
+F-statistic: 0.5505 on 1 and 16 DF,  p-value: 0.4689</code></pre>
+</div>
+</div>
+<div id="comparison-of-regression-lines-1"
+class="section level4 tabset">
+<h4 class="tabset">Comparison of regression lines</h4>
+<div id="ancova-1" class="section level5">
+<h5>ANCOVA</h5>
+<pre class="r"><code>ap_openentry_ancova &lt;- lm(difference_openentry ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_openentry_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_openentry ~ ap_coords * type, data = linear_group_topography)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-9.3388 -2.7554 -0.5934  3.4251  9.9344 
+
+Coefficients:
+                   Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)           5.796      5.147   1.126    0.268
+ap_coords             2.045      2.547   0.803    0.428
+typeeYFP             -6.557      7.263  -0.903    0.373
+ap_coords:typeeYFP   -1.835      3.684  -0.498    0.622
+
+Residual standard error: 4.412 on 33 degrees of freedom
+Multiple R-squared:  0.1239,    Adjusted R-squared:  0.04421 
+F-statistic: 1.555 on 3 and 33 DF,  p-value: 0.2188</code></pre>
+</div>
+<div id="emmeans-1" class="section level5">
+<h5>EMMeans</h5>
+<pre class="r"><code>emtrends(ap_openentry_ancova, pairwise ~ type, var = &quot;ap_coords&quot;)</code></pre>
+<pre><code>$emtrends
+ type ap_coords.trend   SE df lower.CL upper.CL
+ ChR2            2.04 2.55 33    -3.14     7.23
+ eYFP            0.21 2.66 33    -5.20     5.62
+
+Confidence level used: 0.95 
+
+$contrasts
+ contrast    estimate   SE df t.ratio p.value
+ ChR2 - eYFP     1.83 3.68 33   0.498  0.6218</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="distance-based-metrics" class="section level1 tabset">
+<h1 class="tabset">Distance-based metrics</h1>
+<div id="all-3-2" class="section level2 tabset">
+<h2 class="tabset">All 3</h2>
+<div id="summary-statistics-4" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<pre class="r"><code># open entry function also works for distance
+baseline_pre_array_topography &lt;- transform_epm_openentry(data_topography, 
+                                                        &quot;baseline_pre&quot;, &quot;Distance&quot;, 1, 1200)
+treatment_array_topography &lt;- transform_epm_openentry(data_topography, 
+                                                     &quot;treatment&quot;, &quot;Distance&quot;, 1, 1200)
+baseline_post_array_topography &lt;- transform_epm_openentry(data_topography, 
+                                                         &quot;baseline_post&quot;, &quot;Distance&quot;, 1, 1200)
+
+distance_group_topography &lt;- group_array_epm(data_topography, 
+                                             baseline_pre_array_topography, 
+                                             treatment_array_topography, 
+                                             baseline_post_array_topography,
+                                             &quot;distance&quot;)
+
+distance_mins &lt;- transform_epm_openentry_bymin(data_topography, &quot;Distance&quot;)
+distance_mins &lt;- lapply(distance_mins, function(x) cbind.data.frame(x[, 1:2], x$OpenEntry / 100))</code></pre>
+<div id="aplcoa-12" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>aplCoA_group_topography &lt;- distance_group_topography[distance_group_topography$group 
+                                     %in% c(&quot;aplCoA ChR2&quot;, &quot;aplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;distance&quot;, 
+         baseline_pre_distance, treatment_distance, baseline_post_distance) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+aplCoA_group_topography$time &lt;- factor(aplCoA_group_topography$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+aplCoA_group_topography$group &lt;- factor(aplCoA_group_topography$group, 
+                                   levels = c(&quot;aplCoA eYFP&quot;, &quot;aplCoA ChR2&quot;))
+levels(aplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+# convert to meters
+aplCoA_group_topography$distance &lt;- aplCoA_group_topography$distance / 100
+
+aplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"distance","4":"6","5":"13.353","6":"0.479"},{"1":"eYFP","2":"STIM","3":"distance","4":"6","5":"13.165","6":"0.586"},{"1":"eYFP","2":"POST","3":"distance","4":"6","5":"11.733","6":"0.822"},{"1":"ChR2","2":"PRE","3":"distance","4":"6","5":"15.047","6":"1.704"},{"1":"ChR2","2":"STIM","3":"distance","4":"6","5":"13.163","6":"2.184"},{"1":"ChR2","2":"POST","3":"distance","4":"6","5":"12.501","6":"1.643"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pplcoa-12" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>pplCoA_group_topography &lt;- distance_group_topography[distance_group_topography$group 
+                                     %in% c(&quot;pplCoA ChR2&quot;, &quot;pplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;distance&quot;, 
+         baseline_pre_distance, treatment_distance, baseline_post_distance) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+pplCoA_group_topography$time &lt;- factor(pplCoA_group_topography$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+pplCoA_group_topography$group &lt;- factor(pplCoA_group_topography$group, 
+                                   levels = c(&quot;pplCoA eYFP&quot;, &quot;pplCoA ChR2&quot;))
+levels(pplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+# convert to meters
+pplCoA_group_topography$distance &lt;- pplCoA_group_topography$distance / 100
+
+pplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"distance","4":"6","5":"13.778","6":"1.213"},{"1":"eYFP","2":"STIM","3":"distance","4":"6","5":"12.646","6":"0.670"},{"1":"eYFP","2":"POST","3":"distance","4":"6","5":"11.807","6":"0.592"},{"1":"ChR2","2":"PRE","3":"distance","4":"10","5":"13.470","6":"0.804"},{"1":"ChR2","2":"STIM","3":"distance","4":"10","5":"11.337","6":"0.955"},{"1":"ChR2","2":"POST","3":"distance","4":"10","5":"11.502","6":"0.959"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-4" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="aplcoa-13" class="section level4 tabset">
+<h4 class="tabset">aplCoA</h4>
+<div id="anova-8" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(aplCoA_group_topography, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"10","4":"0.237","5":"0.637","6":"","7":"0.017","_rn_":"1"},{"1":"time","2":"2","3":"20","4":"2.789","5":"0.085","6":"","7":"0.069","_rn_":"2"},{"1":"group:time","2":"2","3":"20","4":"0.464","5":"0.636","6":"","7":"0.012","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-8" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(aplCoA_group_topography, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"-0.1880386","7":"-2.558409","8":"2.1823319","9":"0.977","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"-1.6198517","7":"-3.990222","8":"0.7505188","9":"0.211","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"-1.4318131","7":"-3.802184","8":"0.9385574","9":"0.289","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"-1.8841124","7":"-8.715229","8":"4.9470044","9":"0.758","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"-2.5460339","7":"-9.377151","8":"4.2850829","9":"0.607","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.6619214","7":"-7.493038","8":"6.1691954","9":"0.966","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-8" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;PRE&quot;], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;PRE&quot;] and aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;PRE&quot;]
+t = -0.95671, df = 5.7863, p-value = 0.377
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.065498  2.677618
+sample estimates:
+mean of x mean of y 
+ 13.35281  15.04675 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;STIM&quot;], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;STIM&quot;] and aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;STIM&quot;]
+t = 0.00094353, df = 5.7158, p-value = 0.9993
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.598855  5.603122
+sample estimates:
+mean of x mean of y 
+ 13.16477  13.16264 </code></pre>
+<pre class="r"><code># POST
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;POST&quot;], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;POST&quot;] and aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;POST&quot;]
+t = -0.41794, df = 7.3573, p-value = 0.6879
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.069220  3.533704
+sample estimates:
+mean of x mean of y 
+ 11.73296  12.50072 </code></pre>
+</div>
+</div>
+<div id="pplcoa-13" class="section level4 tabset">
+<h4 class="tabset">pplCoA</h4>
+<div id="anova-9" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(pplCoA_group_topography, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"14","4":"0.397","5":"0.539","6":"","7":"0.016","_rn_":"1"},{"1":"time","2":"2","3":"28","4":"3.634","5":"0.040","6":"*","7":"0.103","_rn_":"2"},{"1":"group:time","2":"2","3":"28","4":"0.274","5":"0.762","6":"","7":"0.009","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-9" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(pplCoA_group_topography, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"-1.1316798","7":"-4.327177","8":"2.063817","9":"0.637","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"-1.9704806","7":"-5.165978","8":"1.225016","9":"0.275","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.8388008","7":"-4.034298","8":"2.356696","9":"0.777","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"-2.1330224","7":"-5.320363","8":"1.054318","9":"0.239","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"-1.9677828","7":"-5.155123","8":"1.219558","9":"0.293","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"0.1652396","7":"-3.022101","8":"3.352580","9":"0.991","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-9" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;PRE&quot;], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;PRE&quot;] and pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;PRE&quot;]
+t = 0.21168, df = 9.3585, p-value = 0.8369
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -2.965204  3.581362
+sample estimates:
+mean of x mean of y 
+ 13.77778  13.46970 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;STIM&quot;], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;STIM&quot;] and pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;STIM&quot;]
+t = 1.1222, df = 13.954, p-value = 0.2807
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -1.193997  3.812840
+sample estimates:
+mean of x mean of y 
+ 12.64610  11.33668 </code></pre>
+<pre class="r"><code># POST
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;POST&quot;], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;POST&quot;] and pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;POST&quot;]
+t = 0.27106, df = 13.607, p-value = 0.7904
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -2.117505  2.728267
+sample estimates:
+mean of x mean of y 
+ 11.80730  11.50192 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-4" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="aplcoa-14" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>#bg_epm_prepost(aplCoA_group_topography, epm_dist_label, anterior_color, topo_epm_dist_axes, chr2_blue)
+bg_epm_mins(distance_mins[1:2], epm_dist_label, anterior_color, topo_epm_dist_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/70-aplCoA_distance_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pplcoa-14" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>#bg_epm_prepost(pplCoA_group_topography, epm_dist_label, posterior_color, topo_epm_dist_axes, chr2_blue)
+bg_epm_mins(distance_mins[5:6], epm_dist_label, posterior_color, topo_epm_dist_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/71-pplCoA_distance_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="pre-post-combined-2" class="section level2 tabset">
+<h2 class="tabset">Pre-Post Combined</h2>
+<pre class="r"><code>distance_group_topography[,3] &lt;- (distance_group_topography[,3] + distance_group_topography[,5])/2 
+distance_group_topography &lt;- distance_group_topography[,1:4]
+
+colnames(distance_group_topography)[3] &lt;- &quot;baseline_distance&quot; </code></pre>
+<div id="summary-statistics-5" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="aplcoa-15" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>aplCoA_group_topography &lt;- distance_group_topography[distance_group_topography$group 
+                                     %in% c(&quot;aplCoA ChR2&quot;, &quot;aplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;distance&quot;, 
+         baseline_distance, treatment_distance) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+aplCoA_group_topography$group &lt;- factor(aplCoA_group_topography$group, 
+                                   levels = c(&quot;aplCoA eYFP&quot;, &quot;aplCoA ChR2&quot;))
+levels(aplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+aplCoA_group_topography$distance &lt;- aplCoA_group_topography$distance / 100
+
+aplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"distance","4":"6","5":"12.543","6":"0.479"},{"1":"eYFP","2":"ON","3":"distance","4":"6","5":"13.165","6":"0.586"},{"1":"ChR2","2":"OFF","3":"distance","4":"6","5":"13.774","6":"1.593"},{"1":"ChR2","2":"ON","3":"distance","4":"6","5":"13.163","6":"2.184"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pplcoa-15" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>pplCoA_group_topography &lt;- distance_group_topography[distance_group_topography$group 
+                                     %in% c(&quot;pplCoA ChR2&quot;, &quot;pplCoA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;distance&quot;, 
+         baseline_distance, treatment_distance) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+pplCoA_group_topography$group &lt;- factor(pplCoA_group_topography$group, 
+                                   levels = c(&quot;pplCoA eYFP&quot;, &quot;pplCoA ChR2&quot;))
+levels(pplCoA_group_topography$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+pplCoA_group_topography$distance &lt;- pplCoA_group_topography$distance / 100
+
+pplCoA_group_topography %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"distance","4":"6","5":"12.793","6":"0.558"},{"1":"eYFP","2":"ON","3":"distance","4":"6","5":"12.646","6":"0.670"},{"1":"ChR2","2":"OFF","3":"distance","4":"10","5":"12.486","6":"0.764"},{"1":"ChR2","2":"ON","3":"distance","4":"10","5":"11.337","6":"0.955"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-5" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="aplcoa-16" class="section level4 tabset">
+<h4 class="tabset">aplCoA</h4>
+<div id="anova-10" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(aplCoA_group_topography, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"10","4":"1.20e-01","5":"0.736","6":"","7":"9.00e-03","_rn_":"1"},{"1":"time","2":"1","3":"10","4":"3.63e-05","5":"0.995","6":"","7":"7.39e-07","_rn_":"2"},{"1":"group:time","2":"1","3":"10","4":"4.74e-01","5":"0.507","6":"","7":"1.00e-02","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-10" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(aplCoA_group_topography, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"0.6218873","7":"-1.064599","8":"2.308374","9":"0.430","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.6110955","7":"-6.635354","8":"5.413163","9":"0.826","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-10" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;OFF&quot;], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;OFF&quot;] and aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;OFF&quot;]
+t = -0.73971, df = 5.8971, p-value = 0.4879
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.319716  2.858018
+sample estimates:
+mean of x mean of y 
+ 12.54289  13.77373 </code></pre>
+<pre class="r"><code># ON
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;ON&quot;], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         aplCoA_group_topography$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;eYFP&quot; &amp; aplCoA_group_topography$time == &quot;ON&quot;] and aplCoA_group_topography$distance[aplCoA_group_topography$group == &quot;ChR2&quot; &amp; aplCoA_group_topography$time == &quot;ON&quot;]
+t = 0.00094353, df = 5.7158, p-value = 0.9993
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.598855  5.603122
+sample estimates:
+mean of x mean of y 
+ 13.16477  13.16264 </code></pre>
+</div>
+</div>
+<div id="pplcoa-16" class="section level4 tabset">
+<h4 class="tabset">pplCoA</h4>
+<div id="anova-11" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(pplCoA_group_topography, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"14","4":"0.595","5":"0.453","6":"","7":"0.030","_rn_":"1"},{"1":"time","2":"1","3":"14","4":"1.043","5":"0.324","6":"","7":"0.020","_rn_":"2"},{"1":"group:time","2":"1","3":"14","4":"0.625","5":"0.442","6":"","7":"0.012","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-11" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(pplCoA_group_topography, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.1464395","7":"-2.088646","8":"1.795767","9":"0.87","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-1.1491310","7":"-3.719059","8":"1.420797","9":"0.36","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-11" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;OFF&quot;], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;OFF&quot;] and pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;OFF&quot;]
+t = 0.3243, df = 13.994, p-value = 0.7505
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -1.721933  2.335394
+sample estimates:
+mean of x mean of y 
+ 12.79254  12.48581 </code></pre>
+<pre class="r"><code># ON
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;ON&quot;], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; 
+                                         pplCoA_group_topography$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;eYFP&quot; &amp; pplCoA_group_topography$time == &quot;ON&quot;] and pplCoA_group_topography$distance[pplCoA_group_topography$group == &quot;ChR2&quot; &amp; pplCoA_group_topography$time == &quot;ON&quot;]
+t = 1.1222, df = 13.954, p-value = 0.2807
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -1.193997  3.812840
+sample estimates:
+mean of x mean of y 
+ 12.64610  11.33668 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-5" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="aplcoa-17" class="section level4">
+<h4>aplCoA</h4>
+<pre class="r"><code>bg_twogroup(aplCoA_group_topography, epm_dist_label, anterior_color, topo_epm_dist_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/81-aplCoA_distance_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pplcoa-17" class="section level4">
+<h4>pplCoA</h4>
+<pre class="r"><code>bg_twogroup(pplCoA_group_topography, epm_dist_label, posterior_color, topo_epm_dist_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/82-pplCoA_distance_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="linear-2" class="section level2 tabset">
+<h2 class="tabset">Linear</h2>
+<div id="ap-scatter-plot-2" class="section level3 tabset">
+<h3 class="tabset">AP scatter plot</h3>
+<pre class="r"><code>linear_group_topography &lt;- cbind.data.frame(distance_group_topography,
+                                              as.numeric(paste0(&quot;-&quot;, 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         &quot;[|]&quot;)))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              distance_group_topography$treatment_distance -
+                                              distance_group_topography$baseline_distance,
+                                              unlist(strsplit(distance_group_topography$group, 
+                                                              &quot; &quot;))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;baseline_distance&quot;, &quot;treatment_distance&quot;, 
+                                       &quot;ap_coords&quot;, &quot;difference_distance&quot;, &quot;type&quot;)
+
+linear_group_topography$baseline_distance &lt;- linear_group_topography$baseline_distance / 100
+linear_group_topography$treatment_distance &lt;- linear_group_topography$treatment_distance / 100
+linear_group_topography$difference_distance &lt;- linear_group_topography$difference_distance / 100</code></pre>
+<div id="eyfp-4" class="section level4">
+<h4>eYFP</h4>
+<pre class="r"><code>single_linear_plot(linear_group_topography, &quot;eYFP&quot;, &quot;difference_distance&quot;, eyfp_green,
+                   ap_linear_epm_distance_axes, ap_linear_epm_distance_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/84-distance_scatter_plot_eyfp-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="chr2-4" class="section level4">
+<h4>ChR2</h4>
+<pre class="r"><code>single_linear_plot(linear_group_topography, &quot;ChR2&quot;, &quot;difference_distance&quot;, chr2_blue,
+                   ap_linear_epm_distance_axes, ap_linear_epm_distance_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/85-distance_scatter_plot_chr2-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="combined-2" class="section level4">
+<h4>Combined</h4>
+<pre class="r"><code>dual_linear_plot(linear_group_topography, &quot;difference_distance&quot;, 
+                 ap_linear_epm_distance_axes, ap_linear_epm_distance_label)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/86-distance_scatter_plot_combined-1.pdf" width="460.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="statistics-2" class="section level3 tabset">
+<h3 class="tabset">Statistics</h3>
+<div id="summary-of-linear-regressions-2" class="section level4 tabset">
+<h4 class="tabset">Summary of linear regressions</h4>
+<div id="eyfp-5" class="section level5">
+<h5>eYFP</h5>
+<pre class="r"><code># gives results for controls
+ap_distance_ancova &lt;- lm(difference_distance ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == &quot;eYFP&quot;,])
+
+summary(ap_distance_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_distance ~ ap_coords, data = linear_group_topography[linear_group_topography$type == 
+    &quot;eYFP&quot;, ])
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-1.9748 -0.6513 -0.2265  0.2138  3.9586 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)    2.013      1.725   1.167    0.259
+ap_coords      1.027      0.896   1.146    0.268
+
+Residual standard error: 1.486 on 17 degrees of freedom
+Multiple R-squared:  0.0717,    Adjusted R-squared:  0.0171 
+F-statistic: 1.313 on 1 and 17 DF,  p-value: 0.2677</code></pre>
+</div>
+<div id="chr2-5" class="section level5">
+<h5>ChR2</h5>
+<pre class="r"><code>ap_distance_ancova &lt;- lm(difference_distance ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == &quot;ChR2&quot;,])
+
+summary(ap_distance_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_distance ~ ap_coords, data = linear_group_topography[linear_group_topography$type == 
+    &quot;ChR2&quot;, ])
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-6.3217 -1.9644 -0.0211  1.2509  6.5776 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept) -1.03815    3.72956  -0.278    0.784
+ap_coords    0.01093    1.84580   0.006    0.995
+
+Residual standard error: 3.197 on 16 degrees of freedom
+Multiple R-squared:  2.193e-06, Adjusted R-squared:  -0.0625 
+F-statistic: 3.509e-05 on 1 and 16 DF,  p-value: 0.9953</code></pre>
+</div>
+</div>
+<div id="comparison-of-regression-lines-2"
+class="section level4 tabset">
+<h4 class="tabset">Comparison of regression lines</h4>
+<div id="ancova-2" class="section level5">
+<h5>ANCOVA</h5>
+<pre class="r"><code>ap_distance_ancova &lt;- lm(difference_distance ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_distance_ancova)</code></pre>
+<pre><code>
+Call:
+lm(formula = difference_distance ~ ap_coords * type, data = linear_group_topography)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-6.3217 -1.4520 -0.2265  1.0769  6.5776 
+
+Coefficients:
+                   Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)        -1.03815    2.87945  -0.361    0.721
+ap_coords           0.01093    1.42507   0.008    0.994
+typeeYFP            3.05091    4.06296   0.751    0.458
+ap_coords:typeeYFP  1.01585    2.06092   0.493    0.625
+
+Residual standard error: 2.468 on 33 degrees of freedom
+Multiple R-squared:  0.06855,   Adjusted R-squared:  -0.01613 
+F-statistic: 0.8095 on 3 and 33 DF,  p-value: 0.4977</code></pre>
+</div>
+<div id="emmeans-2" class="section level5">
+<h5>EMMeans</h5>
+<pre class="r"><code>emtrends(ap_distance_ancova, pairwise ~ type, var = &quot;ap_coords&quot;)</code></pre>
+<pre><code>$emtrends
+ type ap_coords.trend   SE df lower.CL upper.CL
+ ChR2          0.0109 1.43 33    -2.89     2.91
+ eYFP          1.0268 1.49 33    -2.00     4.06
+
+Confidence level used: 0.95 
+
+$contrasts
+ contrast    estimate   SE df t.ratio p.value
+ ChR2 - eYFP    -1.02 2.06 33  -0.493  0.6253</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="heatmaps" class="section level1 tabset">
+<h1 class="tabset">Heatmaps</h1>
+<pre class="r"><code>full_heatmap &lt;- get_heatmap_epm(data_topography, &quot;full&quot;)
+baseline_heatmap &lt;- get_heatmap_epm(data_topography, &quot;baseline_all&quot;)
+treatment_heatmap &lt;- get_heatmap_epm(data_topography, &quot;treatment&quot;)
+
+heatmap_diff &lt;- get_heatmap_epm_diff(data_topography)</code></pre>
+<div id="aplcoa-18" class="section level2 tabset">
+<h2 class="tabset">aplCoA</h2>
+<div id="eyfp-6" class="section level3 tabset">
+<h3 class="tabset">eYFP</h3>
+<div id="full" class="section level4">
+<h4>Full</h4>
+<pre class="r"><code>plot_heatmap_epm(full_heatmap$`aplCoA-control`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/92-aplCoA_eyfp_full_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="off" class="section level4">
+<h4>OFF</h4>
+<pre class="r"><code>plot_heatmap_epm(baseline_heatmap$`aplCoA-control`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/93-aplCoA_eyfp_off_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="on" class="section level4">
+<h4>ON</h4>
+<pre class="r"><code>plot_heatmap_epm(treatment_heatmap$`aplCoA-control`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/94-aplCoA_eyfp_on_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="difference" class="section level4">
+<h4>Difference</h4>
+<pre class="r"><code>plot_heatmap_epm_diff(heatmap_diff$`aplCoA-control`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/95-aplCoA_eyfp_diff_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="chr2-6" class="section level3 tabset">
+<h3 class="tabset">ChR2</h3>
+<div id="full-1" class="section level4">
+<h4>Full</h4>
+<pre class="r"><code>plot_heatmap_epm(full_heatmap$`aplCoA-stim`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/96-aplCoA_chr2_full_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="off-1" class="section level4">
+<h4>OFF</h4>
+<pre class="r"><code>plot_heatmap_epm(baseline_heatmap$`aplCoA-stim`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/97-aplCoA_chr2_off_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="on-1" class="section level4">
+<h4>ON</h4>
+<pre class="r"><code>plot_heatmap_epm(treatment_heatmap$`aplCoA-stim`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/98-aplCoA_chr2_on_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="difference-1" class="section level4">
+<h4>Difference</h4>
+<pre class="r"><code>plot_heatmap_epm_diff(heatmap_diff$`aplCoA-stim`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/99-aplCoA_chr2_diff_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="pplcoa-18" class="section level2 tabset">
+<h2 class="tabset">pplCoA</h2>
+<div id="eyfp-7" class="section level3 tabset">
+<h3 class="tabset">eYFP</h3>
+<div id="full-2" class="section level4">
+<h4>Full</h4>
+<pre class="r"><code>plot_heatmap_epm(full_heatmap$`pplCoA-control`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/100-pplCoA_eyfp_full_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="off-2" class="section level4">
+<h4>OFF</h4>
+<pre class="r"><code>plot_heatmap_epm(baseline_heatmap$`pplCoA-control`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/101-pplCoA_eyfp_off_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="on-2" class="section level4">
+<h4>ON</h4>
+<pre class="r"><code>plot_heatmap_epm(treatment_heatmap$`pplCoA-control`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/102-pplCoA_eyfp_on_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="difference-2" class="section level4">
+<h4>Difference</h4>
+<pre class="r"><code>plot_heatmap_epm_diff(heatmap_diff$`pplCoA-control`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/103-pplCoA_eyfp_diff_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="chr2-7" class="section level3 tabset">
+<h3 class="tabset">ChR2</h3>
+<div id="full-3" class="section level4">
+<h4>Full</h4>
+<pre class="r"><code>plot_heatmap_epm(full_heatmap$`pplCoA-stim`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/104-pplCoA_chr2_full_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="off-3" class="section level4">
+<h4>OFF</h4>
+<pre class="r"><code>plot_heatmap_epm(baseline_heatmap$`pplCoA-stim`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/105-pplCoA_chr2_off_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="on-3" class="section level4">
+<h4>ON</h4>
+<pre class="r"><code>plot_heatmap_epm(treatment_heatmap$`pplCoA-stim`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/106-pplCoA_chr2_on_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="difference-3" class="section level4">
+<h4>Difference</h4>
+<pre class="r"><code>plot_heatmap_epm_diff(heatmap_diff$`pplCoA-stim`)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/107-pplCoA_chr2_diff_heatmap-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="scale-bars" class="section level2 tabset">
+<h2 class="tabset">Scale bars</h2>
+<div id="absolute" class="section level3 tabset">
+<h3 class="tabset">Absolute</h3>
+<div id="horizontal" class="section level4">
+<h4>Horizontal</h4>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend(treatment_heatmap$`pplCoA-stim`, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/108-scale_bar_horizontal-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="vertical" class="section level4">
+<h4>Vertical</h4>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend(treatment_heatmap$`pplCoA-stim`, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/109-scale_bar_vertical-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="relative" class="section level3 tabset">
+<h3 class="tabset">Relative</h3>
+<div id="horizontal-1" class="section level4">
+<h4>Horizontal</h4>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend_diff(heatmap_diff$`pplCoA-stim`, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/110-scale_bar_horizontal_diff-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="vertical-1" class="section level4">
+<h4>Vertical</h4>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend_diff(heatmap_diff$`pplCoA-stim`, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/111-scale_bar_vertical_diff-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="legends" class="section level3 tabset">
+<h3 class="tabset">Legends</h3>
+<div id="vertical-2" class="section level4 tabset">
+<h4 class="tabset">Vertical</h4>
+<div id="aplcoa-19" class="section level5 tabset">
+<h5 class="tabset">aplCoA</h5>
+<pre class="r"><code>plot_legend &lt;- points_legend(aplCoA_group_topography, epm_entry_label, anterior_color, topo_entry_axes, chr2_blue, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/112-vertical_legend_aplCoA-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pplcoa-19" class="section level5 tabset">
+<h5 class="tabset">pplCoA</h5>
+<pre class="r"><code>plot_legend &lt;- points_legend(pplCoA_group_topography, epm_entry_label, posterior_color, topo_entry_axes, chr2_blue, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/113-vertical_legend_pplCoA-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="horizontal-2" class="section level4 tabset">
+<h4 class="tabset">Horizontal</h4>
+<div id="aplcoa-20" class="section level5 tabset">
+<h5 class="tabset">aplCoA</h5>
+<pre class="r"><code>plot_legend &lt;- points_legend(aplCoA_group_topography, epm_entry_label, anterior_color, topo_entry_axes, chr2_blue, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/114-horizontal_legend_aplCoA-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pplcoa-20" class="section level5 tabset">
+<h5 class="tabset">pplCoA</h5>
+<pre class="r"><code>plot_legend &lt;- points_legend(pplCoA_group_topography, epm_entry_label, posterior_color, topo_entry_axes, chr2_blue, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_02-epm_topography.Rmd/115-horizontal_legend_pplCoA-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.1.2
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Los_Angeles
+tzcode source: internal
+
+attached base packages:
+[1] grid      stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+ [1] knitr_1.44             ggpubr_0.6.0           emmeans_1.8.8         
+ [4] rstatix_0.7.2          multcomp_1.4-25        TH.data_1.1-2         
+ [7] survival_3.5-7         mvtnorm_1.2-3          car_3.1-2             
+[10] carData_3.0-5          gmodels_2.18.1.1       zoo_1.8-12            
+[13] scales_1.2.1           colorspace_2.1-0       gridExtra_2.3         
+[16] cowplot_1.1.1          viridis_0.6.4          viridisLite_0.4.2     
+[19] spatstat_3.0-6         spatstat.linnet_3.1-1  spatstat.model_3.2-6  
+[22] rpart_4.1.19           spatstat.explore_3.2-3 nlme_3.1-163          
+[25] spatstat.random_3.1-6  spatstat.geom_3.2-5    spatstat.data_3.0-1   
+[28] RColorBrewer_1.1-3     colorRamps_2.3.1       lubridate_1.9.3       
+[31] forcats_1.0.0          stringr_1.5.0          dplyr_1.1.3           
+[34] purrr_1.0.2            readr_2.1.4            tidyr_1.3.0           
+[37] tibble_3.2.1           ggplot2_3.4.3          tidyverse_2.0.0       
+[40] MASS_7.3-60            workflowr_1.7.1       
+
+loaded via a namespace (and not attached):
+ [1] deldir_1.0-9          sandwich_3.0-2        rlang_1.1.1          
+ [4] magrittr_2.0.3        git2r_0.32.0          compiler_4.3.1       
+ [7] getPass_0.2-2         mgcv_1.9-0            gdata_2.19.0         
+[10] reshape2_1.4.4        callr_3.7.3           vctrs_0.6.3          
+[13] pkgconfig_2.0.3       fastmap_1.1.1         backports_1.4.1      
+[16] labeling_0.4.3        utf8_1.2.3            promises_1.2.1       
+[19] rmarkdown_2.25        tzdb_0.4.0            ps_1.7.5             
+[22] xfun_0.40             cachem_1.0.8          jsonlite_1.8.7       
+[25] goftest_1.2-3         later_1.3.1           spatstat.utils_3.0-3 
+[28] broom_1.0.5           R6_2.5.1              bslib_0.5.1          
+[31] stringi_1.7.12        estimability_1.4.1    jquerylib_0.1.4      
+[34] Rcpp_1.0.11           tensor_1.5            httpuv_1.6.11        
+[37] Matrix_1.6-1.1        splines_4.3.1         timechange_0.2.0     
+[40] tidyselect_1.2.0      rstudioapi_0.15.0     abind_1.4-5          
+[43] yaml_2.3.7            codetools_0.2-19      processx_3.8.2       
+[46] plyr_1.8.9            lattice_0.21-9        withr_2.5.1          
+[49] evaluate_0.22         polyclip_1.10-6       pillar_1.9.0         
+[52] BiocManager_1.30.22   whisker_0.4.1         renv_0.15.4          
+[55] generics_0.1.3        rprojroot_2.0.3       hms_1.1.3            
+[58] munsell_0.5.0         xtable_1.8-4          gtools_3.9.4         
+[61] glue_1.6.2            tools_4.3.1           ggsignif_0.6.4       
+[64] fs_1.6.3              cli_3.6.1             spatstat.sparse_3.0-2
+[67] fansi_1.0.4           gtable_0.3.4          sass_0.4.7           
+[70] digest_0.6.33         farver_2.1.1          htmltools_0.5.6      
+[73] lifecycle_1.0.3       httr_1.4.7           </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

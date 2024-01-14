@@ -1,0 +1,1351 @@
+---
+author: "James Howe"
+params:
+  dataset: "Topography (EPM)"
+  path: "data/behavior/topography_epm/"
+title: "Behavioral analysis: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes EPM data and outputs analyses and figures for publication. 
+
+```{r setup}
+# set up paths
+topography_id <- params$dataset
+topography_path <- params$path
+start_min <- params$start_min
+end_min <- params$end_min
+
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+
+topography_groups <- unlist(strsplit(Sys.glob(paste0(topography_path, "*")), topography_path))[c(FALSE, TRUE)]
+```
+
+# Load the data
+
+Names have to be given manually in most cases. Also for now copy into console because it does not load due to odd workspace issues. This loads all files in a directory and puts it into the correct format automatically.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+data_topography <- read_stim_data("epm", topography_groups, topography_path, topography_labels)
+
+data_topography <- list(data_topography$`aplCoA-stim`, data_topography$`aplCoA-control`, 
+                        data_topography$`mplCoA-stim`, data_topography$`mplCoA-control`, 
+                        data_topography$`pplCoA-stim`, data_topography$`pplCoA-control`)
+names(data_topography) <- c("aplCoA-stim", "aplCoA-control", 
+                            "mplCoA-stim", "mplCoA-control", 
+                            "pplCoA-stim", "pplCoA-control")
+```
+
+# Time-based metrics {.tabset}
+
+## All 3 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 6-open_all3_stats, message = FALSE, warning = FALSE}
+baseline_pre_array_topography <- transform_epm_opentime(data_topography, 
+                                                        "baseline_pre", "Region", 1, 1200)
+treatment_array_topography <- transform_epm_opentime(data_topography, 
+                                                     "treatment", "Region", 1, 1200)
+baseline_post_array_topography <- transform_epm_opentime(data_topography, 
+                                                         "baseline_post", "Region", 1, 1200)
+
+opentime_group_topography <- group_array_epm(data_topography, 
+                                             baseline_pre_array_topography, 
+                                             treatment_array_topography, 
+                                             baseline_post_array_topography,
+                                             "opentime")
+
+opentime_mins <- transform_epm_opentime_bymin(data_topography, "Region")
+```
+
+#### aplCoA
+
+```{r 7-aplCoA_opentime_stats, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- opentime_group_topography[opentime_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "OpenTime", 
+         baseline_pre_opentime, treatment_opentime, baseline_post_opentime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("POST", "PRE", "STIM")
+aplCoA_group_topography$time <- factor(aplCoA_group_topography$time, levels = c("PRE", "STIM", "POST"))
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(OpenTime, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 8-pplCoA_opentime_stats, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- opentime_group_topography[opentime_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "OpenTime", 
+         baseline_pre_opentime, treatment_opentime, baseline_post_opentime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("POST", "PRE", "STIM")
+pplCoA_group_topography$time <- factor(pplCoA_group_topography$time, levels = c("PRE", "STIM", "POST"))
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(OpenTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 9-aplCoA_open_anova, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "OpenTime")
+```
+
+##### Pairwise comparisons
+
+```{r 10-aplCoA_open_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "OpenTime")
+```
+
+##### T-test each
+
+```{r 11-aplCoA_ttest_opentimes, message = FALSE, warning = FALSE}
+# PRE
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "PRE"], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "PRE"])
+
+# STIM
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "STIM"], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "STIM"])
+
+# POST
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "POST"], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "POST"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 12-pplCoA_open_anova, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "OpenTime")
+```
+
+##### Pairwise comparisons
+
+```{r 13-pplCoA_open_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "OpenTime")
+```
+
+##### T-test each
+
+```{r 14-pplCoA_ttest_opentimes, message = FALSE, warning = FALSE}
+# PRE
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "PRE"], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "PRE"])
+
+# STIM
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "STIM"], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "STIM"])
+
+# POST
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "POST"], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "POST"])
+
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 15-aplCoA_open_time, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_epm_prepost(aplCoA_group_topography, epm_opentime_label, anterior_color, topo_ot_axes, chr2_blue)
+bg_epm_mins(opentime_mins[1:2], epm_opentime_label, anterior_color, topo_ot_axes_min, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 16-pplCoA_open_time, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_epm_prepost(pplCoA_group_topography, epm_opentime_label, posterior_color, topo_ot_axes, chr2_blue)
+bg_epm_mins(opentime_mins[5:6], epm_opentime_label, posterior_color, topo_ot_axes_min, chr2_blue)
+```
+
+## Pre-Post Combined {.tabset}
+
+```{r 13-prepost_opentime_stats, message = FALSE, warning = FALSE}
+opentime_group_topography[,3] <- (opentime_group_topography[,3] + opentime_group_topography[,5])/2 
+opentime_group_topography <- opentime_group_topography[,1:4]
+
+colnames(opentime_group_topography)[3] <- "baseline_opentime" 
+```
+
+### Summary statistics {.tabset}
+
+#### aplCoA
+
+```{r 14-aplCoA_opentime_stats_prepost, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- opentime_group_topography[opentime_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "OpenTime", 
+         baseline_opentime, treatment_opentime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("OFF", "ON")
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(OpenTime, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 15-pplCoA_opentime_stats_prepost, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- opentime_group_topography[opentime_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "OpenTime", 
+         baseline_opentime, treatment_opentime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("OFF", "ON")
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(OpenTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 16-aplCoA_open_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "OpenTime")
+```
+
+##### Pairwise comparisons
+
+```{r 17-aplCoA_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "OpenTime")
+```
+
+##### T-test each
+
+```{r 18-aplCoA_ttest_opentimes2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "OFF"], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "ON"], 
+       y = aplCoA_group_topography$OpenTime[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "ON"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 19-pplCoA_open_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "OpenTime")
+```
+
+##### Pairwise comparisons
+
+```{r 20-pplCoA_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "OpenTime")
+```
+
+##### T-test each
+
+```{r 21-pplCoA_ttest_opentimes2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "OFF"], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "ON"], 
+       y = pplCoA_group_topography$OpenTime[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 22-aplCoA_open_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(aplCoA_group_topography, epm_opentime_label, anterior_color, topo_ot_axes, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 23-pplCoA_open_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(pplCoA_group_topography, epm_opentime_label, posterior_color, topo_ot_axes, chr2_blue)
+```
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 24-opentime_setup_linear, message = FALSE, warning = FALSE}
+linear_group_topography <- cbind.data.frame(opentime_group_topography,
+                                              as.numeric(paste0("-", 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         "[|]")))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              opentime_group_topography$treatment_opentime -
+                                              opentime_group_topography$baseline_opentime,
+                                              unlist(strsplit(opentime_group_topography$group, 
+                                                              " "))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) <- c("id", "group", "baseline_opentime", "treatment_opentime", 
+                                       "ap_coords", "difference_opentime", "type")
+```
+
+#### eYFP
+
+```{r 25-opentime_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "eYFP", "difference_opentime", eyfp_green,
+                   ap_linear_opentime_axes, ap_linear_opentime_label)
+```
+
+#### ChR2
+
+```{r 26-opentime_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "ChR2", "difference_opentime", chr2_blue,
+                   ap_linear_opentime_axes, ap_linear_opentime_label)
+```
+
+#### Combined
+
+```{r 27-opentime_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4.8}
+dual_linear_plot(linear_group_topography, "difference_opentime", 
+                 ap_linear_opentime_axes, ap_linear_opentime_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 28-opentime_ancova_eyfp, message = FALSE, warning = FALSE}
+# gives results for controls
+ap_opentime_ancova <- lm(difference_opentime ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "eYFP",])
+
+summary(ap_opentime_ancova)
+```
+
+##### ChR2
+
+```{r 29-opentime_ancova_chr2, message = FALSE, warning = FALSE}
+ap_opentime_ancova <- lm(difference_opentime ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "ChR2",])
+
+summary(ap_opentime_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 30-opentime_ancova_comp, message = FALSE, warning = FALSE}
+ap_opentime_ancova <- lm(difference_opentime ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_opentime_ancova)
+```
+
+##### EMMeans
+
+```{r 31-opentime_emmeans_comp, message = FALSE, warning = FALSE}
+emtrends(ap_opentime_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+# Entry-based metrics {.tabset}
+
+## All 3 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 32-entry_all3_stats, message = FALSE, warning = FALSE}
+baseline_pre_array_topography <- transform_epm_openentry(data_topography, 
+                                                        "baseline_pre", "OpenEntry", 1, 1200)
+treatment_array_topography <- transform_epm_openentry(data_topography, 
+                                                     "treatment", "OpenEntry", 1, 1200)
+baseline_post_array_topography <- transform_epm_openentry(data_topography, 
+                                                         "baseline_post", "OpenEntry", 1, 1200)
+
+openentry_group_topography <- group_array_epm(data_topography, 
+                                             baseline_pre_array_topography, 
+                                             treatment_array_topography, 
+                                             baseline_post_array_topography,
+                                             "openentry")
+
+openentry_mins <- transform_epm_openentry_bymin(data_topography, "OpenEntry")
+```
+
+#### aplCoA
+
+```{r 33-aplCoA_openentry_stats, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- openentry_group_topography[openentry_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "openentry", 
+         baseline_pre_openentry, treatment_openentry, baseline_post_openentry) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("POST", "PRE", "STIM")
+aplCoA_group_topography$time <- factor(aplCoA_group_topography$time, levels = c("PRE", "STIM", "POST"))
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(openentry, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 34-pplCoA_openentry_stats, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- openentry_group_topography[openentry_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "openentry", 
+         baseline_pre_openentry, treatment_openentry, baseline_post_openentry) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("POST", "PRE", "STIM")
+pplCoA_group_topography$time <- factor(pplCoA_group_topography$time, levels = c("PRE", "STIM", "POST"))
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(openentry, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 35-aplCoA_entry_anova, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "openentry")
+```
+
+##### Pairwise comparisons
+
+```{r 36-aplCoA_entry_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "openentry")
+```
+
+##### T-test each
+
+```{r 37-aplCoA_ttest_entry, message = FALSE, warning = FALSE}
+# PRE
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "PRE"], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "PRE"])
+
+# STIM
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "STIM"], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "STIM"])
+
+# POST
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "POST"], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "POST"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 38-pplCoA_entry_anova, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "openentry")
+```
+
+##### Pairwise comparisons
+
+```{r 39-pplCoA_entry_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "openentry")
+```
+
+##### T-test each
+
+```{r 40-pplCoA_ttest_entry, message = FALSE, warning = FALSE}
+# PRE
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "PRE"], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "PRE"])
+
+# STIM
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "STIM"], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "STIM"])
+
+# POST
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "POST"], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "POST"])
+
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 41-aplCoA_entry_time, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.4, fig.width = 2.4}
+#bg_epm_prepost(aplCoA_group_topography, epm_entry_label, anterior_color, topo_entry_axes, chr2_blue)
+bg_epm_mins(openentry_mins[1:2], epm_entry_label, anterior_color, topo_entry_axes_min, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 42-pplCoA_entry_time, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.4, fig.width = 2.4}
+#bg_epm_prepost(pplCoA_group_topography, epm_entry_label, posterior_color, topo_entry_axes, chr2_blue)
+bg_epm_mins(openentry_mins[5:6], epm_entry_label, posterior_color, topo_entry_axes_min, chr2_blue)
+```
+
+## Pre-Post Combined {.tabset}
+
+```{r 43-prepost_entry_stats, message = FALSE, warning = FALSE}
+openentry_group_topography[,3] <- (openentry_group_topography[,3] + openentry_group_topography[,5])/2 
+openentry_group_topography <- openentry_group_topography[,1:4]
+
+colnames(openentry_group_topography)[3] <- "baseline_openentry" 
+```
+
+### Summary statistics {.tabset}
+
+#### aplCoA
+
+```{r 36-aplCoA_entry_stats_prepost, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- openentry_group_topography[openentry_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "openentry", 
+         baseline_openentry, treatment_openentry) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("OFF", "ON")
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(openentry, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 44-pplCoA_entry_stats_prepost, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- openentry_group_topography[openentry_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "openentry", 
+         baseline_openentry, treatment_openentry) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("OFF", "ON")
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(openentry, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 45-aplCoA_entry_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "openentry")
+```
+
+##### Pairwise comparisons
+
+```{r 46-aplCoA_entry_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "openentry")
+```
+
+##### T-test each
+
+```{r 47-aplCoA_ttest_entry2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "OFF"], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "ON"], 
+       y = aplCoA_group_topography$openentry[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "ON"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 48-pplCoA_entry_anova, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "openentry")
+```
+
+##### Pairwise comparisons
+
+```{r 49-pplCoA_entry_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "openentry")
+```
+
+##### T-test each
+
+```{r 50-pplCoA_ttest_entry, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "OFF"], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "ON"], 
+       y = pplCoA_group_topography$openentry[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 51-aplCoA_entry_prepost, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.4, dev = 'pdf'}
+bg_twogroup(aplCoA_group_topography, epm_entry_label, anterior_color, topo_entry_axes, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 52-pplCoA_entry_prepost, message = FALSE, warning = FALSE, fig.height = 2.4, fig.width = 2.4, dev = 'pdf'}
+bg_twogroup(pplCoA_group_topography, epm_entry_label, posterior_color, topo_entry_axes, chr2_blue)
+```
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 53-opentime_setup_linear, message = FALSE, warning = FALSE}
+linear_group_topography <- cbind.data.frame(openentry_group_topography,
+                                              as.numeric(paste0("-", 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         "[|]")))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              openentry_group_topography$treatment_openentry -
+                                              openentry_group_topography$baseline_openentry,
+                                              unlist(strsplit(openentry_group_topography$group, 
+                                                              " "))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) <- c("id", "group", "baseline_openentry", "treatment_openentry", 
+                                       "ap_coords", "difference_openentry", "type")
+```
+
+#### eYFP
+
+```{r 54-openentry_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+
+single_linear_plot(linear_group_topography, "eYFP", "difference_openentry", eyfp_green,
+                   ap_linear_entry_axes, ap_linear_entry_label)
+```
+
+#### ChR2
+
+```{r 55-openentry_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+
+single_linear_plot(linear_group_topography, "ChR2", "difference_openentry", chr2_blue,
+                   ap_linear_entry_axes, ap_linear_entry_label)
+```
+
+#### Combined
+
+```{r 56-openentry_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4.8}
+
+dual_linear_plot(linear_group_topography, "difference_openentry", 
+                 ap_linear_entry_axes, ap_linear_entry_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 57-openentry_ancova_eyfp, message = FALSE, warning = FALSE}
+# gives results for controls
+ap_openentry_ancova <- lm(difference_openentry ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "eYFP",])
+
+summary(ap_openentry_ancova)
+```
+
+##### ChR2
+
+```{r 58-openentry_ancova_chr2, message = FALSE, warning = FALSE}
+ap_openentry_ancova <- lm(difference_openentry ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "ChR2",])
+
+summary(ap_openentry_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 59-openentry_ancova_comp, message = FALSE, warning = FALSE}
+ap_openentry_ancova <- lm(difference_openentry ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_openentry_ancova)
+```
+
+##### EMMeans
+
+```{r 60-openentry_emmeans_comp, message = FALSE, warning = FALSE}
+emtrends(ap_openentry_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+# Distance-based metrics {.tabset}
+
+## All 3 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 61-distance_all3_stats, message = FALSE, warning = FALSE}
+# open entry function also works for distance
+baseline_pre_array_topography <- transform_epm_openentry(data_topography, 
+                                                        "baseline_pre", "Distance", 1, 1200)
+treatment_array_topography <- transform_epm_openentry(data_topography, 
+                                                     "treatment", "Distance", 1, 1200)
+baseline_post_array_topography <- transform_epm_openentry(data_topography, 
+                                                         "baseline_post", "Distance", 1, 1200)
+
+distance_group_topography <- group_array_epm(data_topography, 
+                                             baseline_pre_array_topography, 
+                                             treatment_array_topography, 
+                                             baseline_post_array_topography,
+                                             "distance")
+
+distance_mins <- transform_epm_openentry_bymin(data_topography, "Distance")
+distance_mins <- lapply(distance_mins, function(x) cbind.data.frame(x[, 1:2], x$OpenEntry / 100))
+```
+
+#### aplCoA
+
+```{r 62-aplCoA_distance_stats, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- distance_group_topography[distance_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_pre_distance, treatment_distance, baseline_post_distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("POST", "PRE", "STIM")
+aplCoA_group_topography$time <- factor(aplCoA_group_topography$time, levels = c("PRE", "STIM", "POST"))
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+aplCoA_group_topography$distance <- aplCoA_group_topography$distance / 100
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 63-pplCoA_distance_stats, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- distance_group_topography[distance_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_pre_distance, treatment_distance, baseline_post_distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("POST", "PRE", "STIM")
+pplCoA_group_topography$time <- factor(pplCoA_group_topography$time, levels = c("PRE", "STIM", "POST"))
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+pplCoA_group_topography$distance <- pplCoA_group_topography$distance / 100
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 64-aplCoA_distance_anova, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 65-aplCoA_distance_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "distance")
+```
+
+##### T-test each
+
+```{r 66-aplCoA_ttest_distance, message = FALSE, warning = FALSE}
+# PRE
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "PRE"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "PRE"])
+
+# STIM
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "STIM"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "STIM"])
+
+# POST
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "POST"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "POST"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 67-pplCoA_distance_anova, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 68-pplCoA_distance_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "distance")
+```
+
+##### T-test each
+
+```{r 69-pplCoA_ttest_distances, message = FALSE, warning = FALSE}
+# PRE
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "PRE"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "PRE"])
+
+# STIM
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "STIM"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "STIM"])
+
+# POST
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "POST"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "POST"])
+
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 70-aplCoA_distance_time, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.4, fig.width = 2.4}
+#bg_epm_prepost(aplCoA_group_topography, epm_dist_label, anterior_color, topo_epm_dist_axes, chr2_blue)
+bg_epm_mins(distance_mins[1:2], epm_dist_label, anterior_color, topo_epm_dist_axes_min, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 71-pplCoA_distance_time, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.4, fig.width = 2.4}
+#bg_epm_prepost(pplCoA_group_topography, epm_dist_label, posterior_color, topo_epm_dist_axes, chr2_blue)
+bg_epm_mins(distance_mins[5:6], epm_dist_label, posterior_color, topo_epm_dist_axes_min, chr2_blue)
+```
+
+## Pre-Post Combined {.tabset}
+
+```{r 72-prepost_distance_stats, message = FALSE, warning = FALSE}
+distance_group_topography[,3] <- (distance_group_topography[,3] + distance_group_topography[,5])/2 
+distance_group_topography <- distance_group_topography[,1:4]
+
+colnames(distance_group_topography)[3] <- "baseline_distance" 
+```
+
+### Summary statistics {.tabset}
+
+#### aplCoA
+
+```{r 73-aplCoA_distance_stats_prepost, message = FALSE, warning = FALSE}
+aplCoA_group_topography <- distance_group_topography[distance_group_topography$group 
+                                     %in% c("aplCoA ChR2", "aplCoA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_distance, treatment_distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(aplCoA_group_topography$time) <- c("OFF", "ON")
+
+aplCoA_group_topography$group <- factor(aplCoA_group_topography$group, 
+                                   levels = c("aplCoA eYFP", "aplCoA ChR2"))
+levels(aplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+aplCoA_group_topography$distance <- aplCoA_group_topography$distance / 100
+
+aplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+#### pplCoA
+
+```{r 74-pplCoA_distance_stats_prepost, message = FALSE, warning = FALSE}
+pplCoA_group_topography <- distance_group_topography[distance_group_topography$group 
+                                     %in% c("pplCoA ChR2", "pplCoA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_distance, treatment_distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(pplCoA_group_topography$time) <- c("OFF", "ON")
+
+pplCoA_group_topography$group <- factor(pplCoA_group_topography$group, 
+                                   levels = c("pplCoA eYFP", "pplCoA ChR2"))
+levels(pplCoA_group_topography$group) <- c("eYFP", "ChR2")
+
+pplCoA_group_topography$distance <- pplCoA_group_topography$distance / 100
+
+pplCoA_group_topography %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### aplCoA {.tabset}
+
+##### ANOVA
+
+```{r 75-aplCoA_distance_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(aplCoA_group_topography, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 76-aplCoA_distance_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(aplCoA_group_topography, "distance")
+```
+
+##### T-test each
+
+```{r 77-aplCoA_ttest_distance2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "OFF"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = aplCoA_group_topography$distance[aplCoA_group_topography$group == "eYFP" & 
+                                         aplCoA_group_topography$time == "ON"], 
+       y = aplCoA_group_topography$distance[aplCoA_group_topography$group == "ChR2" & 
+                                         aplCoA_group_topography$time == "ON"])
+```
+
+#### pplCoA {.tabset}
+
+##### ANOVA
+
+```{r 78-pplCoA_distance_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(pplCoA_group_topography, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 79-pplCoA_distance_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(pplCoA_group_topography, "distance")
+```
+
+##### T-test each
+
+```{r 80-pplCoA_ttest_distance2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "OFF"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "OFF"])
+
+# ON
+t.test(x = pplCoA_group_topography$distance[pplCoA_group_topography$group == "eYFP" & 
+                                         pplCoA_group_topography$time == "ON"], 
+       y = pplCoA_group_topography$distance[pplCoA_group_topography$group == "ChR2" & 
+                                         pplCoA_group_topography$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### aplCoA
+
+```{r 81-aplCoA_distance_prepost, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(aplCoA_group_topography, epm_dist_label, anterior_color, topo_epm_dist_axes, chr2_blue)
+```
+
+#### pplCoA
+
+```{r 82-pplCoA_distance_prepost, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(pplCoA_group_topography, epm_dist_label, posterior_color, topo_epm_dist_axes, chr2_blue)
+```
+
+## Linear {.tabset}
+
+### AP scatter plot {.tabset}
+
+```{r 83-distance_setup_linear, message = FALSE, warning = FALSE}
+linear_group_topography <- cbind.data.frame(distance_group_topography,
+                                              as.numeric(paste0("-", 
+                                                         str_sub(unlist(lapply(data_topography, 
+                                                         function(x) strsplit(names(x), 
+                                                         "[|]")))[c(FALSE, TRUE)], 
+                                                         start = 1, end = 4))),
+                                              distance_group_topography$treatment_distance -
+                                              distance_group_topography$baseline_distance,
+                                              unlist(strsplit(distance_group_topography$group, 
+                                                              " "))[c(FALSE, TRUE)])
+
+colnames(linear_group_topography) <- c("id", "group", "baseline_distance", "treatment_distance", 
+                                       "ap_coords", "difference_distance", "type")
+
+linear_group_topography$baseline_distance <- linear_group_topography$baseline_distance / 100
+linear_group_topography$treatment_distance <- linear_group_topography$treatment_distance / 100
+linear_group_topography$difference_distance <- linear_group_topography$difference_distance / 100
+```
+
+#### eYFP
+
+```{r 84-distance_scatter_plot_eyfp, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "eYFP", "difference_distance", eyfp_green,
+                   ap_linear_epm_distance_axes, ap_linear_epm_distance_label)
+```
+
+#### ChR2
+
+```{r 85-distance_scatter_plot_chr2, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4}
+single_linear_plot(linear_group_topography, "ChR2", "difference_distance", chr2_blue,
+                   ap_linear_epm_distance_axes, ap_linear_epm_distance_label)
+```
+
+#### Combined
+
+```{r 86-distance_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 4.8}
+dual_linear_plot(linear_group_topography, "difference_distance", 
+                 ap_linear_epm_distance_axes, ap_linear_epm_distance_label)
+```
+
+### Statistics {.tabset}
+
+#### Summary of linear regressions {.tabset}
+
+##### eYFP
+
+```{r 87-distance_ancova_eyfp, message = FALSE, warning = FALSE}
+# gives results for controls
+ap_distance_ancova <- lm(difference_distance ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "eYFP",])
+
+summary(ap_distance_ancova)
+```
+
+##### ChR2
+
+```{r 88-opentime_ancova_chr2, message = FALSE, warning = FALSE}
+ap_distance_ancova <- lm(difference_distance ~ ap_coords, 
+                         data = linear_group_topography[linear_group_topography$type == "ChR2",])
+
+summary(ap_distance_ancova)
+```
+
+#### Comparison of regression lines {.tabset}
+
+##### ANCOVA
+
+```{r 89-distance_ancova_comp, message = FALSE, warning = FALSE}
+ap_distance_ancova <- lm(difference_distance ~ ap_coords * type, data = linear_group_topography)
+
+summary(ap_distance_ancova)
+```
+
+##### EMMeans
+
+```{r 90-opentime_emmeans_comp, message = FALSE, warning = FALSE}
+emtrends(ap_distance_ancova, pairwise ~ type, var = "ap_coords")
+```
+
+# Heatmaps {.tabset}
+
+```{r 91-get_heatmaps, message = FALSE, warning = FALSE}
+full_heatmap <- get_heatmap_epm(data_topography, "full")
+baseline_heatmap <- get_heatmap_epm(data_topography, "baseline_all")
+treatment_heatmap <- get_heatmap_epm(data_topography, "treatment")
+
+heatmap_diff <- get_heatmap_epm_diff(data_topography)
+```
+
+## aplCoA {.tabset}
+
+### eYFP {.tabset}
+
+#### Full
+
+```{r 92-aplCoA_eyfp_full_heatmap, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(full_heatmap$`aplCoA-control`)
+```
+
+#### OFF
+
+```{r 93-aplCoA_eyfp_off_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(baseline_heatmap$`aplCoA-control`)
+```
+
+#### ON
+
+```{r 94-aplCoA_eyfp_on_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(treatment_heatmap$`aplCoA-control`)
+```
+
+#### Difference
+
+```{r 95-aplCoA_eyfp_diff_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm_diff(heatmap_diff$`aplCoA-control`)
+```
+
+### ChR2 {.tabset}
+
+#### Full
+
+```{r 96-aplCoA_chr2_full_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(full_heatmap$`aplCoA-stim`)
+```
+
+#### OFF
+
+```{r 97-aplCoA_chr2_off_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(baseline_heatmap$`aplCoA-stim`)
+```
+
+#### ON
+
+```{r 98-aplCoA_chr2_on_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(treatment_heatmap$`aplCoA-stim`)
+```
+
+#### Difference
+
+```{r 99-aplCoA_chr2_diff_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm_diff(heatmap_diff$`aplCoA-stim`)
+```
+
+## pplCoA {.tabset}
+
+### eYFP {.tabset}
+
+#### Full
+
+```{r 100-pplCoA_eyfp_full_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(full_heatmap$`pplCoA-control`)
+```
+
+#### OFF
+
+```{r 101-pplCoA_eyfp_off_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(baseline_heatmap$`pplCoA-control`)
+```
+
+#### ON
+
+```{r 102-pplCoA_eyfp_on_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(treatment_heatmap$`pplCoA-control`)
+```
+
+#### Difference
+
+```{r 103-pplCoA_eyfp_diff_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm_diff(heatmap_diff$`pplCoA-control`)
+```
+
+### ChR2 {.tabset}
+
+#### Full
+
+```{r 104-pplCoA_chr2_full_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(full_heatmap$`pplCoA-stim`)
+```
+
+#### OFF
+
+```{r 105-pplCoA_chr2_off_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(baseline_heatmap$`pplCoA-stim`)
+```
+
+#### ON
+
+```{r 106-pplCoA_chr2_on_heatmap, message = FALSE, warning = FALSE,  dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm(treatment_heatmap$`pplCoA-stim`)
+```
+
+#### Difference
+
+```{r 107-pplCoA_chr2_diff_heatmap, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+plot_heatmap_epm_diff(heatmap_diff$`pplCoA-stim`)
+```
+
+## Scale bars {.tabset}
+
+### Absolute {.tabset}
+
+#### Horizontal
+
+```{r 108-scale_bar_horizontal, message = FALSE, warning = FALSE, fig.height = 2.4, dev = "pdf", fig.width = 1.8}
+plot_legend <- plot_heatmap_epm_legend(treatment_heatmap$`pplCoA-stim`, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+#### Vertical
+
+```{r 109-scale_bar_vertical, message = FALSE, warning = FALSE, fig.height = 2.4, dev = "pdf", fig.width = 1.8}
+plot_legend <- plot_heatmap_epm_legend(treatment_heatmap$`pplCoA-stim`, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+### Relative {.tabset}
+
+#### Horizontal
+
+```{r 110-scale_bar_horizontal_diff, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 1.8}
+plot_legend <- plot_heatmap_epm_legend_diff(heatmap_diff$`pplCoA-stim`, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+#### Vertical
+
+```{r 111-scale_bar_vertical_diff, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 1.8}
+plot_legend <- plot_heatmap_epm_legend_diff(heatmap_diff$`pplCoA-stim`, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+### Legends {.tabset}
+
+#### Vertical {.tabset}
+
+##### aplCoA {.tabset}
+
+```{r 112-vertical_legend_aplCoA, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 1.8}
+plot_legend <- points_legend(aplCoA_group_topography, epm_entry_label, anterior_color, topo_entry_axes, chr2_blue, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+##### pplCoA {.tabset}
+
+```{r 113-vertical_legend_pplCoA, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 1.8}
+plot_legend <- points_legend(pplCoA_group_topography, epm_entry_label, posterior_color, topo_entry_axes, chr2_blue, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+#### Horizontal {.tabset}
+
+##### aplCoA {.tabset}
+
+```{r 114-horizontal_legend_aplCoA, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 1.8}
+plot_legend <- points_legend(aplCoA_group_topography, epm_entry_label, anterior_color, topo_entry_axes, chr2_blue, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+##### pplCoA {.tabset}
+
+```{r 115-horizontal_legend_pplCoA, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 1.8}
+plot_legend <- points_legend(pplCoA_group_topography, epm_entry_label, posterior_color, topo_entry_axes, chr2_blue, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
