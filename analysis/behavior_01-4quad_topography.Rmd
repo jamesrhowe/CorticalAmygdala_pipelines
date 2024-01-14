@@ -72,7 +72,7 @@ single_linear_plot(pi_dataframe_topography_linear, "ChR2", "difference_pi", chr2
 
 #### Combined
 
-```{r 5-pi_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 5}
+```{r 5-pi_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 5.3}
 dual_linear_plot(pi_dataframe_topography_linear, "difference_pi", 
                  ap_linear_pi_axes, ap_linear_pi_label)
 ```
@@ -301,7 +301,7 @@ single_linear_plot(pd_dataframe_topography_linear, "ChR2", "difference_pd", chr2
 
 #### Combined
 
-```{r 27-pd_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 5}
+```{r 27-pd_scatter_plot_combined, message = FALSE, warning = FALSE, dev= 'pdf', fig.height = 4, fig.width = 5.3}
 dual_linear_plot(pd_dataframe_topography_linear, "difference_pd", 
                  ap_linear_pd_axes, ap_linear_pd_label)
 ```

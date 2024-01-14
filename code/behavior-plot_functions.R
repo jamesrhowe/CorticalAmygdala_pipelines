@@ -9,7 +9,10 @@ single_linear_plot <- function(linear_array, type_id, metric, type_color, ylims,
     scale_colour_manual(values = type_color) +
     scale_fill_manual(values = type_color) +
     geom_hline(yintercept = 0, linetype = "dashed") +
-    scale_x_continuous(limits = c(-2.6, -1.2), expand = c(.01,.01)) +
+    scale_x_continuous(limits = c(-1.2, -2.6),
+                       expand = c(.01,.01),
+                       trans = "reverse"
+                       ) +
     scale_y_continuous(limits = ylims) +
     ylab(y_label) + xlab("AP location (mm from bregma)") +
     geom_smooth(aes(fill = type, colour = type), alpha = 0.2, method = "lm", fullrange = TRUE, se = TRUE) +
@@ -29,7 +32,10 @@ dual_linear_plot <- function(linear_array, metric, ylims, y_label){
     scale_colour_manual(values = c(chr2_blue, eyfp_green)) +
     scale_fill_manual(values = c(chr2_blue, eyfp_green)) +
     geom_hline(yintercept = 0, linetype = "dashed") +
-    scale_x_continuous(limits = c(-2.6, -1.2), expand = c(.01,.01)) +
+    scale_x_continuous(limits = c(-1.2, -2.6),
+                       expand = c(.01,.01),
+                       trans = "reverse"
+                       ) +
     scale_y_continuous(limits = ylims) +
     ylab(y_label) + xlab("AP location (mm from bregma)") +
     geom_smooth(aes(fill = type, colour = type), alpha = 0.2, method = "lm", fullrange = TRUE, se = TRUE) +
