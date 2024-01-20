@@ -1,0 +1,245 @@
+---
+author: "James Howe"
+title: "RNAscope analysis"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+library(tidyverse)    #needed for grouping data by nested subgroups using %>%
+library(scales)     #contains pretty_breaks() which allows for publication-quality x axes
+library(colorRamps)     # for heatmap colors
+library(zoo)
+library(gmodels)
+library(car)
+library(multcomp)
+library(rstatix)
+library(emmeans)
+library(ggpubr)
+
+source("code/behavior-refs.R")
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+# Baseline RNAscope
+
+## Read info
+
+```{r 1-read_data_baseline, message = FALSE, warning = FALSE}
+# set up coronal 2
+baseline_cor2_anterior <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C2/anterior/*"),
+                                                  read.csv))
+baseline_cor2_anterior <- baseline_cor2_anterior[,21:22]
+
+baseline_cor2_middle <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C2/middle/*"),
+                                                  read.csv))
+baseline_cor2_middle <- baseline_cor2_middle[,21:22]
+
+baseline_cor2_posterior <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C2/posterior/*"),
+                                                  read.csv))
+baseline_cor2_posterior <- baseline_cor2_posterior[,21:22]
+
+# set up coronal 3
+baseline_cor3_anterior <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C3/anterior/*"),
+                                                  read.csv))
+baseline_cor3_anterior <- baseline_cor3_anterior[,21:22]
+
+baseline_cor3_middle <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C3/middle/*"),
+                                                  read.csv))
+baseline_cor3_middle <- baseline_cor3_middle[,21:22]
+
+baseline_cor3_posterior <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C3/posterior/*"),
+                                                  read.csv))
+baseline_cor3_posterior <- baseline_cor3_posterior[,21:22]
+
+# set up coronal 5
+baseline_cor5_anterior <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C5/anterior/*"),
+                                                  read.csv))
+baseline_cor5_anterior <- baseline_cor5_anterior[,21:22]
+
+baseline_cor5_middle <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C5/middle/*"),
+                                                  read.csv))
+baseline_cor5_middle <- baseline_cor5_middle[,21:22]
+
+baseline_cor5_posterior <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C5/posterior/*"),
+                                                  read.csv))
+baseline_cor5_posterior <- baseline_cor5_posterior[,21:22]
+
+# set up coronal 6
+baseline_cor6_anterior <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C6/anterior/*"),
+                                                  read.csv))
+baseline_cor6_anterior <- baseline_cor6_anterior[,21:22]
+
+baseline_cor6_middle <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C6/middle/*"),
+                                                  read.csv))
+baseline_cor6_middle <- baseline_cor6_middle[,21:22]
+
+baseline_cor6_posterior <- do.call("rbind.data.frame",
+                                  lapply(Sys.glob("data/rnascope/baseline/C6/posterior/*"),
+                                                  read.csv))
+baseline_cor6_posterior <- baseline_cor6_posterior[,21:22]
+```
+
+## Sum all regions together
+
+
+```{r 2-consolidate_data_baseline, message = FALSE, warning = FALSE}
+baseline_anterior <- rbind.data.frame(baseline_cor2_anterior, 
+                                      baseline_cor3_anterior, 
+                                      baseline_cor5_anterior,
+                                      baseline_cor6_anterior)
+
+baseline_middle <- rbind.data.frame(baseline_cor2_middle, 
+                                    baseline_cor3_middle,
+                                    baseline_cor5_middle,
+                                    baseline_cor6_middle)
+
+baseline_posterior <- rbind.data.frame(baseline_cor2_posterior, 
+                                       baseline_cor3_posterior,
+                                       baseline_cor5_posterior, 
+                                       baseline_cor6_posterior)
+```
+
+## See all percentages {.tabset}
+
+### Anterior
+
+```{r 3-table_data_baseline_anterior, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}
+proportions_anterior <- cbind.data.frame(c("Slc17a6+", "Slc17a7+", "Slc17a6/Slc17a7+"), 
+                        c(table(cbind.data.frame(baseline_anterior$Children_AllVG1_Count >= 5,
+                                               baseline_anterior$Children_AllVG2_Count >= 5))[1,2],
+                          table(cbind.data.frame(baseline_anterior$Children_AllVG1_Count >= 5,
+                                               baseline_anterior$Children_AllVG2_Count >= 5))[2,1],
+                          table(cbind.data.frame(baseline_anterior$Children_AllVG1_Count >= 5,
+                                               baseline_anterior$Children_AllVG2_Count >= 5))[2,2]))
+colnames(proportions_anterior) <- c("Group", "Number")
+
+# Compute percentages
+proportions_anterior = cbind.data.frame(proportions_anterior, 
+                                      proportions_anterior$Number / sum(proportions_anterior$Number))
+colnames(proportions_anterior) <- c("Group", "Number", "Proportion")
+
+# Compute the cumulative percentages (top of each rectangle)
+proportions_anterior = cbind.data.frame(proportions_anterior, 
+                                      cumsum(proportions_anterior$Proportion))
+colnames(proportions_anterior) <- c("Group", "Number", "Proportion", "Top")
+
+# Compute the bottom of each rectangle
+proportions_anterior = cbind.data.frame(proportions_anterior, 
+                                      c(0, head(proportions_anterior$Top, n=-1)))
+colnames(proportions_anterior) <- c("Group", "Number", "Proportion", "Top", "Bottom")
+
+ggplot(proportions_anterior, aes(ymax = Top, ymin = Bottom, xmax=4, xmin=3, fill = Group)) +
+     geom_rect(color = "black") +
+     coord_polar(theta="y") + 
+     scale_fill_manual(values = c("limegreen", VGlut2_color, VGlut1_color)) +
+     xlim(c(2, 4)) +
+     theme_void()
+
+```
+
+### Middle
+
+```{r 4-table_data_baseline_middle, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}
+proportions_middle <- cbind.data.frame(c("Slc17a6+", "Slc17a7+", "Slc17a6/Slc17a7+"), 
+                        c(table(cbind.data.frame(baseline_middle$Children_AllVG1_Count >= 5,
+                                               baseline_middle$Children_AllVG2_Count >= 5))[1,2],
+                          table(cbind.data.frame(baseline_middle$Children_AllVG1_Count >= 5,
+                                               baseline_middle$Children_AllVG2_Count >= 5))[2,1],
+                          table(cbind.data.frame(baseline_middle$Children_AllVG1_Count >= 5,
+                                               baseline_middle$Children_AllVG2_Count >= 5))[2,2]))
+colnames(proportions_middle) <- c("Group", "Number")
+
+# Compute percentages
+proportions_middle = cbind.data.frame(proportions_middle, 
+                                      proportions_middle$Number / sum(proportions_middle$Number))
+colnames(proportions_middle) <- c("Group", "Number", "Proportion")
+
+# Compute the cumulative percentages (top of each rectangle)
+proportions_middle = cbind.data.frame(proportions_middle, 
+                                      cumsum(proportions_middle$Proportion))
+colnames(proportions_middle) <- c("Group", "Number", "Proportion", "Top")
+
+# Compute the bottom of each rectangle
+proportions_middle = cbind.data.frame(proportions_middle, 
+                                      c(0, head(proportions_middle$Top, n=-1)))
+colnames(proportions_middle) <- c("Group", "Number", "Proportion", "Top", "Bottom")
+
+ggplot(proportions_middle, aes(ymax = Top, ymin = Bottom, xmax=4, xmin=3, fill = Group)) +
+     geom_rect(color = "black") +
+     coord_polar(theta="y") + 
+     scale_fill_manual(values = c("limegreen", VGlut2_color, VGlut1_color)) +
+     xlim(c(2, 4)) +
+     theme_void()
+```
+
+### Posterior
+
+```{r 5-table_data_baseline_posterior, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}
+proportions_posterior <- cbind.data.frame(c("Slc17a6+", "Slc17a7+", "Slc17a6/Slc17a7+"), 
+                        c(table(cbind.data.frame(baseline_posterior$Children_AllVG1_Count >= 5,
+                                               baseline_posterior$Children_AllVG2_Count >= 5))[1,2],
+                          table(cbind.data.frame(baseline_posterior$Children_AllVG1_Count >= 5,
+                                               baseline_posterior$Children_AllVG2_Count >= 5))[2,1],
+                          table(cbind.data.frame(baseline_posterior$Children_AllVG1_Count >= 5,
+                                               baseline_posterior$Children_AllVG2_Count >= 5))[2,2]))
+colnames(proportions_posterior) <- c("Group", "Number")
+
+# Compute percentages
+proportions_posterior = cbind.data.frame(proportions_posterior, 
+                                      proportions_posterior$Number / sum(proportions_posterior$Number))
+colnames(proportions_posterior) <- c("Group", "Number", "Proportion")
+
+# Compute the cumulative percentages (top of each rectangle)
+proportions_posterior = cbind.data.frame(proportions_posterior, 
+                                      cumsum(proportions_posterior$Proportion))
+colnames(proportions_posterior) <- c("Group", "Number", "Proportion", "Top")
+
+# Compute the bottom of each rectangle
+proportions_posterior = cbind.data.frame(proportions_posterior, 
+                                      c(0, head(proportions_posterior$Top, n=-1)))
+colnames(proportions_posterior) <- c("Group", "Number", "Proportion", "Top", "Bottom")
+
+ggplot(proportions_posterior, aes(ymax = Top, ymin = Bottom, xmax=4, xmin=3, fill = Group)) +
+     geom_rect(color = "black") +
+     coord_polar(theta="y") + 
+     scale_fill_manual(values = c("limegreen", VGlut2_color, VGlut1_color)) +
+     xlim(c(2, 4)) +
+     theme_void()
+```
+
+# Output percentages
+
+## Anterior
+
+```{r 5-table_data_baseline_anterior}
+proportions_anterior[1:3]
+```
+
+## Middle
+
+```{r 6-table_data_baseline_middle}
+proportions_middle[1:3]
+```
+
+## Posterior
+
+```{r 7-table_data_baseline_posterior}
+proportions_posterior[1:3]
+```
