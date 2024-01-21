@@ -1,0 +1,640 @@
+---
+author: "James Howe"
+params:
+  start_min: 12
+  end_min: 24
+  dataset: "genes_silence"
+  path: "data/behavior/genes_silence/"
+title: "Behavioral analysis: `r params$dataset` (2PE)"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+# set up paths
+gene_id <- params$dataset
+gene_path <- params$path
+start_min <- params$start_min
+end_min <- params$end_min
+
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+
+gene_groups_2PE <- unlist(strsplit(Sys.glob(paste0(gene_path, "2PE/SAL/*")),
+                                         paste0(gene_path, "2PE/SAL/")))[c(FALSE, TRUE)]
+```
+
+# Load the data
+
+Names have to be given manually in most cases. Also for now copy into console because it does not load due to odd workspace issues. This loads all files in a directory and puts it into the correct format automatically.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+# set up the object with pointers
+data_gene_2PE_sal <- vector(mode = "list", length = 4)
+data_gene_2PE_sal <- lapply(gene_groups_2PE, 
+                                  function(x) lapply(Sys.glob(paste0(gene_path, "2PE/SAL/", x, "/*")),
+                                                     process_series))
+
+data_gene_2PE_cno <- vector(mode = "list", length = 4)
+data_gene_2PE_cno <- lapply(gene_groups_2PE, 
+                                  function(x) lapply(Sys.glob(paste0(gene_path, "2PE/CNO/", x, "/*")),
+                                                     process_series))
+
+# add names to each
+names(data_gene_2PE_sal) <- Sys.glob(paste0(gene_path, "2PE/SAL/", "*"))
+names(data_gene_2PE_sal) <- unlist(strsplit(names(data_gene_2PE_sal), 
+                                                  paste0(gene_path, "2PE/SAL/")))[c(FALSE, TRUE)]
+
+names(data_gene_2PE_cno) <- Sys.glob(paste0(gene_path, "2PE/CNO/", "*"))
+names(data_gene_2PE_cno) <- unlist(strsplit(names(data_gene_2PE_cno), 
+                                                  paste0(gene_path, "2PE/CNO/")))[c(FALSE, TRUE)]
+
+for (i in 1:length(gene_groups_2PE)){
+  data_gene_2PE_sal <- add_custom_names(data_gene_2PE_sal, paste0(gene_path, "2PE/SAL/"), 
+                                              gene_groups_2PE[i], gene_labels_2PE[i])
+  data_gene_2PE_cno <- add_custom_names(data_gene_2PE_cno, paste0(gene_path, "2PE/CNO/"), 
+                                              gene_groups_2PE[i], gene_labels_2PE[i])
+}
+
+data_gene_2PE_sal <- list(data_gene_2PE_sal$`VGlut1-control`, data_gene_2PE_sal$`VGlut1-Gi`, 
+                                data_gene_2PE_sal$`VGlut2-control`, data_gene_2PE_sal$`VGlut2-Gi`)
+names(data_gene_2PE_sal) <- c("VGlut1-control", "VGlut1-Gi", "VGlut2-control", "VGlut2-Gi")
+
+data_gene_2PE_cno <- list(data_gene_2PE_cno$`VGlut1-control`, data_gene_2PE_cno$`VGlut1-Gi`, 
+                                data_gene_2PE_cno$`VGlut2-control`, data_gene_2PE_cno$`VGlut2-Gi`)
+names(data_gene_2PE_cno) <- c("VGlut1-control", "VGlut1-Gi", "VGlut2-control", "VGlut2-Gi")
+```
+
+# Performance Index metrics
+
+## Repeated Measures {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 2-pi_stats, message = FALSE, warning = FALSE}
+#saline
+baseline_array_gene_2PE_sal <- transform_pi(data_gene_2PE_sal, "baseline", "Quadrant", 1, 2399)
+treatment_array_gene_2PE_sal <- transform_pi(data_gene_2PE_sal, "treatment", "Quadrant", 1, 2880)
+
+pi_group_gene_2PE_sal <- group_array(data_gene_2PE_sal, 
+                                           baseline_array_gene_2PE_sal, 
+                                           treatment_array_gene_2PE_sal, "pi")
+
+# cno
+baseline_array_gene_2PE_cno <- transform_pi(data_gene_2PE_cno, "baseline", "Quadrant", 1, 2399)
+treatment_array_gene_2PE_cno <- transform_pi(data_gene_2PE_cno, "treatment", "Quadrant", 1, 2880)
+
+pi_group_gene_2PE_cno <- group_array(data_gene_2PE_cno, 
+                                           baseline_array_gene_2PE_cno, 
+                                           treatment_array_gene_2PE_cno, "pi")
+```
+
+#### VGlut1 {.tabset}
+
+##### SAL
+
+```{r 3-VGlut1_pi_stats_2PE_sal, message = FALSE, warning = FALSE}
+VGlut1_group_gene_2PE_sal <- pi_group_gene_2PE_sal[pi_group_gene_2PE_sal$group 
+                                     %in% c("VGlut1 Gi", "VGlut1 mCh"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(VGlut1_group_gene_2PE_sal$time) <- c("Air", "2PE")
+
+VGlut1_group_gene_2PE_sal$group <- factor(VGlut1_group_gene_2PE_sal$group, 
+                                   levels = c("VGlut1 mCh", "VGlut1 Gi"))
+levels(VGlut1_group_gene_2PE_sal$group) <- c("mCh", "Gi")
+
+VGlut1_group_gene_2PE_sal %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+##### CNO
+
+```{r 4-VGlut1_pi_stats_2PE_cno, message = FALSE, warning = FALSE}
+VGlut1_group_gene_2PE_cno <- pi_group_gene_2PE_cno[pi_group_gene_2PE_cno$group 
+                                     %in% c("VGlut1 Gi", "VGlut1 mCh"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(VGlut1_group_gene_2PE_cno$time) <- c("Air", "2PE")
+
+VGlut1_group_gene_2PE_cno$group <- factor(VGlut1_group_gene_2PE_cno$group, 
+                                   levels = c("VGlut1 mCh", "VGlut1 Gi"))
+levels(VGlut1_group_gene_2PE_cno$group) <- c("mCh", "Gi")
+
+VGlut1_group_gene_2PE_cno %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+#### VGlut2 {.tabset}
+
+##### SAL
+
+```{r 5-VGlut2_pi_stats_2PE_sal, message = FALSE, warning = FALSE}
+VGlut2_group_gene_2PE_sal <- pi_group_gene_2PE_sal[pi_group_gene_2PE_sal$group 
+                                     %in% c("VGlut2 Gi", "VGlut2 mCh"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(VGlut2_group_gene_2PE_sal$time) <- c("Air", "2PE")
+
+VGlut2_group_gene_2PE_sal$group <- factor(VGlut2_group_gene_2PE_sal$group, 
+                                             levels = c("VGlut2 mCh", "VGlut2 Gi"))
+levels(VGlut2_group_gene_2PE_sal$group) <- c("mCh", "Gi")
+
+VGlut2_group_gene_2PE_sal %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+##### CNO
+
+```{r 6-VGlut2_pi_stats_2PE_cno, message = FALSE, warning = FALSE}
+VGlut2_group_gene_2PE_cno <- pi_group_gene_2PE_cno[pi_group_gene_2PE_cno$group 
+                                     %in% c("VGlut2 Gi", "VGlut2 mCh"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(VGlut2_group_gene_2PE_cno$time) <- c("Air", "2PE")
+
+VGlut2_group_gene_2PE_cno$group <- factor(VGlut2_group_gene_2PE_cno$group, 
+                                             levels = c("VGlut2 mCh", "VGlut2 Gi"))
+levels(VGlut2_group_gene_2PE_cno$group) <- c("mCh", "Gi")
+
+VGlut2_group_gene_2PE_cno %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+## Difference {.tabset}
+
+### Summary statistics
+
+#### VGlut1
+
+```{r 7-VGlut1_pi_diff_stats, message = FALSE, warning = FALSE}
+VGlut1_group_diffs_2PE_sal <- cbind.data.frame(VGlut1_group_gene_2PE_sal$id[1:                                                                             (length(rownames(VGlut1_group_gene_2PE_sal))/2)],
+                                        VGlut1_group_gene_2PE_sal$group[1:                                                                          (length(rownames(VGlut1_group_gene_2PE_sal))/2)],
+                                    rep("SAL", times = length(rownames(VGlut1_group_gene_2PE_sal))/2),
+                               VGlut1_group_gene_2PE_sal$PI[(length(rownames(VGlut1_group_gene_2PE_sal))/2)+1:
+                                                               (length(rownames(VGlut1_group_gene_2PE_sal))/2)] -
+                                          VGlut1_group_gene_2PE_sal$PI[1:                                                                         (length(rownames(VGlut1_group_gene_2PE_sal))/2)])
+colnames(VGlut1_group_diffs_2PE_sal) <- c("id", "group", "time", "PI_diff")
+
+VGlut1_group_diffs_2PE_cno <- cbind.data.frame(VGlut1_group_gene_2PE_cno$id[1:                                                                             (length(rownames(VGlut1_group_gene_2PE_cno))/2)],
+                                        VGlut1_group_gene_2PE_cno$group[1:                                                                          (length(rownames(VGlut1_group_gene_2PE_cno))/2)],
+                                        rep("CNO", times = length(rownames(VGlut1_group_gene_2PE_cno))/2),
+                               VGlut1_group_gene_2PE_cno$PI[(length(rownames(VGlut1_group_gene_2PE_cno))/2)+1:
+                                                               (length(rownames(VGlut1_group_gene_2PE_cno))/2)] -
+                                          VGlut1_group_gene_2PE_cno$PI[1:                                                                         (length(rownames(VGlut1_group_gene_2PE_cno))/2)])
+colnames(VGlut1_group_diffs_2PE_cno) <- c("id", "group", "time", "PI_diff")
+
+VGlut1_group_diffs_2PE <- rbind.data.frame(VGlut1_group_diffs_2PE_sal, VGlut1_group_diffs_2PE_cno)
+
+VGlut1_group_diffs_2PE$time <- factor(VGlut1_group_diffs_2PE$time, 
+                                        levels = c("SAL", "CNO"))
+
+VGlut1_group_diffs_2PE %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI_diff, type = "mean_se")
+```
+
+#### VGlut2
+
+```{r 8-VGlut2_pi_diff_stats, message = FALSE, warning = FALSE}
+VGlut2_group_diffs_2PE_sal <- cbind.data.frame(VGlut2_group_gene_2PE_sal$id[1:                                                                             (length(rownames(VGlut2_group_gene_2PE_sal))/2)],
+                                        VGlut2_group_gene_2PE_sal$group[1:                                                                          (length(rownames(VGlut2_group_gene_2PE_sal))/2)],
+                                    rep("SAL", times = length(rownames(VGlut2_group_gene_2PE_sal))/2),
+                               VGlut2_group_gene_2PE_sal$PI[(length(rownames(VGlut2_group_gene_2PE_sal))/2)+1:
+                                                               (length(rownames(VGlut2_group_gene_2PE_sal))/2)] -
+                                          VGlut2_group_gene_2PE_sal$PI[1:                                                                         (length(rownames(VGlut2_group_gene_2PE_sal))/2)])
+colnames(VGlut2_group_diffs_2PE_sal) <- c("id", "group", "time", "PI_diff")
+
+VGlut2_group_diffs_2PE_cno <- cbind.data.frame(VGlut2_group_gene_2PE_cno$id[1:                                                                             (length(rownames(VGlut2_group_gene_2PE_cno))/2)],
+                                        VGlut2_group_gene_2PE_cno$group[1:                                                                          (length(rownames(VGlut2_group_gene_2PE_cno))/2)],
+                                        rep("CNO", times = length(rownames(VGlut2_group_gene_2PE_cno))/2),
+                               VGlut2_group_gene_2PE_cno$PI[(length(rownames(VGlut2_group_gene_2PE_cno))/2)+1:
+                                                               (length(rownames(VGlut2_group_gene_2PE_cno))/2)] -
+                                          VGlut2_group_gene_2PE_cno$PI[1:                                                                         (length(rownames(VGlut2_group_gene_2PE_cno))/2)])
+colnames(VGlut2_group_diffs_2PE_cno) <- c("id", "group", "time", "PI_diff")
+
+VGlut2_group_diffs_2PE <- rbind.data.frame(VGlut2_group_diffs_2PE_sal, VGlut2_group_diffs_2PE_cno)
+
+VGlut2_group_diffs_2PE$time <- factor(VGlut2_group_diffs_2PE$time, 
+                                        levels = c("SAL", "CNO"))
+
+VGlut2_group_diffs_2PE %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI_diff, type = "mean_se")
+```
+
+### Two-way repeated-Measures ANOVA {.tabset}
+
+#### VGlut1 {.tabset}
+
+##### ANOVA
+
+```{r 9-VGlut1_pi_diff_anova_2PE, message = FALSE, warning = FALSE}
+display_anova(VGlut1_group_diffs_2PE, "PI_diff")
+```
+
+##### Pairwise comparisons
+
+```{r 10-VGlut1_pi_diff_pairwise_2PE, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut1_group_diffs_2PE, "PI_diff")
+```
+
+#### VGlut2 {.tabset}
+
+##### ANOVA
+
+```{r 11-VGlut2_pi_diff_anova_2PE, message = FALSE, warning = FALSE}
+display_anova(VGlut2_group_diffs_2PE, "PI_diff")
+```
+
+##### Pairwise comparisons
+
+```{r 12-VGlut2_pi_pairwise_2PE, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut2_group_diffs_2PE, "PI_diff")
+```
+
+### Plots {.tabset}
+
+#### VGlut1
+
+```{r 13-VGlut1_pi_diff_2PE, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.8, fig.width = 2.4}
+bg_twogroup(VGlut1_group_diffs_2PE, diff_pi_label_silence, VGlut1_color, pi_axes_2PE_genes, "white")
+```
+
+#### VGlut2
+
+```{r 14-VGlut2_pi_diff_2PE, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.8, fig.width = 2.4}
+bg_twogroup(VGlut2_group_diffs_2PE, diff_pi_label_silence, VGlut2_color, pi_axes_2PE_genes, "white")
+```
+
+## Difference in Differences {.tabset}
+
+### VGlut1 {.tabset}
+
+```{r 15-VGlut1_pi_diff2x_2PE, message = FALSE, warning = FALSE}
+VGlut1_group_diffs2x_2PE <- cbind.data.frame(VGlut1_group_diffs_2PE$id[1:                                                                             (length(rownames(VGlut1_group_diffs_2PE))/2)],
+                                        VGlut1_group_diffs_2PE$group[1:                                                                          (length(rownames(VGlut1_group_diffs_2PE))/2)],
+                              VGlut1_group_diffs_2PE$PI_diff[(length(rownames(VGlut1_group_diffs_2PE))/2)+1:
+                                                               (length(rownames(VGlut1_group_diffs_2PE))/2)] -
+                                          VGlut1_group_diffs_2PE$PI_diff[1:                                                                         (length(rownames(VGlut1_group_diffs_2PE))/2)])
+
+colnames(VGlut1_group_diffs2x_2PE) <- c("id", "group", "PI_diff")
+
+VGlut1_group_diffs2x_2PE %>%
+  group_by(group) %>%
+  get_summary_stats(PI_diff, type = "mean_se")
+```
+
+### VGlut2
+
+```{r 16-VGlut2_pi_diff2x_2PE, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 4, fig.width = 2}
+VGlut2_group_diffs2x_2PE <- cbind.data.frame(VGlut2_group_diffs_2PE$id[1:                                                                             (length(rownames(VGlut2_group_diffs_2PE))/2)],
+                                        VGlut2_group_diffs_2PE$group[1:                                                                          (length(rownames(VGlut2_group_diffs_2PE))/2)],
+                              VGlut2_group_diffs_2PE$PI_diff[(length(rownames(VGlut2_group_diffs_2PE))/2)+1:
+                                                               (length(rownames(VGlut2_group_diffs_2PE))/2)] -
+                                          VGlut2_group_diffs_2PE$PI_diff[1:                                                                         (length(rownames(VGlut2_group_diffs_2PE))/2)])
+
+colnames(VGlut2_group_diffs2x_2PE) <- c("id", "group", "PI_diff")
+
+VGlut2_group_diffs2x_2PE %>%
+  group_by(group) %>%
+  get_summary_stats(PI_diff, type = "mean_se")
+```
+
+### T-tests {.tabset}
+
+#### VGlut1
+
+```{r 17-VGlut1_pi_diff_ttest, message = FALSE, warning = FALSE}
+t.test(x = VGlut1_group_diffs2x_2PE$PI_diff[VGlut1_group_diffs2x_2PE$group %in% "Gi"], 
+       y = VGlut1_group_diffs2x_2PE$PI_diff[VGlut1_group_diffs2x_2PE$group %in% "mCh"])
+```
+
+#### VGlut2
+
+```{r 18-VGlut2_pi_diff_ttest, message = FALSE, warning = FALSE}
+t.test(x = VGlut2_group_diffs2x_2PE$PI_diff[VGlut2_group_diffs2x_2PE$group %in% "Gi"], 
+       y = VGlut2_group_diffs2x_2PE$PI_diff[VGlut2_group_diffs2x_2PE$group %in% "mCh"])
+```
+
+### Graphs {.tabset}
+
+#### VGlut1
+
+```{r 19-VGlut1_diff_graph_2PE, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.3, fig.height = 3}
+bg_diff(VGlut1_group_diffs2x_2PE, silence_diff_label, VGlut1_color, diff_pi_axes_2PE_genes, "white")
+```
+
+#### VGlut2
+
+```{r 20-VGlut2_diff_graph_2PE, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.3, fig.height = 3}
+bg_diff(VGlut2_group_diffs2x_2PE, silence_diff_label, VGlut2_color, diff_pi_axes_2PE_genes, "white")
+```
+
+# Port Distance metrics
+
+## Difference {.tabset}
+
+### Summary statistics
+
+```{r 21-pd_calculate, message = FALSE, warning = FALSE}
+#saline
+baseline_array_gene_2PE_sal_pd <- transform_pd(data_gene_2PE_sal, "baseline", "PortDistance", 1, 2399)
+treatment_array_gene_2PE_sal_pd <- transform_pd(data_gene_2PE_sal, "treatment", "PortDistance", 1, 2880)
+
+pd_group_gene_2PE_sal <- group_array(data_gene_2PE_sal, 
+                                           baseline_array_gene_2PE_sal_pd, 
+                                           treatment_array_gene_2PE_sal_pd, "pd")
+
+# cno
+baseline_array_gene_2PE_cno_pd <- transform_pd(data_gene_2PE_cno, "baseline", "PortDistance", 1, 2399)
+treatment_array_gene_2PE_cno_pd <- transform_pd(data_gene_2PE_cno, "treatment", "PortDistance", 1, 2880)
+
+pd_group_gene_2PE_cno <- group_array(data_gene_2PE_cno, 
+                                           baseline_array_gene_2PE_cno_pd, 
+                                           treatment_array_gene_2PE_cno_pd, "pd")
+```
+
+#### VGlut1
+
+```{r 22-VGlut1_pd_diff_stats, message = FALSE, warning = FALSE}
+# saline
+VGlut1_group_gene_2PE_sal_pd <- pd_group_gene_2PE_sal[pd_group_gene_2PE_sal$group 
+                                     %in% c("VGlut1 Gi", "VGlut1 mCh"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(VGlut1_group_gene_2PE_sal_pd$time) <- c("Air", "2PE")
+
+VGlut1_group_gene_2PE_sal_pd$group <- factor(VGlut1_group_gene_2PE_sal_pd$group, 
+                                   levels = c("VGlut1 mCh", "VGlut1 Gi"))
+levels(VGlut1_group_gene_2PE_sal_pd$group) <- c("mCh", "Gi")
+
+VGlut1_group_diffs_2PE_sal_pd <- cbind.data.frame(VGlut1_group_gene_2PE_sal_pd$id[1:                                                                             (length(rownames(VGlut1_group_gene_2PE_sal_pd))/2)],
+                                        VGlut1_group_gene_2PE_sal_pd$group[1:                                                                          (length(rownames(VGlut1_group_gene_2PE_sal_pd))/2)],
+                                    rep("SAL", times = length(rownames(VGlut1_group_gene_2PE_sal_pd))/2),
+                               VGlut1_group_gene_2PE_sal_pd$PD[(length(rownames(VGlut1_group_gene_2PE_sal_pd))/2)+1:
+                                                               (length(rownames(VGlut1_group_gene_2PE_sal_pd))/2)] -
+                                          VGlut1_group_gene_2PE_sal_pd$PD[1:                                                                         (length(rownames(VGlut1_group_gene_2PE_sal_pd))/2)])
+colnames(VGlut1_group_diffs_2PE_sal_pd) <- c("id", "group", "time", "PD_diff")
+
+# CNO
+VGlut1_group_gene_2PE_cno_pd <- pd_group_gene_2PE_cno[pd_group_gene_2PE_cno$group 
+                                     %in% c("VGlut1 Gi", "VGlut1 mCh"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(VGlut1_group_gene_2PE_cno_pd$time) <- c("Air", "2PE")
+
+VGlut1_group_gene_2PE_cno_pd$group <- factor(VGlut1_group_gene_2PE_cno_pd$group, 
+                                   levels = c("VGlut1 mCh", "VGlut1 Gi"))
+levels(VGlut1_group_gene_2PE_cno_pd$group) <- c("mCh", "Gi")
+
+VGlut1_group_diffs_2PE_cno_pd <- cbind.data.frame(VGlut1_group_gene_2PE_cno_pd$id[1:                                                                             (length(rownames(VGlut1_group_gene_2PE_cno_pd))/2)],
+                                        VGlut1_group_gene_2PE_cno_pd$group[1:                                                                          (length(rownames(VGlut1_group_gene_2PE_cno_pd))/2)],
+                                    rep("CNO", times = length(rownames(VGlut1_group_gene_2PE_cno_pd))/2),
+                               VGlut1_group_gene_2PE_cno_pd$PD[(length(rownames(VGlut1_group_gene_2PE_cno_pd))/2)+1:
+                                                               (length(rownames(VGlut1_group_gene_2PE_cno_pd))/2)] -
+                                          VGlut1_group_gene_2PE_cno_pd$PD[1:                                                                         (length(rownames(VGlut1_group_gene_2PE_cno_pd))/2)])
+colnames(VGlut1_group_diffs_2PE_cno_pd) <- c("id", "group", "time", "PD_diff")
+
+VGlut1_group_diffs_2PE_pd <- rbind.data.frame(VGlut1_group_diffs_2PE_sal_pd, VGlut1_group_diffs_2PE_cno_pd)
+
+VGlut1_group_diffs_2PE_pd$time <- factor(VGlut1_group_diffs_2PE_pd$time, 
+                                        levels = c("SAL", "CNO"))
+
+VGlut1_group_diffs_2PE_pd %>%
+  group_by(group, time) %>%
+  get_summary_stats(PD_diff, type = "mean_se")
+```
+
+#### VGlut2
+
+```{r 23-VGlut2_pd_diff_stats, message = FALSE, warning = FALSE}
+# saline
+VGlut2_group_gene_2PE_sal_pd <- pd_group_gene_2PE_sal[pd_group_gene_2PE_sal$group 
+                                     %in% c("VGlut2 Gi", "VGlut2 mCh"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(VGlut2_group_gene_2PE_sal_pd$time) <- c("Air", "2PE")
+
+VGlut2_group_gene_2PE_sal_pd$group <- factor(VGlut2_group_gene_2PE_sal_pd$group, 
+                                   levels = c("VGlut2 mCh", "VGlut2 Gi"))
+levels(VGlut2_group_gene_2PE_sal_pd$group) <- c("mCh", "Gi")
+
+VGlut2_group_diffs_2PE_sal_pd <- cbind.data.frame(VGlut2_group_gene_2PE_sal_pd$id[1:                                                                             (length(rownames(VGlut2_group_gene_2PE_sal_pd))/2)],
+                                        VGlut2_group_gene_2PE_sal_pd$group[1:                                                                          (length(rownames(VGlut2_group_gene_2PE_sal_pd))/2)],
+                                    rep("SAL", times = length(rownames(VGlut2_group_gene_2PE_sal_pd))/2),
+                               VGlut2_group_gene_2PE_sal_pd$PD[(length(rownames(VGlut2_group_gene_2PE_sal_pd))/2)+1:
+                                                               (length(rownames(VGlut2_group_gene_2PE_sal_pd))/2)] -
+                                          VGlut2_group_gene_2PE_sal_pd$PD[1:                                                                         (length(rownames(VGlut2_group_gene_2PE_sal_pd))/2)])
+colnames(VGlut2_group_diffs_2PE_sal_pd) <- c("id", "group", "time", "PD_diff")
+
+# CNO
+VGlut2_group_gene_2PE_cno_pd <- pd_group_gene_2PE_cno[pd_group_gene_2PE_cno$group 
+                                     %in% c("VGlut2 Gi", "VGlut2 mCh"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(VGlut2_group_gene_2PE_cno_pd$time) <- c("Air", "2PE")
+
+VGlut2_group_gene_2PE_cno_pd$group <- factor(VGlut2_group_gene_2PE_cno_pd$group, 
+                                   levels = c("VGlut2 mCh", "VGlut2 Gi"))
+levels(VGlut2_group_gene_2PE_cno_pd$group) <- c("mCh", "Gi")
+
+VGlut2_group_diffs_2PE_cno_pd <- cbind.data.frame(VGlut2_group_gene_2PE_cno_pd$id[1:                                                                             (length(rownames(VGlut2_group_gene_2PE_cno_pd))/2)],
+                                        VGlut2_group_gene_2PE_cno_pd$group[1:                                                                          (length(rownames(VGlut2_group_gene_2PE_cno_pd))/2)],
+                                    rep("CNO", times = length(rownames(VGlut2_group_gene_2PE_cno_pd))/2),
+                               VGlut2_group_gene_2PE_cno_pd$PD[(length(rownames(VGlut2_group_gene_2PE_cno_pd))/2)+1:
+                                                               (length(rownames(VGlut2_group_gene_2PE_cno_pd))/2)] -
+                                          VGlut2_group_gene_2PE_cno_pd$PD[1:                                                                         (length(rownames(VGlut2_group_gene_2PE_cno_pd))/2)])
+colnames(VGlut2_group_diffs_2PE_cno_pd) <- c("id", "group", "time", "PD_diff")
+
+VGlut2_group_diffs_2PE_pd <- rbind.data.frame(VGlut2_group_diffs_2PE_sal_pd, VGlut2_group_diffs_2PE_cno_pd)
+
+VGlut2_group_diffs_2PE_pd$time <- factor(VGlut2_group_diffs_2PE_pd$time, 
+                                        levels = c("SAL", "CNO"))
+
+VGlut2_group_diffs_2PE_pd %>%
+  group_by(group, time) %>%
+  get_summary_stats(PD_diff, type = "mean_se")
+```
+
+### Two-way repeated-Measures ANOVA {.tabset}
+
+#### VGlut1 {.tabset}
+
+##### ANOVA
+
+```{r 24-VGlut1_pd_diff_anova_2PE, message = FALSE, warning = FALSE}
+display_anova(VGlut1_group_diffs_2PE_pd, "PD_diff")
+```
+
+##### Pairwise comparisons
+
+```{r 25-VGlut1_pd_diff_pairwise_2PE, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut1_group_diffs_2PE_pd, "PD_diff")
+```
+
+#### VGlut2 {.tabset}
+
+##### ANOVA
+
+```{r 26-VGlut2_pd_diff_anova_2PE, message = FALSE, warning = FALSE}
+display_anova(VGlut2_group_diffs_2PE_pd, "PD_diff")
+```
+
+##### Pairwise comparisons
+
+```{r 27-VGlut2_pd_pairwise_2PE, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut2_group_diffs_2PE_pd, "PD_diff")
+```
+
+### Plots {.tabset}
+
+#### VGlut1
+
+```{r 28-VGlut1_pd_diff_2PE, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.8, fig.width = 2.4}
+bg_twogroup_nobar(VGlut1_group_diffs_2PE_pd, diff_pd_label_silence, VGlut1_color,
+                  pd_axes_2PE_genes, "white", 0)
+```
+
+#### VGlut2
+
+```{r 29-VGlut2_pd_diff_2PE, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.8, fig.width = 2.4}
+bg_twogroup_nobar(VGlut2_group_diffs_2PE_pd, diff_pd_label_silence, VGlut2_color,
+                  pd_axes_2PE_genes, "white", 0)
+```
+
+## Difference in Differences {.tabset}
+
+### VGlut1 {.tabset}
+
+```{r 30-VGlut1_pd_diff2x_2PE, message = FALSE, warning = FALSE}
+VGlut1_group_diffs2x_2PE_pd <- cbind.data.frame(VGlut1_group_diffs_2PE_pd$id[1:                                                                             (length(rownames(VGlut1_group_diffs_2PE_pd))/2)],
+                                        VGlut1_group_diffs_2PE_pd$group[1:                                                                          (length(rownames(VGlut1_group_diffs_2PE_pd))/2)],
+                              VGlut1_group_diffs_2PE_pd$PD_diff[(length(rownames(VGlut1_group_diffs_2PE_pd))/2)+1:
+                                                               (length(rownames(VGlut1_group_diffs_2PE_pd))/2)] -
+                                          VGlut1_group_diffs_2PE_pd$PD_diff[1:                                                                         (length(rownames(VGlut1_group_diffs_2PE_pd))/2)])
+
+colnames(VGlut1_group_diffs2x_2PE_pd) <- c("id", "group", "PD_diff")
+
+VGlut1_group_diffs2x_2PE_pd %>%
+  group_by(group) %>%
+  get_summary_stats(PD_diff, type = "mean_se")
+```
+
+### VGlut2
+
+```{r 31-VGlut2_pd_diff2x_2PE, message = FALSE, warning = FALSE, dev = 'pdf'}
+VGlut2_group_diffs2x_2PE_pd <- cbind.data.frame(VGlut2_group_diffs_2PE_pd$id[1:                                                                             (length(rownames(VGlut2_group_diffs_2PE_pd))/2)],
+                                        VGlut2_group_diffs_2PE_pd$group[1:                                                                          (length(rownames(VGlut2_group_diffs_2PE_pd))/2)],
+                              VGlut2_group_diffs_2PE_pd$PD_diff[(length(rownames(VGlut2_group_diffs_2PE_pd))/2)+1:
+                                                               (length(rownames(VGlut2_group_diffs_2PE_pd))/2)] -
+                                          VGlut2_group_diffs_2PE_pd$PD_diff[1:                                                                         (length(rownames(VGlut2_group_diffs_2PE_pd))/2)])
+
+colnames(VGlut2_group_diffs2x_2PE_pd) <- c("id", "group", "PD_diff")
+
+VGlut2_group_diffs2x_2PE_pd %>%
+  group_by(group) %>%
+  get_summary_stats(PD_diff, type = "mean_se")
+```
+
+### T-tests {.tabset}
+
+#### VGlut1
+
+```{r 32-VGlut1_pd_diff_ttest_2x, message = FALSE, warning = FALSE}
+t.test(x = VGlut1_group_diffs2x_2PE_pd$PD_diff[VGlut1_group_diffs2x_2PE_pd$group %in% "Gi"], 
+       y = VGlut1_group_diffs2x_2PE_pd$PD_diff[VGlut1_group_diffs2x_2PE_pd$group %in% "mCh"])
+```
+
+#### VGlut2
+
+```{r 33-VGlut2_pd_diff_ttest_2x, message = FALSE, warning = FALSE}
+t.test(x = VGlut2_group_diffs2x_2PE_pd$PD_diff[VGlut2_group_diffs2x_2PE_pd$group %in% "Gi"], 
+       y = VGlut2_group_diffs2x_2PE_pd$PD_diff[VGlut2_group_diffs2x_2PE_pd$group %in% "mCh"])
+```
+
+### Graphs {.tabset}
+
+#### VGlut1
+
+```{r 34-VGlut1_diff_graph_2PE_pd, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.2, fig.height = 3}
+bg_diff(VGlut1_group_diffs2x_2PE_pd, "∆ CNO - SAL", VGlut1_color, pd_axes_2PE_diff, pe_colors)
+```
+
+#### VGlut2
+
+```{r 35-VGlut2_diff_graph_2PE_pd, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.2, fig.height = 3}
+bg_diff(VGlut2_group_diffs2x_2PE_pd, "∆ CNO - SAL", VGlut2_color, pd_axes_2PE_diff, pe_colors)
+```
+
+# Heatmap {.tabset}
+
+Generates a heatmap for each group. Sums all groups together at baseline and at treatment, and applies a gaussian smooth filter to both. It then subtracts the baseline from the treatment to identify the difference between treatment and baseline for all groups. 
+
+## SAL {.tabset}
+
+```{r 36-heatmap_generate_sal, message=FALSE, warning=FALSE}
+heatmap_list_sal <- get_heatmap(data_gene_2PE_sal)
+```
+
+## VGlut1 mCh
+
+```{r 37-heatmap_mea_mch_sal, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_sal$`VGlut1-control`)
+```
+
+## VGlut1 Gi
+
+```{r 38-heatmap_mea_gi_sal, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_sal$`VGlut1-Gi`)
+```
+
+## VGlut2 mCh
+
+```{r 39-heatmap_nac_mch_sal, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_sal$`VGlut2-control`)
+```
+
+## VGlut2 Gi
+
+```{r 40-heatmap_nac_gi_sal, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_sal$`VGlut2-Gi`)
+```
+
+## CNO {.tabset}
+
+```{r 41-heatmap_generate_cno, message=FALSE, warning=FALSE}
+heatmap_list_cno <- get_heatmap(data_gene_2PE_cno)
+```
+
+## VGlut1 mCh
+
+```{r 42-heatmap_mea_mch_cno, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_cno$`VGlut1-control`)
+```
+
+## VGlut1 Gi
+
+```{r 43-heatmap_mea_gi_cno, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_cno$`VGlut1-Gi`)
+```
+
+## VGlut2 mCh
+
+```{r 44-heatmap_nac_mch_cno, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_cno$`VGlut2-control`)
+```
+
+## VGlut2 Gi
+
+```{r 45-heatmap_nac_gi_cno, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_cno$`VGlut2-Gi`)
+```

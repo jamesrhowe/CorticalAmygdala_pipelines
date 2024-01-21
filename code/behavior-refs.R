@@ -117,6 +117,7 @@ proj_ot_axes_min <- c(0, 1) # projection min-wise
 ### Open Arm Entries
 topo_entry_axes <- c(0, 25) # topographical pre-post
 proj_entry_axes <- c(0, 25) # projection pre-post
+proj_entry_axes_silence <- c(0, 50) # projection pre-post
 topo_entry_axes_min <- c(0, 8) # topographical min-wise
 proj_entry_axes_min <- c(0, 12) # projection min-wise
 ### Distance
@@ -194,7 +195,7 @@ pd_axes_2PE_diff <- c(-7, 7)
 
 epm_axes_entry_genes <- c(0, 50)
 
-openfield_axes_dist_silence <- c(0, 40)
+openfield_axes_dist_silence <- c(0, 50)
 openfield_axes_dist_silence_epm <- c(0, 50)
 
 openfield_center_axes_genes <- c(0, 0.4)
