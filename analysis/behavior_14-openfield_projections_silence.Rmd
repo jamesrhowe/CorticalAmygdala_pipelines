@@ -1,0 +1,652 @@
+---
+author: "James Howe"
+params:
+  dataset: "projections"
+  path: "data/behavior/projections_silence_openfield/"
+title: "Behavioral analysis: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+# set up paths
+projection_id <- params$dataset
+projection_path <- params$path
+start_min <- params$start_min
+end_min <- params$end_min
+
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+
+projection_groups <- unlist(strsplit(Sys.glob(paste0(projection_path, "SAL/*")),
+                                         paste0(projection_path, "SAL/")))[c(FALSE, TRUE)]
+```
+
+# Load the data
+
+Names have to be given manually in most cases. Also for now copy into console because it does not load due to odd workspace issues. This loads all files in a directory and puts it into the correct format automatically.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+# set up the object with pointers
+data_projection_sal <- vector(mode = "list", length = 4)
+data_projection_sal <- lapply(projection_groups, 
+                        function(x) lapply(Sys.glob(paste0(projection_path, "SAL/", x, "/*")),
+                                           function(y) process_series_openfield(y, "silence")))
+
+data_projection_cno <- vector(mode = "list", length = 4)
+data_projection_cno <- lapply(projection_groups, 
+                        function(x) lapply(Sys.glob(paste0(projection_path, "CNO/", x, "/*")),
+                                           function(y) process_series_openfield(y, "silence")))
+
+# add names to each
+names(data_projection_sal) <- Sys.glob(paste0(projection_path, "SAL/", "*"))
+names(data_projection_sal) <- unlist(strsplit(names(data_projection_sal), 
+                                                  paste0(projection_path, "SAL/")))[c(FALSE, TRUE)]
+
+names(data_projection_cno) <- Sys.glob(paste0(projection_path, "CNO/", "*"))
+names(data_projection_cno) <- unlist(strsplit(names(data_projection_cno), 
+                                                  paste0(projection_path, "CNO/")))[c(FALSE, TRUE)]
+
+for (i in 1:length(projection_groups)){
+  data_projection_sal <- add_custom_names(data_projection_sal, paste0(projection_path, "SAL/"), 
+                                              projection_groups[i], projection_labels[i])
+  data_projection_cno <- add_custom_names(data_projection_cno, paste0(projection_path, "CNO/"), 
+                                              projection_groups[i], projection_labels[i])
+}
+
+data_projection_sal <- list(data_projection_sal$`MeA-control`, data_projection_sal$`MeA-Gi`, 
+                                data_projection_sal$`NAc-control`, data_projection_sal$`NAc-Gi`)
+names(data_projection_sal) <- c("MeA-control", "MeA-Gi", "NAc-control", "NAc-Gi")
+
+data_projection_cno <- list(data_projection_cno$`MeA-control`, data_projection_cno$`MeA-Gi`, 
+                                data_projection_cno$`NAc-control`, data_projection_cno$`NAc-Gi`)
+names(data_projection_cno) <- c("MeA-control", "MeA-Gi", "NAc-control", "NAc-Gi")
+```
+
+# Center Time-based metrics
+
+### Summary statistics
+
+```{r 2-all_centertime_stats, message = FALSE, warning = FALSE}
+projection_sal_array <- transform_openfield_centertime(data_projection_sal, 
+                                                 "full", "Region", 1, 2400)
+
+projection_cno_array <- transform_openfield_centertime(data_projection_cno, 
+                                                 "full", "Region", 1, 2400)
+
+centertime_group_projection <- group_array(data_projection_sal, projection_sal_array, projection_cno_array, "CenterTime")
+```
+
+#### MeA
+
+```{r 3-MeA_centertime_stats, message = FALSE, warning = FALSE}
+MeA_group_projection <- centertime_group_projection[centertime_group_projection$group 
+                                     %in% c("MeA Gi", "MeA mCh"),] %>%
+  gather(key = "time", value = "CenterTime", baseline_CenterTime, treatment_CenterTime) %>%
+  convert_as_factor(group, time)
+levels(MeA_group_projection$time) <- c("SAL", "CNO")
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                  levels = c("MeA mCh", "MeA Gi"))
+levels(MeA_group_projection$group) <- c("mCh", "Gi")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+#### NAc
+
+```{r 4-NAc_centertime_stats, message = FALSE, warning = FALSE}
+NAc_group_projection <- centertime_group_projection[centertime_group_projection$group 
+                                     %in% c("NAc Gi", "NAc mCh"),] %>%
+  gather(key = "time", value = "CenterTime", baseline_CenterTime, treatment_CenterTime) %>%
+  convert_as_factor(group, time)
+levels(NAc_group_projection$time) <- c("SAL", "CNO")
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                  levels = c("NAc mCh", "NAc Gi"))
+levels(NAc_group_projection$group) <- c("mCh", "Gi")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 5-MeA_center_anova, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 6-MeA_center_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "CenterTime")
+```
+
+##### T-test each
+
+```{r 7-MeA_ttest_centertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "mCh" & 
+                                              MeA_group_projection$time == "SAL"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "Gi" & 
+                                         MeA_group_projection$time == "SAL"])
+
+# CNO
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "mCh" & 
+                                              MeA_group_projection$time == "CNO"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "Gi" & 
+                                         MeA_group_projection$time == "CNO"])
+```
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 8-NAc_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 9-NAc_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "CenterTime")
+```
+
+##### T-test each
+
+```{r 10-NAc_ttest_centertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "mCh" & 
+                                              NAc_group_projection$time == "SAL"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "Gi" & 
+                                         NAc_group_projection$time == "SAL"])
+
+# CNO
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "mCh" & 
+                                              NAc_group_projection$time == "CNO"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "Gi" & 
+                                         NAc_group_projection$time == "CNO"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 22-MeA_center_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(MeA_group_projection, "Proportion Time in Center", 
+            c(control_color, mea_color), proj_center_axes, "white")
+```
+
+#### NAc
+
+```{r 23-NAc_center_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(NAc_group_projection, "Proportion Time in Center", 
+            c(control_color, nac_color), proj_center_axes, "white")
+```
+
+# Corner Time-based metrics
+
+### Summary statistics
+
+```{r 13-all_Cornertime_stats, message = FALSE, warning = FALSE}
+projection_sal_array <- transform_openfield_cornertime(data_projection_sal, 
+                                                 "full", "Corner", 1, 2400)
+
+projection_cno_array <- transform_openfield_cornertime(data_projection_cno, 
+                                                 "full", "Corner", 1, 2400)
+
+cornertime_group_projection <- group_array(data_projection_sal, projection_sal_array,
+                                           projection_cno_array, "CornerTime")
+```
+
+#### MeA
+
+```{r 14-MeA_Cornertime_stats, message = FALSE, warning = FALSE}
+MeA_group_projection <- cornertime_group_projection[cornertime_group_projection$group 
+                                     %in% c("MeA Gi", "MeA mCh"),] %>%
+  gather(key = "time", value = "CornerTime", baseline_CornerTime, treatment_CornerTime) %>%
+  convert_as_factor(group, time)
+levels(MeA_group_projection$time) <- c("SAL", "CNO")
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                  levels = c("MeA mCh", "MeA Gi"))
+levels(MeA_group_projection$group) <- c("mCh", "Gi")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+#### NAc
+
+```{r 15-NAc_Cornertime_stats, message = FALSE, warning = FALSE}
+NAc_group_projection <- cornertime_group_projection[cornertime_group_projection$group 
+                                     %in% c("NAc Gi", "NAc mCh"),] %>%
+  gather(key = "time", value = "CornerTime", baseline_CornerTime, treatment_CornerTime) %>%
+  convert_as_factor(group, time)
+levels(NAc_group_projection$time) <- c("SAL", "CNO")
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                  levels = c("NAc mCh", "NAc Gi"))
+levels(NAc_group_projection$group) <- c("mCh", "Gi")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 16-MeA_Corner_anova, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 17-MeA_Corner_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "CornerTime")
+```
+
+##### T-test each
+
+```{r 18-MeA_ttest_Cornertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "mCh" & 
+                                              MeA_group_projection$time == "SAL"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "Gi" & 
+                                         MeA_group_projection$time == "SAL"])
+
+# CNO
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "mCh" & 
+                                              MeA_group_projection$time == "CNO"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "Gi" & 
+                                         MeA_group_projection$time == "CNO"])
+```
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 19-NAc_Corner_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 20-NAc_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "CornerTime")
+```
+
+##### T-test each
+
+```{r 21-NAc_ttest_Cornertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "mCh" & 
+                                              NAc_group_projection$time == "SAL"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "Gi" & 
+                                         NAc_group_projection$time == "SAL"])
+
+# CNO
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "mCh" & 
+                                              NAc_group_projection$time == "CNO"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "Gi" & 
+                                         NAc_group_projection$time == "CNO"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 22-MeA_corner_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(MeA_group_projection, "Proportion Time in Corner", 
+            c(control_color, mea_color), openfield_corner_axes_genes, "white")
+```
+
+#### NAc
+
+```{r 23-NAc_corner_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(NAc_group_projection, "Proportion Time in Corner", 
+            c(control_color, nac_color), openfield_corner_axes_genes, "white")
+```
+
+# Freezing-based metrics
+
+### Summary statistics
+
+```{r 24-all_freezing_stats, message = FALSE, warning = FALSE}
+projection_sal_array <- transform_openfield_mobility(data_projection_sal, 
+                                                 "full", "Freezing", 1, 2400)
+
+projection_cno_array <- transform_openfield_mobility(data_projection_cno, 
+                                                 "full", "Freezing", 1, 2400)
+
+freezing_group_projection <- group_array(data_projection_sal, projection_sal_array, projection_cno_array, "Freezing")
+```
+
+#### MeA
+
+```{r 25-MeA_freezing_stats, message = FALSE, warning = FALSE}
+MeA_group_projection <- freezing_group_projection[freezing_group_projection$group 
+                                     %in% c("MeA Gi", "MeA mCh"),] %>%
+  gather(key = "time", value = "Freezing", baseline_Freezing, treatment_Freezing) %>%
+  convert_as_factor(group, time)
+levels(MeA_group_projection$time) <- c("SAL", "CNO")
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                  levels = c("MeA mCh", "MeA Gi"))
+levels(MeA_group_projection$group) <- c("mCh", "Gi")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(Freezing, type = "mean_se")
+```
+
+#### NAc
+
+```{r 26-NAc_freezing_stats, message = FALSE, warning = FALSE}
+NAc_group_projection <- freezing_group_projection[freezing_group_projection$group 
+                                     %in% c("NAc Gi", "NAc mCh"),] %>%
+  gather(key = "time", value = "Freezing", baseline_Freezing, treatment_Freezing) %>%
+  convert_as_factor(group, time)
+levels(NAc_group_projection$time) <- c("SAL", "CNO")
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                  levels = c("NAc mCh", "NAc Gi"))
+levels(NAc_group_projection$group) <- c("mCh", "Gi")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(Freezing, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 27-MeA_freezing_anova, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "Freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 28-MeA_freezing_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "Freezing")
+```
+
+##### T-test each
+
+```{r 29-MeA_ttest_freezing, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = MeA_group_projection$Freezing[MeA_group_projection$group == "mCh" & 
+                                              MeA_group_projection$time == "SAL"], 
+       y = MeA_group_projection$Freezing[MeA_group_projection$group == "Gi" & 
+                                         MeA_group_projection$time == "SAL"])
+
+# CNO
+t.test(x = MeA_group_projection$Freezing[MeA_group_projection$group == "mCh" & 
+                                              MeA_group_projection$time == "CNO"], 
+       y = MeA_group_projection$Freezing[MeA_group_projection$group == "Gi" & 
+                                         MeA_group_projection$time == "CNO"])
+```
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 30-NAc_freezing_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "Freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 31-NAc_freezing_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "Freezing")
+```
+
+##### T-test each
+
+```{r 32-NAc_ttest_freezing, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = NAc_group_projection$Freezing[NAc_group_projection$group == "mCh" & 
+                                              NAc_group_projection$time == "SAL"], 
+       y = NAc_group_projection$Freezing[NAc_group_projection$group == "Gi" & 
+                                         NAc_group_projection$time == "SAL"])
+
+# CNO
+t.test(x = NAc_group_projection$Freezing[NAc_group_projection$group == "mCh" & 
+                                              NAc_group_projection$time == "CNO"], 
+       y = NAc_group_projection$Freezing[NAc_group_projection$group == "Gi" & 
+                                         NAc_group_projection$time == "CNO"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 33-MeA_freezing_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(MeA_group_projection, "Proportion Time Freezing", 
+            c(control_color, mea_color), openfield_corner_axes_genes, "white")
+```
+
+#### NAc
+
+```{r 34-NAc_freezing_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(NAc_group_projection, "Proportion Time Freezing", 
+            c(control_color, nac_color), openfield_freeze_axes_genes, "white")
+```
+
+# Distance-based metrics
+
+### Summary statistics
+
+```{r 35-all_distance_stats, message = FALSE, warning = FALSE}
+projection_sal_array <- transform_epm_openentry(data_projection_sal, 
+                                          "full", "Distance", 1, 2400)
+
+projection_cno_array <- transform_epm_openentry(data_projection_cno, 
+                                          "full", "Distance", 1, 2400)
+
+distance_group_projection <- group_array(data_projection_sal, projection_sal_array, projection_cno_array, "Distance")
+```
+
+#### MeA
+
+```{r 36-MeA_distance_stats, message = FALSE, warning = FALSE}
+MeA_group_projection <- distance_group_projection[centertime_group_projection$group 
+                                     %in% c("MeA Gi", "MeA mCh"),] %>%
+  gather(key = "time", value = "Distance", baseline_Distance, treatment_Distance) %>%
+  convert_as_factor(group, time)
+levels(MeA_group_projection$time) <- c("SAL", "CNO")
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                  levels = c("MeA mCh", "MeA Gi"))
+levels(MeA_group_projection$group) <- c("mCh", "Gi")
+
+MeA_group_projection$Distance <- MeA_group_projection$Distance / 100
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(Distance, type = "mean_se")
+```
+
+#### NAc
+
+```{r 37-NAc_distance_stats, message = FALSE, warning = FALSE}
+NAc_group_projection <- distance_group_projection[centertime_group_projection$group 
+                                     %in% c("NAc Gi", "NAc mCh"),] %>%
+  gather(key = "time", value = "Distance", baseline_Distance, treatment_Distance) %>%
+  convert_as_factor(group, time)
+levels(NAc_group_projection$time) <- c("SAL", "CNO")
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                  levels = c("NAc mCh", "NAc Gi"))
+levels(NAc_group_projection$group) <- c("mCh", "Gi")
+
+NAc_group_projection$Distance <- NAc_group_projection$Distance / 100
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(Distance, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 38-MeA_distance_anova, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "Distance")
+```
+
+##### Pairwise comparisons
+
+```{r 39-MeA_distance_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "Distance")
+```
+
+##### T-test each
+
+```{r 40-MeA_distance_centertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = MeA_group_projection$Distance[MeA_group_projection$group == "mCh" & 
+                                              MeA_group_projection$time == "SAL"], 
+       y = MeA_group_projection$Distance[MeA_group_projection$group == "Gi" & 
+                                         MeA_group_projection$time == "SAL"])
+
+# CNO
+t.test(x = MeA_group_projection$Distance[MeA_group_projection$group == "mCh" & 
+                                              MeA_group_projection$time == "CNO"], 
+       y = MeA_group_projection$Distance[MeA_group_projection$group == "Gi" & 
+                                         MeA_group_projection$time == "CNO"])
+```
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 41-NAc_distance_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "Distance")
+```
+
+##### Pairwise comparisons
+
+```{r 42-NAc_distance_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "Distance")
+```
+
+##### T-test each
+
+```{r 43-NAc_ttest_centertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = NAc_group_projection$Distance[NAc_group_projection$group == "mCh" & 
+                                              NAc_group_projection$time == "SAL"], 
+       y = NAc_group_projection$Distance[NAc_group_projection$group == "Gi" & 
+                                         NAc_group_projection$time == "SAL"])
+
+# CNO
+t.test(x = NAc_group_projection$Distance[NAc_group_projection$group == "mCh" & 
+                                              NAc_group_projection$time == "CNO"], 
+       y = NAc_group_projection$Distance[NAc_group_projection$group == "Gi" & 
+                                         NAc_group_projection$time == "CNO"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 44-MeA_distance_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(MeA_group_projection, "Distance (m)", 
+            c(control_color, mea_color), openfield_axes_dist_silence, "white")
+```
+
+#### NAc
+
+```{r 45-NAc_distance_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(NAc_group_projection, "Distance (m)", 
+            c(control_color, nac_color), openfield_axes_dist_silence, "white")
+```
+
+# Heatmaps {.tabset}
+
+```{r 46-get_heatmaps, message = FALSE, warning = FALSE}
+sal_heatmap <- get_heatmap_openfield(data_projection_sal, "full")
+cno_heatmap <- get_heatmap_openfield(data_projection_cno, "full")
+```
+
+## MeA {.tabset}
+
+### mCh {.tabset}
+
+#### SAL
+
+```{r 47-MeA_mCh_sal_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(sal_heatmap$`MeA-control`)
+```
+
+#### CNO
+
+```{r 48-MeA_mCh_cno_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(cno_heatmap$`MeA-control`)
+```
+
+### Gi {.tabset}
+
+#### SAL
+
+```{r 49-MeA_Gi_sal_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(sal_heatmap$`MeA-Gi`)
+```
+
+#### CNO
+
+```{r 50-MeA_Gi_cno_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(cno_heatmap$`MeA-Gi`)
+```
+
+## NAc {.tabset}
+
+### mCh {.tabset}
+
+#### SAL
+
+```{r 51-NAc_mCh_sal_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(sal_heatmap$`NAc-control`)
+```
+
+#### CNO
+
+```{r 52-NAc_mCh_cno_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(cno_heatmap$`NAc-control`)
+```
+
+### Gi {.tabset}
+
+#### SAL
+
+```{r 53-NAc_Gi_sal_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(sal_heatmap$`NAc-Gi`)
+```
+
+#### CNO
+
+```{r 54-NAc_Gi_cno_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(cno_heatmap$`NAc-Gi`)
+```

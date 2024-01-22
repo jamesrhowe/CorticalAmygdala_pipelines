@@ -1,0 +1,1497 @@
+---
+author: "James Howe"
+params:
+  dataset: "Projections (OFT)"
+  path: "data/behavior/projections_openfield/"
+title: "Behavioral analysis: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+# set up paths
+projection_id <- params$dataset
+projection_path <- params$path
+start_min <- params$start_min
+end_min <- params$end_min
+
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+
+projection_groups <- unlist(strsplit(Sys.glob(paste0(projection_path, "*")), projection_path))[c(FALSE, TRUE)]
+```
+
+# Load the data
+
+Names have to be given manually in most cases. Also for now copy into console because it does not load due to odd workspace issues. This loads all files in a directory and puts it into the correct format automatically.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+data_projection <- read_stim_data("oft", projection_groups, projection_path, projection_stim_labels)
+
+data_projection <- list(data_projection$`MeA-control`, data_projection$`MeA-stim`, 
+                           data_projection$`NAc-control`, data_projection$`NAc-stim`)
+names(data_projection) <- c("MeA-control", "MeA-stim", "NAc-control", "NAc-stim")
+```
+
+# Center Time-based metrics {.tabset}
+
+## All 5 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 2-center_all5_stats, message = FALSE, warning = FALSE}
+baseline_1_array_projection <- transform_openfield_centertime(data_projection, 
+                                                              "baseline_1", "Region", 1, 1200)
+treatment_1_array_projection <- transform_openfield_centertime(data_projection, 
+                                                     "treatment_1", "Region", 1, 1200)
+baseline_2_array_projection <- transform_openfield_centertime(data_projection, 
+                                                      "baseline_2", "Region", 1, 1200)
+treatment_2_array_projection <- transform_openfield_centertime(data_projection, 
+                                                       "treatment_2", "Region", 1, 1200)
+baseline_3_array_projection <- transform_openfield_centertime(data_projection, 
+                                                      "baseline_3", "Region", 1, 1200)
+
+centertime_group_projection <- group_array_openfield(data_projection, 
+                                             baseline_1_array_projection, 
+                                             treatment_1_array_projection, 
+                                             baseline_2_array_projection,
+                                             treatment_2_array_projection,
+                                             baseline_3_array_projection,
+                                             "CenterTime")
+
+centertime_mins <- transform_openfield_centertime_bymin(data_projection, "Region")
+```
+
+#### NAc
+
+```{r 3-NAc_centertime_stats, message = FALSE, warning = FALSE}
+NAc_group_projection <- centertime_group_projection[centertime_group_projection$group 
+                                     %in% c("NAc ChR2", "NAc eYFP"),] %>%
+  gather(key = "time", value = "CenterTime", 
+         baseline_1_CenterTime, treatment_1_CenterTime, baseline_2_CenterTime,
+         treatment_2_CenterTime, baseline_3_CenterTime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+NAc_group_projection$time <- factor(NAc_group_projection$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                   levels = c("NAc eYFP", "NAc ChR2"))
+levels(NAc_group_projection$group) <- c("eYFP", "ChR2")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+#### MeA
+
+```{r 4-MeA_centertime_stats, message = FALSE, warning = FALSE}
+MeA_group_projection <- centertime_group_projection[centertime_group_projection$group 
+                                     %in% c("MeA ChR2", "MeA eYFP"),] %>%
+  gather(key = "time", value = "CenterTime", 
+         baseline_1_CenterTime, treatment_1_CenterTime, baseline_2_CenterTime,
+         treatment_2_CenterTime, baseline_3_CenterTime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+MeA_group_projection$time <- factor(MeA_group_projection$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                   levels = c("MeA eYFP", "MeA ChR2"))
+levels(MeA_group_projection$group) <- c("eYFP", "ChR2")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 5-NAc_center_anova, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 6-NAc_center_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "CenterTime")
+```
+
+##### T-test each
+
+```{r 7-NAc_center_ttest, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline1"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline1"])
+
+# Treatment1
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Treatment1"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Treatment1"])
+
+# Baseline2
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline2"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline2"])
+
+# Treatment2
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Treatment2"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Treatment2"])
+
+# Baseline3
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline3"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline3"])
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 8-MeA_center_anova, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 9-MeA_center_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "CenterTime")
+```
+
+##### T-test each
+
+```{r 10-MeA_center_ttest, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline1"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline1"])
+
+# Treatment1
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Treatment1"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Treatment1"])
+
+# Baseline2
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline2"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline2"])
+
+# Treatment2
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Treatment2"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Treatment2"])
+
+# Baseline3
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline3"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline3"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 11-MeA_center_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(MeA_group_projection, oft_center_label, mea_color, proj_center_axes, chr2_blue)
+bg_oft_mins(centertime_mins[1:2], oft_center_label, mea_color, proj_center_axes_min, chr2_blue)
+```
+
+#### NAc
+
+```{r 12-NAc_center_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(NAc_group_projection, oft_center_label, nac_color, proj_center_axes, chr2_blue)
+bg_oft_mins(centertime_mins[3:4], oft_center_label, nac_color, proj_center_axes_min, chr2_blue)
+```
+
+## Baseline-Treatment Combined {.tabset}
+
+```{r 13-onoff_centertime_stats, message = FALSE, warning = FALSE}
+centertime_group_projection[,3] <- (centertime_group_projection[,3] + centertime_group_projection[,5] 
+                                    + centertime_group_projection[,7])/3 
+
+centertime_group_projection[,4] <- (centertime_group_projection[,4] + centertime_group_projection[,6])/2 
+centertime_group_projection <- centertime_group_projection[,1:4]
+
+colnames(centertime_group_projection)[3:4] <- c("baseline_centertime", "treatment_centertime")
+```
+
+### Summary statistics {.tabset}
+
+#### NAc
+
+```{r 14-NAc_centertime_stats_prepost, message = FALSE, warning = FALSE}
+NAc_group_projection <- centertime_group_projection[centertime_group_projection$group 
+                                     %in% c("NAc ChR2", "NAc eYFP"),] %>%
+  gather(key = "time", value = "CenterTime", 
+         baseline_centertime, treatment_centertime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) <- c("OFF", "ON")
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                   levels = c("NAc eYFP", "NAc ChR2"))
+levels(NAc_group_projection$group) <- c("eYFP", "ChR2")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+#### MeA
+
+```{r 15-MeA_centertime_stats_prepost, message = FALSE, warning = FALSE}
+MeA_group_projection <- centertime_group_projection[centertime_group_projection$group 
+                                     %in% c("MeA ChR2", "MeA eYFP"),] %>%
+  gather(key = "time", value = "CenterTime", 
+         baseline_centertime, treatment_centertime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) <- c("OFF", "ON")
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                   levels = c("MeA eYFP", "MeA ChR2"))
+levels(MeA_group_projection$group) <- c("eYFP", "ChR2")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 16-NAc_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 17-NAc_center_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "CenterTime")
+```
+
+##### T-test each
+
+```{r 18-NAc_ttest_centertime2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "OFF"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "OFF"])
+
+# ON
+t.test(x = NAc_group_projection$CenterTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "ON"], 
+       y = NAc_group_projection$CenterTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "ON"])
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 19-MeA_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 20-MeA_center_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "CenterTime")
+```
+
+```{r 21-MeA_ttest_centertime2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "OFF"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "OFF"])
+
+# ON
+t.test(x = MeA_group_projection$CenterTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "ON"], 
+       y = MeA_group_projection$CenterTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 22-MeA_center_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(MeA_group_projection, oft_center_label, mea_color, proj_center_axes, chr2_blue)
+```
+
+#### NAc
+
+```{r 23-NAc_center_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(NAc_group_projection, oft_center_label, nac_color, proj_center_axes, chr2_blue)
+```
+
+# Corner Time-based metrics {.tabset}
+
+## All 5 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 24-corner_all5_stats, message = FALSE, warning = FALSE}
+baseline_1_array_projection <- transform_openfield_cornertime(data_projection, 
+                                                              "baseline_1", "Corner", 1, 1200)
+treatment_1_array_projection <- transform_openfield_cornertime(data_projection, 
+                                                     "treatment_1", "Corner", 1, 1200)
+baseline_2_array_projection <- transform_openfield_cornertime(data_projection, 
+                                                      "baseline_2", "Corner", 1, 1200)
+treatment_2_array_projection <- transform_openfield_cornertime(data_projection, 
+                                                       "treatment_2", "Corner", 1, 1200)
+baseline_3_array_projection <- transform_openfield_cornertime(data_projection, 
+                                                      "baseline_3", "Corner", 1, 1200)
+
+cornertime_group_projection <- group_array_openfield(data_projection, 
+                                             baseline_1_array_projection, 
+                                             treatment_1_array_projection, 
+                                             baseline_2_array_projection,
+                                             treatment_2_array_projection,
+                                             baseline_3_array_projection,
+                                             "CornerTime")
+
+cornertime_mins <- transform_openfield_cornertime_bymin(data_projection, "Corner")
+```
+
+#### NAc
+
+```{r 25-NAc_cornertime_stats, message = FALSE, warning = FALSE}
+NAc_group_projection <- cornertime_group_projection[cornertime_group_projection$group 
+                                     %in% c("NAc ChR2", "NAc eYFP"),] %>%
+  gather(key = "time", value = "CornerTime", 
+         baseline_1_CornerTime, treatment_1_CornerTime, baseline_2_CornerTime,
+         treatment_2_CornerTime, baseline_3_CornerTime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+NAc_group_projection$time <- factor(NAc_group_projection$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                   levels = c("NAc eYFP", "NAc ChR2"))
+levels(NAc_group_projection$group) <- c("eYFP", "ChR2")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+#### MeA
+
+```{r 26-MeA_cornertime_stats, message = FALSE, warning = FALSE}
+MeA_group_projection <- cornertime_group_projection[cornertime_group_projection$group 
+                                     %in% c("MeA ChR2", "MeA eYFP"),] %>%
+  gather(key = "time", value = "CornerTime", 
+         baseline_1_CornerTime, treatment_1_CornerTime, baseline_2_CornerTime,
+         treatment_2_CornerTime, baseline_3_CornerTime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+MeA_group_projection$time <- factor(MeA_group_projection$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                   levels = c("MeA eYFP", "MeA ChR2"))
+levels(MeA_group_projection$group) <- c("eYFP", "ChR2")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 27-NAc_corner_anova, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 28-NAc_corner_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "CornerTime")
+```
+
+##### T-test each
+
+```{r 29-NAc_corner_ttest, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline1"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline1"])
+
+# Treatment1
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Treatment1"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Treatment1"])
+
+# Baseline2
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline2"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline2"])
+
+# Treatment2
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Treatment2"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Treatment2"])
+
+# Baseline3
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline3"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline3"])
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 30-MeA_corner_anova, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 31-MeA_corner_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "CornerTime")
+```
+
+##### T-test each
+
+```{r 32-MeA_corner_ttest, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline1"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline1"])
+
+# Treatment1
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Treatment1"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Treatment1"])
+
+# Baseline2
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline2"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline2"])
+
+# Treatment2
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Treatment2"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Treatment2"])
+
+# Baseline3
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline3"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline3"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 33-MeA_corner_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(MeA_group_projection, oft_corner_label, mea_color, proj_corner_axes, chr2_blue)
+bg_oft_mins(cornertime_mins[1:2], oft_corner_label, mea_color, proj_corner_axes_min, chr2_blue)
+```
+
+#### NAc
+
+```{r 34-NAc_corner_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(NAc_group_projection, oft_corner_label, nac_color, proj_corner_axes, chr2_blue)
+bg_oft_mins(cornertime_mins[3:4], oft_corner_label, nac_color, proj_corner_axes_min, chr2_blue)
+```
+
+## Baseline-Treatment Combined {.tabset}
+
+```{r 35-onoff_cornertime_stats, message = FALSE, warning = FALSE}
+cornertime_group_projection[,3] <- (cornertime_group_projection[,3] + cornertime_group_projection[,5] 
+                                    + cornertime_group_projection[,7])/3 
+
+cornertime_group_projection[,4] <- (cornertime_group_projection[,4] + cornertime_group_projection[,6])/2 
+cornertime_group_projection <- cornertime_group_projection[,1:4]
+
+colnames(cornertime_group_projection)[3:4] <- c("baseline_cornertime", "treatment_cornertime")
+```
+
+### Summary statistics {.tabset}
+
+#### NAc
+
+```{r 36-NAc_cornertime_stats_prepost, message = FALSE, warning = FALSE}
+NAc_group_projection <- cornertime_group_projection[cornertime_group_projection$group 
+                                     %in% c("NAc ChR2", "NAc eYFP"),] %>%
+  gather(key = "time", value = "CornerTime", 
+         baseline_cornertime, treatment_cornertime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) <- c("OFF", "ON")
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                   levels = c("NAc eYFP", "NAc ChR2"))
+levels(NAc_group_projection$group) <- c("eYFP", "ChR2")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+#### MeA
+
+```{r 37-MeA_cornertime_stats_prepost, message = FALSE, warning = FALSE}
+MeA_group_projection <- cornertime_group_projection[cornertime_group_projection$group 
+                                     %in% c("MeA ChR2", "MeA eYFP"),] %>%
+  gather(key = "time", value = "CornerTime", 
+         baseline_cornertime, treatment_cornertime) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) <- c("OFF", "ON")
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                   levels = c("MeA eYFP", "MeA ChR2"))
+levels(MeA_group_projection$group) <- c("eYFP", "ChR2")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 38-NAc_corner_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 39-NAc_corner_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "CornerTime")
+```
+
+##### T-test each
+
+```{r 40-NAc_ttest_cornertime2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "OFF"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "OFF"])
+
+# ON
+t.test(x = NAc_group_projection$CornerTime[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "ON"], 
+       y = NAc_group_projection$CornerTime[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "ON"])
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 41-MeA_corner_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 42-MeA_corner_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "CornerTime")
+```
+
+```{r 43-MeA_ttest_cornertime2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "OFF"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "OFF"])
+
+# ON
+t.test(x = MeA_group_projection$CornerTime[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "ON"], 
+       y = MeA_group_projection$CornerTime[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 44-MeA_corner_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(MeA_group_projection, oft_corner_label, mea_color, proj_corner_axes, chr2_blue)
+```
+
+#### NAc
+
+```{r 45-NAc_corner_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(NAc_group_projection, oft_corner_label, nac_color, proj_corner_axes, chr2_blue)
+```
+
+# Freezing-based metrics {.tabset}
+
+## All 5 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 46-freezing_all5_stats, message = FALSE, warning = FALSE}
+baseline_1_array_projection <- transform_openfield_mobility(data_projection, 
+                                                              "baseline_1", "Freezing", 1, 1200)
+treatment_1_array_projection <- transform_openfield_mobility(data_projection, 
+                                                     "treatment_1", "Freezing", 1, 1200)
+baseline_2_array_projection <- transform_openfield_mobility(data_projection, 
+                                                      "baseline_2", "Freezing", 1, 1200)
+treatment_2_array_projection <- transform_openfield_mobility(data_projection, 
+                                                       "treatment_2", "Freezing", 1, 1200)
+baseline_3_array_projection <- transform_openfield_mobility(data_projection, 
+                                                      "baseline_3", "Freezing", 1, 1200)
+
+freezing_group_projection <- group_array_openfield(data_projection, 
+                                             baseline_1_array_projection, 
+                                             treatment_1_array_projection, 
+                                             baseline_2_array_projection,
+                                             treatment_2_array_projection,
+                                             baseline_3_array_projection,
+                                             "Freezing")
+
+freezing_mins <- transform_openfield_mobility_bymin(data_projection, "Freezing")
+```
+
+#### NAc
+
+```{r 47-NAc_freezing_stats, message = FALSE, warning = FALSE}
+NAc_group_projection <- freezing_group_projection[freezing_group_projection$group 
+                                     %in% c("NAc ChR2", "NAc eYFP"),] %>%
+  gather(key = "time", value = "freezing", 
+         baseline_1_Freezing, treatment_1_Freezing, baseline_2_Freezing,
+         treatment_2_Freezing, baseline_3_Freezing) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+NAc_group_projection$time <- factor(NAc_group_projection$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                   levels = c("NAc eYFP", "NAc ChR2"))
+levels(NAc_group_projection$group) <- c("eYFP", "ChR2")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(freezing, type = "mean_se")
+```
+
+#### MeA
+
+```{r 48-MeA_freezing_stats, message = FALSE, warning = FALSE}
+MeA_group_projection <- freezing_group_projection[freezing_group_projection$group 
+                                     %in% c("MeA ChR2", "MeA eYFP"),] %>%
+  gather(key = "time", value = "freezing", 
+         baseline_1_Freezing, treatment_1_Freezing, baseline_2_Freezing,
+         treatment_2_Freezing, baseline_3_Freezing) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+MeA_group_projection$time <- factor(MeA_group_projection$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                   levels = c("MeA eYFP", "MeA ChR2"))
+levels(MeA_group_projection$group) <- c("eYFP", "ChR2")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(freezing, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 49-NAc_freezing_anova, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 50-NAc_freezing_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "freezing")
+```
+
+##### T-test each
+
+```{r 51-NAc_freezing_ttest, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = NAc_group_projection$freezing[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline1"], 
+       y = NAc_group_projection$freezing[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline1"])
+
+# Treatment1
+t.test(x = NAc_group_projection$freezing[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Treatment1"], 
+       y = NAc_group_projection$freezing[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Treatment1"])
+
+# Baseline2
+t.test(x = NAc_group_projection$freezing[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline2"], 
+       y = NAc_group_projection$freezing[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline2"])
+
+# Treatment2
+t.test(x = NAc_group_projection$freezing[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Treatment2"], 
+       y = NAc_group_projection$freezing[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Treatment2"])
+
+# Baseline3
+t.test(x = NAc_group_projection$freezing[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline3"], 
+       y = NAc_group_projection$freezing[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline3"])
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 52-MeA_freezing_anova, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 53-MeA_freezing_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "freezing")
+```
+
+##### T-test each
+
+```{r 54-MeA_freezing_ttest, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = MeA_group_projection$freezing[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline1"], 
+       y = MeA_group_projection$freezing[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline1"])
+
+# Treatment1
+t.test(x = MeA_group_projection$freezing[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Treatment1"], 
+       y = MeA_group_projection$freezing[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Treatment1"])
+
+# Baseline2
+t.test(x = MeA_group_projection$freezing[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline2"], 
+       y = MeA_group_projection$freezing[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline2"])
+
+# Treatment2
+t.test(x = MeA_group_projection$freezing[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Treatment2"], 
+       y = MeA_group_projection$freezing[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Treatment2"])
+
+# Baseline3
+t.test(x = MeA_group_projection$freezing[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline3"], 
+       y = MeA_group_projection$freezing[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline3"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 55-MeA_freezing_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(MeA_group_projection, oft_freeze_label, mea_color, proj_freeze_axes, chr2_blue)
+bg_oft_mins(freezing_mins[1:2], oft_corner_label, mea_color, proj_freeze_axes_min, chr2_blue)
+```
+
+#### NAc
+
+```{r 56-NAc_freezing_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(NAc_group_projection, oft_freeze_label, nac_color, proj_freeze_axes, chr2_blue)
+bg_oft_mins(freezing_mins[3:4], oft_corner_label, nac_color, proj_freeze_axes_min, chr2_blue)
+```
+
+## Baseline-Treatment Combined {.tabset}
+
+```{r 57-onoff_freezing_stats, message = FALSE, warning = FALSE}
+freezing_group_projection[,3] <- (freezing_group_projection[,3] + freezing_group_projection[,5] 
+                                    + freezing_group_projection[,7])/3 
+
+freezing_group_projection[,4] <- (freezing_group_projection[,4] + freezing_group_projection[,6])/2 
+freezing_group_projection <- freezing_group_projection[,1:4]
+
+colnames(freezing_group_projection)[3:4] <- c("baseline_freezing", "treatment_freezing")
+```
+
+### Summary statistics {.tabset}
+
+#### NAc
+
+```{r 58-NAc_freezing_stats_prepost, message = FALSE, warning = FALSE}
+NAc_group_projection <- freezing_group_projection[freezing_group_projection$group 
+                                     %in% c("NAc ChR2", "NAc eYFP"),] %>%
+  gather(key = "time", value = "freezing", 
+         baseline_freezing, treatment_freezing) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) <- c("OFF", "ON")
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                   levels = c("NAc eYFP", "NAc ChR2"))
+levels(NAc_group_projection$group) <- c("eYFP", "ChR2")
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(freezing, type = "mean_se")
+```
+
+#### MeA
+
+```{r 59-MeA_freezing_stats_prepost, message = FALSE, warning = FALSE}
+MeA_group_projection <- freezing_group_projection[freezing_group_projection$group 
+                                     %in% c("MeA ChR2", "MeA eYFP"),] %>%
+  gather(key = "time", value = "freezing", 
+         baseline_freezing, treatment_freezing) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) <- c("OFF", "ON")
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                   levels = c("MeA eYFP", "MeA ChR2"))
+levels(MeA_group_projection$group) <- c("eYFP", "ChR2")
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(freezing, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 60-NAc_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 61-NAc_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "freezing")
+```
+
+##### T-test each
+
+```{r 62-NAc_ttest_freezing2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = NAc_group_projection$freezing[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "OFF"], 
+       y = NAc_group_projection$freezing[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "OFF"])
+
+# ON
+t.test(x = NAc_group_projection$freezing[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "ON"], 
+       y = NAc_group_projection$freezing[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "ON"])
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 63-MeA_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 64-MeA_center_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "freezing")
+```
+
+##### T-tests each
+
+```{r 65-MeA_ttest_freezing2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = MeA_group_projection$freezing[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "OFF"], 
+       y = MeA_group_projection$freezing[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "OFF"])
+
+# ON
+t.test(x = MeA_group_projection$freezing[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "ON"], 
+       y = MeA_group_projection$freezing[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 66-MeA_freezing_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(MeA_group_projection, oft_freeze_label, mea_color, proj_freeze_axes, chr2_blue)
+```
+
+#### NAc
+
+```{r 67-NAc_freezing_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(NAc_group_projection, oft_freeze_label, nac_color, proj_freeze_axes, chr2_blue)
+```
+
+# Distance-based metrics {.tabset}
+
+## All 5 {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 68-distance_all5_stats, message = FALSE, warning = FALSE}
+baseline_1_array_projection <- transform_epm_openentry(data_projection, 
+                                                       "baseline_1", "Distance", 1, 1200)
+treatment_1_array_projection <- transform_epm_openentry(data_projection, 
+                                                       "treatment_1", "Distance", 1, 1200)
+baseline_2_array_projection <- transform_epm_openentry(data_projection, 
+                                                       "baseline_2", "Distance", 1, 1200)
+treatment_2_array_projection <- transform_epm_openentry(data_projection, 
+                                                       "treatment_2", "Distance", 1, 1200)
+baseline_3_array_projection <- transform_epm_openentry(data_projection, 
+                                                       "baseline_3", "Distance", 1, 1200)
+
+distance_group_projection <- group_array_openfield(data_projection, 
+                                             baseline_1_array_projection, 
+                                             treatment_1_array_projection, 
+                                             baseline_2_array_projection,
+                                             treatment_2_array_projection,
+                                             baseline_3_array_projection,
+                                             "Distance")
+
+distance_mins <- transform_openfield_distance_bymin(data_projection, "Distance")
+distance_mins <- lapply(distance_mins, function(x) cbind.data.frame(x[, 1:2], x$Distance / 100))
+```
+
+#### NAc
+
+```{r 69-NAc_distance_stats, message = FALSE, warning = FALSE}
+NAc_group_projection <- distance_group_projection[distance_group_projection$group 
+                                     %in% c("NAc ChR2", "NAc eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_1_Distance, treatment_1_Distance, baseline_2_Distance,
+         treatment_2_Distance, baseline_3_Distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+NAc_group_projection$time <- factor(NAc_group_projection$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                   levels = c("NAc eYFP", "NAc ChR2"))
+levels(NAc_group_projection$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+NAc_group_projection$distance <- NAc_group_projection$distance / 100
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+#### MeA
+
+```{r 70-MeA_distance_stats, message = FALSE, warning = FALSE}
+MeA_group_projection <- distance_group_projection[distance_group_projection$group 
+                                     %in% c("MeA ChR2", "MeA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_1_Distance, treatment_1_Distance, baseline_2_Distance,
+         treatment_2_Distance, baseline_3_Distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) <- c("Baseline1", "Baseline2", "Baseline3", 
+                                       "Treatment1", "Treatment2")
+MeA_group_projection$time <- factor(MeA_group_projection$time, levels = c("Baseline1", "Treatment1",
+                                                                          "Baseline2", "Treatment2",
+                                                                          "Baseline3"))
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                   levels = c("MeA eYFP", "MeA ChR2"))
+levels(MeA_group_projection$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+MeA_group_projection$distance <- MeA_group_projection$distance / 100
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 71-NAc_distance_anova, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 72-NAc_distance_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "distance")
+```
+
+##### T-test each
+
+```{r 73-NAc_distance_ttest, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline1"], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline1"])
+
+# Treatment1
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Treatment1"], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Treatment1"])
+
+# Baseline2
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline2"], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline2"])
+
+# Treatment2
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Treatment2"], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Treatment2"])
+
+# Baseline3
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "Baseline3"], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "Baseline3"])
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 74-MeA_distance_anova, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 75-MeA_distance_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "distance")
+```
+
+##### T-test each
+
+```{r 76-MeA_distance_ttest, message = FALSE, warning = FALSE}
+# Baseline1
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline1"], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline1"])
+
+# Treatment1
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Treatment1"], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Treatment1"])
+
+# Baseline2
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline2"], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline2"])
+
+# Treatment2
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Treatment2"], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Treatment2"])
+
+# Baseline3
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "Baseline3"], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "Baseline3"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 77-MeA_distance_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(MeA_group_projection, oft_dist_label, mea_color, proj_oft_dist_axes, chr2_blue)
+bg_oft_mins(distance_mins[1:2], oft_dist_label, mea_color, topo_oft_dist_axes_min, chr2_blue)
+```
+
+#### NAc
+
+```{r 78-NAc_distance_5x, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+#bg_openfield_5x(NAc_group_projection, oft_dist_label, nac_color, proj_oft_dist_axes, chr2_blue)
+bg_oft_mins(distance_mins[3:4], oft_dist_label, nac_color, topo_oft_dist_axes_min, chr2_blue)
+```
+
+## Baseline-Treatment Combined {.tabset}
+
+```{r 79-onoff_distance_stats, message = FALSE, warning = FALSE}
+distance_group_projection[,3] <- (distance_group_projection[,3] + distance_group_projection[,5] 
+                                    + distance_group_projection[,7])/3 
+
+distance_group_projection[,4] <- (distance_group_projection[,4] + distance_group_projection[,6])/2 
+distance_group_projection <- distance_group_projection[,1:4]
+
+colnames(distance_group_projection)[3:4] <- c("baseline_distance", "treatment_distance")
+```
+
+### Summary statistics {.tabset}
+
+#### NAc
+
+```{r 80-NAc_distance_stats_prepost, message = FALSE, warning = FALSE}
+NAc_group_projection <- distance_group_projection[distance_group_projection$group 
+                                     %in% c("NAc ChR2", "NAc eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_distance, treatment_distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) <- c("OFF", "ON")
+
+NAc_group_projection$group <- factor(NAc_group_projection$group, 
+                                   levels = c("NAc eYFP", "NAc ChR2"))
+levels(NAc_group_projection$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+NAc_group_projection$distance <- NAc_group_projection$distance / 100
+
+NAc_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+#### MeA
+
+```{r 81-MeA_distance_stats_prepost, message = FALSE, warning = FALSE}
+MeA_group_projection <- distance_group_projection[distance_group_projection$group 
+                                     %in% c("MeA ChR2", "MeA eYFP"),] %>%
+  gather(key = "time", value = "distance", 
+         baseline_distance, treatment_distance) %>%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) <- c("OFF", "ON")
+
+MeA_group_projection$group <- factor(MeA_group_projection$group, 
+                                   levels = c("MeA eYFP", "MeA ChR2"))
+levels(MeA_group_projection$group) <- c("eYFP", "ChR2")
+
+# convert to meters
+MeA_group_projection$distance <- MeA_group_projection$distance / 100
+
+MeA_group_projection %>%
+  group_by(group, time) %>%
+  get_summary_stats(distance, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 82-NAc_distance_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(NAc_group_projection, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 83-NAc_distance_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_projection, "distance")
+```
+
+##### T-test each
+
+```{r 84-NAc_ttest_distance2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "OFF"], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "OFF"])
+
+# ON
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == "eYFP" & 
+                                         NAc_group_projection$time == "ON"], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == "ChR2" & 
+                                         NAc_group_projection$time == "ON"])
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 85-MeA_distance_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(MeA_group_projection, "distance")
+```
+
+##### Pairwise comparisons
+
+```{r 86-MeA_distance_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_projection, "distance")
+```
+
+```{r 87-MeA_ttest_distance2, message = FALSE, warning = FALSE}
+# OFF
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "OFF"], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "OFF"])
+
+# ON
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == "eYFP" & 
+                                         MeA_group_projection$time == "ON"], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == "ChR2" & 
+                                         MeA_group_projection$time == "ON"])
+```
+
+### Plots {.tabset}
+
+#### MeA
+
+```{r 88-MeA_distance_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(MeA_group_projection, oft_dist_label, mea_color, proj_oft_dist_axes, chr2_blue)
+```
+
+#### NAc
+
+```{r 89-NAc_distance_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width = 2.4}
+bg_twogroup(NAc_group_projection, oft_dist_label, nac_color, proj_oft_dist_axes, chr2_blue)
+```
+
+# Heatmaps {.tabset}
+
+```{r 90-get_heatmaps, message = FALSE, warning = FALSE}
+full_heatmap <- get_heatmap_openfield(data_projection, "full")
+baseline_heatmap <- get_heatmap_openfield(data_projection, "baseline_all")
+treatment_heatmap <- get_heatmap_openfield(data_projection, "treatment_all")
+
+heatmap_diff <- get_heatmap_openfield_diff(data_projection)
+```
+
+## MeA {.tabset}
+
+### eYFP {.tabset}
+
+#### Full
+
+```{r 91-mea_eyfp_full_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(full_heatmap$`MeA-control`)
+```
+
+#### OFF
+
+```{r 92-mea_eyfp_off_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(baseline_heatmap$`MeA-control`)
+```
+
+#### ON
+
+```{r 93-mea_eyfp_on_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(treatment_heatmap$`MeA-control`)
+```
+
+#### Difference
+
+```{r 94-mea_eyfp_diff_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield_diff(heatmap_diff$`MeA-control`)
+```
+
+### ChR2 {.tabset}
+
+#### Full
+
+```{r 95-mea_chr2_full_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(full_heatmap$`MeA-stim`)
+```
+
+#### OFF
+
+```{r 96-mea_chr2_off_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(baseline_heatmap$`MeA-stim`)
+```
+
+#### ON
+
+```{r 97-mea_chr2_on_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(treatment_heatmap$`MeA-stim`)
+```
+
+#### Difference
+
+```{r 98-mea_chr2_diff_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield_diff(heatmap_diff$`MeA-stim`)
+```
+
+## NAc {.tabset}
+
+### eYFP {.tabset}
+
+#### Full
+
+```{r 99-nac_eyfp_full_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(full_heatmap$`NAc-control`)
+```
+
+#### OFF
+
+```{r 100-nac_eyfp_off_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(baseline_heatmap$`NAc-control`)
+```
+
+#### ON
+
+```{r 101-nac_eyfp_on_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(treatment_heatmap$`NAc-control`)
+```
+
+#### Difference
+
+```{r 102-nac_eyfp_diff_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield_diff(heatmap_diff$`NAc-control`)
+```
+
+### ChR2 {.tabset}
+
+#### Full
+
+```{r 103-nac_chr2_full_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(full_heatmap$`NAc-stim`)
+```
+
+#### OFF
+
+```{r 104-nac_chr2_off_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(baseline_heatmap$`NAc-stim`)
+```
+
+#### ON
+
+```{r 105-nac_chr2_on_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(treatment_heatmap$`NAc-stim`)
+```
+
+#### Difference
+
+```{r 106-nac_chr2_diff_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield_diff(heatmap_diff$`NAc-stim`)
+```
+
+## Scale bars {.tabset}
+
+### Absolute {.tabset}
+
+#### Horizontal
+
+```{r 107-scale_bar_horizontal, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_legend <- plot_heatmap_openfield_legend(treatment_heatmap$`NAc-stim`, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+#### Vertical
+
+```{r 108-scale_bar_vertical, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_legend <- plot_heatmap_openfield_legend(treatment_heatmap$`NAc-stim`, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+### Relative {.tabset}
+
+#### Horizontal
+
+```{r 111-scale_bar_horizontal_diff, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_legend <- plot_heatmap_openfield_legend_diff(heatmap_diff$`NAc-stim`, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+#### Vertical
+
+```{r 112-scale_bar_vertical_diff, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_legend <- plot_heatmap_openfield_legend_diff(heatmap_diff$`NAc-stim`, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
