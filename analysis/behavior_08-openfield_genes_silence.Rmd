@@ -1,0 +1,667 @@
+---
+author: "James Howe"
+params:
+  dataset: "genes"
+  path: "data/behavior/genes_silence_openfield/"
+title: "Behavioral analysis: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+# set up paths
+gene_id <- params$dataset
+gene_path <- params$path
+start_min <- params$start_min
+end_min <- params$end_min
+
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+
+gene_groups <- unlist(strsplit(Sys.glob(paste0(gene_path, "SAL/*")),
+                                        paste0(gene_path, "SAL/")))[c(FALSE, TRUE)]
+```
+
+# Load the data
+
+Names have to be given manually in most cases. Also for now copy into console because it does not load due to odd workspace issues. This loads all files in a directory and puts it into the correct format automatically.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+# set up the object with pointers
+data_gene_sal <- vector(mode = "list", length = 4)
+data_gene_sal <- lapply(gene_groups, 
+                        function(x) lapply(Sys.glob(paste0(gene_path, "SAL/", x, "/*")),
+                                           function(y) process_series_openfield(y, "silence")))
+
+data_gene_cno <- vector(mode = "list", length = 4)
+data_gene_cno <- lapply(gene_groups, 
+                        function(x) lapply(Sys.glob(paste0(gene_path, "CNO/", x, "/*")),
+                                           function(y) process_series_openfield(y, "silence")))
+
+# add names to each
+names(data_gene_sal) <- Sys.glob(paste0(gene_path, "SAL/", "*"))
+names(data_gene_sal) <- unlist(strsplit(names(data_gene_sal), 
+                                                  paste0(gene_path, "SAL/")))[c(FALSE, TRUE)]
+
+names(data_gene_cno) <- Sys.glob(paste0(gene_path, "CNO/", "*"))
+names(data_gene_cno) <- unlist(strsplit(names(data_gene_cno), 
+                                                  paste0(gene_path, "CNO/")))[c(FALSE, TRUE)]
+
+for (i in 1:length(gene_groups)){
+  data_gene_sal <- add_custom_names(data_gene_sal, paste0(gene_path, "SAL/"), 
+                                              gene_groups[i], gene_labels[i])
+  data_gene_cno <- add_custom_names(data_gene_cno, paste0(gene_path, "CNO/"), 
+                                              gene_groups[i], gene_labels[i])
+}
+
+data_gene_sal <- list(data_gene_sal$`VGlut1-control`, data_gene_sal$`VGlut1-Gi`, 
+                                data_gene_sal$`VGlut2-control`, data_gene_sal$`VGlut2-Gi`)
+names(data_gene_sal) <- c("VGlut1-control", "VGlut1-Gi", "VGlut2-control", "VGlut2-Gi")
+
+data_gene_cno <- list(data_gene_cno$`VGlut1-control`, data_gene_cno$`VGlut1-Gi`, 
+                                data_gene_cno$`VGlut2-control`, data_gene_cno$`VGlut2-Gi`)
+names(data_gene_cno) <- c("VGlut1-control", "VGlut1-Gi", "VGlut2-control", "VGlut2-Gi")
+```
+
+# Center Time-based metrics
+
+### Summary statistics
+
+```{r 2-all_centertime_stats, message = FALSE, warning = FALSE}
+gene_sal_array <- transform_openfield_centertime(data_gene_sal, 
+                                                 "full", "Region", 1, 2400)
+
+gene_cno_array <- transform_openfield_centertime(data_gene_cno, 
+                                                 "full", "Region", 1, 2400)
+
+centertime_group_gene <- group_array(data_gene_sal, gene_sal_array, gene_cno_array, "CenterTime")
+```
+
+#### VGlut1
+
+```{r 3-VGlut1_centertime_stats, message = FALSE, warning = FALSE}
+VGlut1_group_gene <- centertime_group_gene[centertime_group_gene$group 
+                                     %in% c("VGlut1 Gi", "VGlut1 mCh"),] %>%
+  gather(key = "time", value = "CenterTime", baseline_CenterTime, treatment_CenterTime) %>%
+  convert_as_factor(group, time)
+levels(VGlut1_group_gene$time) <- c("SAL", "CNO")
+
+VGlut1_group_gene$group <- factor(VGlut1_group_gene$group, 
+                                  levels = c("VGlut1 mCh", "VGlut1 Gi"))
+levels(VGlut1_group_gene$group) <- c("mCh", "Gi")
+
+VGlut1_group_gene %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+#### VGlut2
+
+```{r 4-VGlut2_centertime_stats, message = FALSE, warning = FALSE}
+VGlut2_group_gene <- centertime_group_gene[centertime_group_gene$group 
+                                     %in% c("VGlut2 Gi", "VGlut2 mCh"),] %>%
+  gather(key = "time", value = "CenterTime", baseline_CenterTime, treatment_CenterTime) %>%
+  convert_as_factor(group, time)
+levels(VGlut2_group_gene$time) <- c("SAL", "CNO")
+
+VGlut2_group_gene$group <- factor(VGlut2_group_gene$group, 
+                                  levels = c("VGlut2 mCh", "VGlut2 Gi"))
+levels(VGlut2_group_gene$group) <- c("mCh", "Gi")
+
+VGlut2_group_gene %>%
+  group_by(group, time) %>%
+  get_summary_stats(CenterTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### VGlut1 {.tabset}
+
+##### ANOVA
+
+```{r 5-VGlut1_center_anova, message = FALSE, warning = FALSE}
+display_anova(VGlut1_group_gene, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 6-VGlut1_center_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut1_group_gene, "CenterTime")
+```
+
+##### T-test each
+
+```{r 7-VGlut1_ttest_centertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = VGlut1_group_gene$CenterTime[VGlut1_group_gene$group == "mCh" & 
+                                              VGlut1_group_gene$time == "SAL"], 
+       y = VGlut1_group_gene$CenterTime[VGlut1_group_gene$group == "Gi" & 
+                                         VGlut1_group_gene$time == "SAL"])
+
+# CNO
+t.test(x = VGlut1_group_gene$CenterTime[VGlut1_group_gene$group == "mCh" & 
+                                              VGlut1_group_gene$time == "CNO"], 
+       y = VGlut1_group_gene$CenterTime[VGlut1_group_gene$group == "Gi" & 
+                                         VGlut1_group_gene$time == "CNO"])
+```
+
+#### VGlut2 {.tabset}
+
+##### ANOVA
+
+```{r 8-VGlut2_center_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(VGlut2_group_gene, "CenterTime")
+```
+
+##### Pairwise comparisons
+
+```{r 9-VGlut2_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut2_group_gene, "CenterTime")
+```
+
+##### T-test each
+
+```{r 10-VGlut2_ttest_centertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = VGlut2_group_gene$CenterTime[VGlut2_group_gene$group == "mCh" & 
+                                              VGlut2_group_gene$time == "SAL"], 
+       y = VGlut2_group_gene$CenterTime[VGlut2_group_gene$group == "Gi" & 
+                                         VGlut2_group_gene$time == "SAL"])
+
+# CNO
+t.test(x = VGlut2_group_gene$CenterTime[VGlut2_group_gene$group == "mCh" & 
+                                              VGlut2_group_gene$time == "CNO"], 
+       y = VGlut2_group_gene$CenterTime[VGlut2_group_gene$group == "Gi" & 
+                                         VGlut2_group_gene$time == "CNO"])
+```
+
+### Plots {.tabset}
+
+#### VGlut1
+
+```{r 11-VGlut1_center_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(VGlut1_group_gene, "Proportion Time in Center", 
+                       c(control_color, VGlut1_color), openfield_center_axes_genes, "white")
+```
+
+#### VGlut2
+
+```{r 12-VGlut2_center_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(VGlut2_group_gene, "Proportion Time in Center", 
+                       c(control_color, VGlut2_color), openfield_center_axes_genes, "white")
+```
+
+# Corner Time-based metrics
+
+### Summary statistics
+
+```{r 13-all_cornertime_stats, message = FALSE, warning = FALSE}
+gene_sal_array <- transform_openfield_cornertime(data_gene_sal, 
+                                                 "full", "Corner", 1, 2400)
+
+gene_cno_array <- transform_openfield_cornertime(data_gene_cno, 
+                                                 "full", "Corner", 1, 2400)
+
+cornertime_group_gene <- group_array(data_gene_sal, gene_sal_array, gene_cno_array, "CornerTime")
+```
+
+#### VGlut1
+
+```{r 14-VGlut1_cornertime_stats, message = FALSE, warning = FALSE}
+VGlut1_group_gene <- cornertime_group_gene[cornertime_group_gene$group 
+                                     %in% c("VGlut1 Gi", "VGlut1 mCh"),] %>%
+  gather(key = "time", value = "CornerTime", baseline_CornerTime, treatment_CornerTime) %>%
+  convert_as_factor(group, time)
+levels(VGlut1_group_gene$time) <- c("SAL", "CNO")
+
+VGlut1_group_gene$group <- factor(VGlut1_group_gene$group, 
+                                  levels = c("VGlut1 mCh", "VGlut1 Gi"))
+levels(VGlut1_group_gene$group) <- c("mCh", "Gi")
+
+VGlut1_group_gene %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+#### VGlut2
+
+```{r 15-VGlut2_Cornertime_stats, message = FALSE, warning = FALSE}
+VGlut2_group_gene <- cornertime_group_gene[cornertime_group_gene$group 
+                                     %in% c("VGlut2 Gi", "VGlut2 mCh"),] %>%
+  gather(key = "time", value = "CornerTime", baseline_CornerTime, treatment_CornerTime) %>%
+  convert_as_factor(group, time)
+levels(VGlut2_group_gene$time) <- c("SAL", "CNO")
+
+VGlut2_group_gene$group <- factor(VGlut2_group_gene$group, 
+                                  levels = c("VGlut2 mCh", "VGlut2 Gi"))
+levels(VGlut2_group_gene$group) <- c("mCh", "Gi")
+
+VGlut2_group_gene %>%
+  group_by(group, time) %>%
+  get_summary_stats(CornerTime, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### VGlut1 {.tabset}
+
+##### ANOVA
+
+```{r 16-VGlut1_Corner_anova, message = FALSE, warning = FALSE}
+display_anova(VGlut1_group_gene, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 17-VGlut1_Corner_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut1_group_gene, "CornerTime")
+```
+
+##### T-test each
+
+```{r 18-VGlut1_ttest_Cornertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = VGlut1_group_gene$CornerTime[VGlut1_group_gene$group == "mCh" & 
+                                              VGlut1_group_gene$time == "SAL"], 
+       y = VGlut1_group_gene$CornerTime[VGlut1_group_gene$group == "Gi" & 
+                                         VGlut1_group_gene$time == "SAL"])
+
+# CNO
+t.test(x = VGlut1_group_gene$CornerTime[VGlut1_group_gene$group == "mCh" & 
+                                              VGlut1_group_gene$time == "CNO"], 
+       y = VGlut1_group_gene$CornerTime[VGlut1_group_gene$group == "Gi" & 
+                                         VGlut1_group_gene$time == "CNO"])
+```
+
+#### VGlut2 {.tabset}
+
+##### ANOVA
+
+```{r 19-VGlut2_Corner_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(VGlut2_group_gene, "CornerTime")
+```
+
+##### Pairwise comparisons
+
+```{r 20-VGlut2_open_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut2_group_gene, "CornerTime")
+```
+
+##### T-test each
+
+```{r 21-VGlut2_ttest_Cornertimes2, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = VGlut2_group_gene$CornerTime[VGlut2_group_gene$group == "mCh" & 
+                                              VGlut2_group_gene$time == "SAL"], 
+       y = VGlut2_group_gene$CornerTime[VGlut2_group_gene$group == "Gi" & 
+                                         VGlut2_group_gene$time == "SAL"])
+
+# CNO
+t.test(x = VGlut2_group_gene$CornerTime[VGlut2_group_gene$group == "mCh" & 
+                                              VGlut2_group_gene$time == "CNO"], 
+       y = VGlut2_group_gene$CornerTime[VGlut2_group_gene$group == "Gi" & 
+                                         VGlut2_group_gene$time == "CNO"])
+```
+
+### Plots {.tabset}
+
+#### VGlut1
+
+```{r 22-VGlut1_Corner_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(VGlut1_group_gene, "Proportion Time in Corner", 
+            c(control_color, VGlut1_color), openfield_corner_axes_genes, "white")
+```
+
+#### VGlut2
+
+```{r 23-VGlut2_Corner_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(VGlut2_group_gene, "Proportion Time in Corner", 
+            c(control_color, VGlut2_color), openfield_corner_axes_genes, "white")
+```
+
+# Freezing-based metrics
+
+### Summary statistics
+
+```{r 24-all_freezing_stats, message = FALSE, warning = FALSE}
+gene_sal_array <- transform_openfield_mobility(data_gene_sal, "full", "Freezing", 1, 2400)
+
+gene_cno_array <- transform_openfield_mobility(data_gene_cno, "full", "Freezing", 1, 2400)
+
+freezing_group_gene <- group_array(data_gene_sal, gene_sal_array, gene_cno_array, "Freezing")
+```
+
+#### VGlut1
+
+```{r 25-VGlut1_freezing_stats, message = FALSE, warning = FALSE}
+VGlut1_group_gene <- freezing_group_gene[freezing_group_gene$group 
+                                     %in% c("VGlut1 Gi", "VGlut1 mCh"),] %>%
+  gather(key = "time", value = "Freezing", baseline_Freezing, treatment_Freezing) %>%
+  convert_as_factor(group, time)
+levels(VGlut1_group_gene$time) <- c("SAL", "CNO")
+
+VGlut1_group_gene$group <- factor(VGlut1_group_gene$group, 
+                                  levels = c("VGlut1 mCh", "VGlut1 Gi"))
+levels(VGlut1_group_gene$group) <- c("mCh", "Gi")
+
+VGlut1_group_gene %>%
+  group_by(group, time) %>%
+  get_summary_stats(Freezing, type = "mean_se")
+```
+
+#### VGlut2
+
+```{r 26-VGlut2_freezing_stats, message = FALSE, warning = FALSE}
+VGlut2_group_gene <- freezing_group_gene[freezing_group_gene$group 
+                                     %in% c("VGlut2 Gi", "VGlut2 mCh"),] %>%
+  gather(key = "time", value = "Freezing", baseline_Freezing, treatment_Freezing) %>%
+  convert_as_factor(group, time)
+levels(VGlut2_group_gene$time) <- c("SAL", "CNO")
+
+VGlut2_group_gene$group <- factor(VGlut2_group_gene$group, 
+                                  levels = c("VGlut2 mCh", "VGlut2 Gi"))
+levels(VGlut2_group_gene$group) <- c("mCh", "Gi")
+
+VGlut2_group_gene %>%
+  group_by(group, time) %>%
+  get_summary_stats(Freezing, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### VGlut1 {.tabset}
+
+##### ANOVA
+
+```{r 27-VGlut1_freezing_anova, message = FALSE, warning = FALSE}
+display_anova(VGlut1_group_gene, "Freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 28-VGlut1_freezing_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut1_group_gene, "Freezing")
+```
+
+##### T-test each
+
+```{r 29-VGlut1_ttest_freezing, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = VGlut1_group_gene$Freezing[VGlut1_group_gene$group == "mCh" & 
+                                              VGlut1_group_gene$time == "SAL"], 
+       y = VGlut1_group_gene$Freezing[VGlut1_group_gene$group == "Gi" & 
+                                         VGlut1_group_gene$time == "SAL"])
+
+# CNO
+t.test(x = VGlut1_group_gene$Freezing[VGlut1_group_gene$group == "mCh" & 
+                                              VGlut1_group_gene$time == "CNO"], 
+       y = VGlut1_group_gene$Freezing[VGlut1_group_gene$group == "Gi" & 
+                                         VGlut1_group_gene$time == "CNO"])
+```
+
+#### VGlut2 {.tabset}
+
+##### ANOVA
+
+```{r 30-VGlut2_freezing_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(VGlut2_group_gene, "Freezing")
+```
+
+##### Pairwise comparisons
+
+```{r 31-VGlut2_freezing_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut2_group_gene, "Freezing")
+```
+
+##### T-test each
+
+```{r 32-VGlut2_ttest_freezing, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = VGlut2_group_gene$Freezing[VGlut2_group_gene$group == "mCh" & 
+                                              VGlut2_group_gene$time == "SAL"], 
+       y = VGlut2_group_gene$Freezing[VGlut2_group_gene$group == "Gi" & 
+                                         VGlut2_group_gene$time == "SAL"])
+
+# CNO
+t.test(x = VGlut2_group_gene$Freezing[VGlut2_group_gene$group == "mCh" & 
+                                              VGlut2_group_gene$time == "CNO"], 
+       y = VGlut2_group_gene$Freezing[VGlut2_group_gene$group == "Gi" & 
+                                         VGlut2_group_gene$time == "CNO"])
+```
+
+### Plots {.tabset}
+
+#### VGlut1
+
+```{r 33-VGlut1_freezing_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(VGlut1_group_gene, "Proportion Time Freezing", 
+            c(control_color, VGlut1_color), openfield_corner_axes_genes, "white")
+```
+
+#### VGlut2
+
+```{r 34-VGlut2_freezing_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(VGlut2_group_gene, "Proportion Time Freezing", 
+            c(control_color, VGlut2_color), openfield_freeze_axes_genes, "white")
+```
+
+# Distance-based metrics
+
+### Summary statistics
+
+```{r 35-all_distance_stats, message = FALSE, warning = FALSE}
+gene_sal_array <- transform_epm_openentry(data_gene_sal, "full", "Distance", 1, 2400)
+
+gene_cno_array <- transform_epm_openentry(data_gene_cno, "full", "Distance", 1, 2400)
+
+distance_group_gene <- group_array(data_gene_sal, gene_sal_array, gene_cno_array, "Distance")
+```
+
+#### VGlut1
+
+```{r 36-VGlut1_distance_stats, message = FALSE, warning = FALSE}
+VGlut1_group_gene <- distance_group_gene[distance_group_gene$group 
+                                     %in% c("VGlut1 Gi", "VGlut1 mCh"),] %>%
+  gather(key = "time", value = "Distance", baseline_Distance, treatment_Distance) %>%
+  convert_as_factor(group, time)
+levels(VGlut1_group_gene$time) <- c("SAL", "CNO")
+
+VGlut1_group_gene$group <- factor(VGlut1_group_gene$group, 
+                                  levels = c("VGlut1 mCh", "VGlut1 Gi"))
+levels(VGlut1_group_gene$group) <- c("mCh", "Gi")
+
+VGlut1_group_gene$Distance <- VGlut1_group_gene$Distance / 100
+
+VGlut1_group_gene %>%
+  group_by(group, time) %>%
+  get_summary_stats(Distance, type = "mean_se")
+```
+
+#### VGlut2
+
+```{r 37-VGlut2_distance_stats, message = FALSE, warning = FALSE}
+VGlut2_group_gene <- distance_group_gene[distance_group_gene$group 
+                                     %in% c("VGlut2 Gi", "VGlut2 mCh"),] %>%
+  gather(key = "time", value = "Distance", baseline_Distance, treatment_Distance) %>%
+  convert_as_factor(group, time)
+levels(VGlut2_group_gene$time) <- c("SAL", "CNO")
+
+VGlut2_group_gene$group <- factor(VGlut2_group_gene$group, 
+                                  levels = c("VGlut2 mCh", "VGlut2 Gi"))
+levels(VGlut2_group_gene$group) <- c("mCh", "Gi")
+
+VGlut2_group_gene$Distance <- VGlut2_group_gene$Distance / 100
+
+VGlut2_group_gene %>%
+  group_by(group, time) %>%
+  get_summary_stats(Distance, type = "mean_se")
+```
+
+### Stats {.tabset}
+
+#### VGlut1 {.tabset}
+
+##### ANOVA
+
+```{r 38-VGlut1_distance_anova, message = FALSE, warning = FALSE}
+display_anova(VGlut1_group_gene, "Distance")
+```
+
+##### Pairwise comparisons
+
+```{r 39-VGlut1_distance_pairwise, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut1_group_gene, "Distance")
+```
+
+##### T-test each
+
+```{r 40-VGlut1_ttest_distance, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = VGlut1_group_gene$Distance[VGlut1_group_gene$group == "mCh" & 
+                                              VGlut1_group_gene$time == "SAL"], 
+       y = VGlut1_group_gene$Distance[VGlut1_group_gene$group == "Gi" & 
+                                         VGlut1_group_gene$time == "SAL"])
+
+# CNO
+t.test(x = VGlut1_group_gene$Distance[VGlut1_group_gene$group == "mCh" & 
+                                              VGlut1_group_gene$time == "CNO"], 
+       y = VGlut1_group_gene$Distance[VGlut1_group_gene$group == "Gi" & 
+                                         VGlut1_group_gene$time == "CNO"])
+```
+
+#### VGlut2 {.tabset}
+
+##### ANOVA
+
+```{r 41-VGlut2_distance_anova_prepost, message = FALSE, warning = FALSE}
+display_anova(VGlut2_group_gene, "Distance")
+```
+
+##### Pairwise comparisons
+
+```{r 42-VGlut2_distance_pairwise_prepost, message = FALSE, warning = FALSE}
+pairwise_comp_anova(VGlut2_group_gene, "Distance")
+```
+
+##### T-test each
+
+```{r 43-VGlut2_ttest_distance, message = FALSE, warning = FALSE}
+# SAL
+t.test(x = VGlut2_group_gene$Distance[VGlut2_group_gene$group == "mCh" & 
+                                              VGlut2_group_gene$time == "SAL"], 
+       y = VGlut2_group_gene$Distance[VGlut2_group_gene$group == "Gi" & 
+                                         VGlut2_group_gene$time == "SAL"])
+
+# CNO
+t.test(x = VGlut2_group_gene$Distance[VGlut2_group_gene$group == "mCh" & 
+                                              VGlut2_group_gene$time == "CNO"], 
+       y = VGlut2_group_gene$Distance[VGlut2_group_gene$group == "Gi" & 
+                                         VGlut2_group_gene$time == "CNO"])
+```
+
+### Plots {.tabset}
+
+#### VGlut1
+
+```{r 44-VGlut1_distance_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(VGlut1_group_gene, "Distance (m)", 
+            c(control_color, VGlut1_color), openfield_axes_dist_silence, "white")
+```
+
+#### VGlut2
+
+```{r 45-VGlut2_distance_prepost, message = FALSE, warning = FALSE, dev = "pdf", fig.height = 2.4, fig.width= 2.4}
+bg_twogroup(VGlut2_group_gene, "Distance (m)", 
+            c(control_color, VGlut2_color), openfield_axes_dist_silence, "white")
+```
+
+# Heatmaps {.tabset}
+
+```{r 46-get_heatmaps, message = FALSE, warning = FALSE}
+sal_heatmap <- get_heatmap_openfield(data_gene_sal, "full")
+cno_heatmap <- get_heatmap_openfield(data_gene_cno, "full")
+```
+
+## VGlut1 {.tabset}
+
+### mCh {.tabset}
+
+#### SAL
+
+```{r 47-VGlut1_mCh_sal_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield_diff(sal_heatmap$`VGlut1-control`)
+```
+
+#### CNO
+
+```{r 48-VGlut1_mCh_cno_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield_diff(cno_heatmap$`VGlut1-control`)
+```
+
+### Gi {.tabset}
+
+#### SAL
+
+```{r 49-VGlut1_Gi_sal_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(sal_heatmap$`VGlut1-Gi`)
+```
+
+#### CNO
+
+```{r 50-VGlut1_Gi_cno_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(cno_heatmap$`VGlut1-Gi`)
+```
+
+## VGlut2 {.tabset}
+
+### mCh {.tabset}
+
+#### SAL
+
+```{r 51-VGlut2_mCh_sal_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(sal_heatmap$`VGlut2-control`)
+```
+
+#### CNO
+
+```{r 52-VGlut2_mCh_cno_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(cno_heatmap$`VGlut2-control`)
+```
+
+### Gi {.tabset}
+
+#### SAL
+
+```{r 53-VGlut2_Gi_sal_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(sal_heatmap$`VGlut2-Gi`)
+```
+
+#### CNO
+
+```{r 54-VGlut2_Gi_cno_heatmap, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_heatmap_openfield(cno_heatmap$`VGlut2-Gi`)
+```
+
+## Scale bars {.tabset}
+
+### Horizontal
+
+```{r 55-scale_bar_horizontal, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_legend <- plot_heatmap_openfield_legend(sal_heatmap$`VGlut1-control`, "horizontal")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
+
+### Vertical
+
+```{r 56-scale_bar_vertical, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 3}
+plot_legend <- plot_heatmap_openfield_legend(sal_heatmap$`VGlut1-control`, "vertical")
+
+grid.newpage()
+grid.draw(plot_legend)
+```
