@@ -1,0 +1,163 @@
+---
+author: "James Howe"
+params:
+  input_path: "output/spatial/merged/merged_array.rds"
+  cells_path: "output/sequencing/05-subcluster_process-RNA/GABAergic_processed.rds"
+  clusters_path: "output/sequencing/cluster_lists/05M-GABA_type_clusters.csv"
+  output_path: "output/spatial/merged/"
+title: "Spatial preprocessing: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This notebook is a basic workflow to project specific cell types from glutamatergic and GABAergic neurons down into spatial data.
+
+```{r setup, message = FALSE, warning = FALSE}
+# set up paths
+input <- params$input_path
+cells_input <- params$cells_path
+clusters_input <- params$clusters_path
+output <- params$output_path
+id <- params$dataset
+path <- paste0(input, id)
+output_path <- paste0(output, id)
+
+# import helper scripts
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
+
+# load packages
+require(tidyverse)
+require(Seurat)
+require(SeuratData)
+require(patchwork)
+require(hdf5r)
+require(Matrix.utils)
+require(knitr)
+require(future)
+require(scCustomize)
+require(clustree)
+require(chisq.posthoc.test)
+require(speckle)
+require(ggtree)
+require(pvclust)
+require(dendextend)
+require(heatmap3)
+require(colorRamps)
+
+# set up parallelization, multisession for compatibility purposes, assuming 32GB RAM
+plan("multisession", earlySignal = TRUE, gc = TRUE)
+options(future.globals.maxSize = 32 * 1024 ^ 3)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+## Read in data from step 02
+
+Imports the merged and transformed Seurat objects to project and the Visium object. This object should contain SCT data, all relevant metadata, and it should be barcode- and feature-filtered already for all such objects.
+
+```{r 1-read_integrated_data, message = FALSE, warning = FALSE}
+array <- readRDS(input)
+rna_array <- readRDS(cells_input)
+rna_clusters <- read.csv(clusters_input, row.names = 1)
+
+rna_array <- AddMetaData(rna_array, metadata = rna_clusters$Type, col.name = "Type")
+```
+
+# Project nuclei onto Visium
+
+Clusters nuclei using Seurat's implementation of the Leiden clustering algorithm (see methods for references), which improves upon the more traditional Louvain algorithm. Clustering is performed at a variety of resolutions so that the best can be chosen from among the different results, ensuring optimal cluster assignments prior to downstream segmentation. 
+
+```{r 2-predictions, message = FALSE, warning = FALSE}
+anchors <- FindTransferAnchors(reference = rna_array, 
+                               query = array, 
+                               normalization.method = "SCT", dims = 1:50, npcs = 50)
+
+predictions.assay <- TransferData(anchorset = anchors, 
+                                  refdata = rna_array$Type, 
+                                  prediction.assay = TRUE,
+                                  weight.reduction = array[["pca"]], dims = 1:50, k.weight = 39)
+
+array[["predictions"]] <- predictions.assay
+
+DefaultAssay(array) <- "predictions"
+```
+
+# Visualize predictions
+
+## Scatter {.tabset}
+
+### PCA {.tabset}
+
+```{r 3-pca_markers, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(rownames(array@assays$predictions), function(pred_type) {
+    src <- c(
+        "#### {{pred_type}} {.unnumbered}",
+        "```{r pca-{{pred_type}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'pca', '{{pred_type}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### tSNE {.tabset}
+
+```{r 4-tsne_markers, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(rownames(array@assays$predictions), function(pred_type) {
+    src <- c(
+        "#### {{pred_type}} {.unnumbered}",
+        "```{r tsne-{{pred_type}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'tsne', '{{pred_type}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### UMAP {.tabset}
+
+```{r 5-umap_markers, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(rownames(array@assays$predictions), function(pred_type) {
+    src <- c(
+        "#### {{pred_type}} {.unnumbered}",
+        "```{r umap-{{pred_type}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'umap', '{{pred_type}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Map {.tabset}
+
+```{r 18-type_map, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(rownames(array@assays$predictions), function(pred_type) {
+    src <- c(
+        "### {{pred_type}} {.unnumbered}",
+        "```{r prediction_map-{{pred_type}}, message = FALSE, warning = FALSE}",
+        "SpatialFeaturePlot(array, images = 'slice1.16', features = '{{pred_type}}', pt.size.factor = 25)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`

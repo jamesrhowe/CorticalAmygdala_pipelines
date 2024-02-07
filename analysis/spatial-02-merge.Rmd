@@ -1,0 +1,295 @@
+---
+author: "James Howe"
+params:
+  input_path: "output/spatial/preprocessed/cropped/"
+  output_path: "output/spatial/merged/"
+title: "Spatial sequencing: merging"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This notebook is a basic workflow to go from raw CellRanger ATAC pipeline output to a pre-processed, Signac-formatted dataset with low-quality cells and outliers removed.  Most filtering steps are generally found in other papers, as listed in the methods.
+
+```{r setup, message = FALSE, warning = FALSE}
+# set up paths
+input <- params$input_path
+output <- params$output_path
+id <- params$dataset
+path <- paste0(input, id)
+output_path <- paste0(output, id)
+
+# import helper scripts
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
+
+# load packages
+require(tidyverse)
+require(Seurat)
+require(SeuratData)
+require(SeuratObject)
+require(patchwork)
+require(hdf5r)
+require(Matrix.utils)
+require(knitr)
+require(future)
+require(scCustomize)
+require(clustree)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+# Read in data from step 01
+
+Extracts all of the paths and their dataset names from the outputs of step 1, then puts them into a list for merging.  
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+paths <- Sys.glob(paste0(input, "*"))
+
+array <- rep(list(NULL), length(paths))
+
+for (i in 1:length(paths)){
+  array[[i]] <- readRDS(paths[i])
+  paths[i] <- gsub("output/spatial/preprocessed/cropped/","", paths[i])
+  paths[i] <- gsub("_cropped_array.rds","", paths[i])
+  names(array)[i] <- paths[i]
+}
+
+# show datasets used
+cat(names(array), sep = "\t")
+```
+
+# Merge datasets into single array {.tabset}
+
+This step merges all elements of the list into a single unified Seurat array, with the region of origin and batch information saved. Compare metadata across regions and batches.
+
+```{r 2-merge_data, message = FALSE, warning = FALSE}
+array2 <- list()
+for (i in 2:length(array)){
+    array2[[i-1]] <- array[[i]]
+}
+array <- merge(x= array[[1]], 
+               y = array2, 
+               add.cell.ids = names(array))
+rm(array2)
+
+number_array <- as.factor(str_sub(colnames(array), start = 1, end = 8))
+levels(number_array) <- as.character(c(1:21))
+array <- AddMetaData(array, metadata = str_sub(colnames(array), start = 1, end = 8), col.name = "id")
+array <- AddMetaData(array, metadata = number_array, col.name = "id_number")
+
+plot_merge_array <- cbind.data.frame(array$nCount_Spatial, 
+                               array$nFeature_Spatial,
+                               array$Mito_proportion,
+                               array$Ribo_proportion,
+                               array$id, array$id_number)
+colnames(plot_merge_array) <- c("UMIs", "Genes", "Mito_proportion", "Ribo_proportion", "Slide", "Section")
+
+table(plot_merge_array$Section)
+```
+
+## Total Spots
+
+```{r 3-total_spots, message = FALSE, warning = FALSE, fig.height = 3, fig.width = 6}
+ggplot(plot_merge_array, aes(Section)) +
+       ylab("Total spots") +
+       geom_bar(aes(fill = Section)) + scale_y_continuous(expand = c(0,0)) +
+       scale_fill_manual(values = spatial_colors_section) +
+       theme_classic() +  theme(axis.ticks.x = element_blank(), 
+                                axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+                                legend.position="none")
+```
+
+## Genes/UMIs Scatter
+
+```{r 4-gene_umi_scatter, message = FALSE, warning = FALSE, results = "hide"}
+ggplot(plot_merge_array, aes(UMIs, Genes, colour = Section)) +
+                 geom_point(alpha = 0.5, size = 0.3) +
+                 geom_hline(yintercept = mean(plot_merge_array$Genes), 
+                            colour = 'darkorchid', linetype = 2) +
+                 geom_vline(xintercept = mean(plot_merge_array$UMIs), 
+                            colour = 'forestgreen', linetype = 2) +
+                 guides(colour = guide_legend(override.aes = list(size = 5, alpha = 1))) +
+                 labs(colour = 'Section') + theme_minimal()
+```
+
+## Violin {.tabset}
+
+### Genes
+
+```{r 5-genes_violin, message = FALSE, warning = FALSE, results = "hide", fig.height = 3, fig.width = 6}
+VlnPlot(array, features = 'nFeature_Spatial', group.by = 'id_number', pt.size = 0) +
+    ggtitle('') + xlab('') + ylab("Features (thousands)") + 
+    scale_fill_manual(values = spatial_colors_section) +
+    NoLegend()
+```
+
+### UMIs
+
+```{r 6-umis_violin, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 6}
+VlnPlot(array, features = 'nCount_Spatial', group.by = 'id_number', pt.size = 0) +
+    ggtitle('') + xlab('') + ylab("UMIs (thousands)") +
+    scale_fill_manual(values = spatial_colors_section) +
+    NoLegend()
+```
+
+### Mitochondrial proportion
+
+```{r 7-mito_violin, message = FALSE, warning = FALSE, results = "hide", fig.height = 3, fig.width = 6}
+VlnPlot(array, features = 'Mito_proportion', group.by = 'id_number', pt.size = 0) +
+    ggtitle('') + xlab('') + ylab("Percent Mitochondrial UMIs") +
+    scale_fill_manual(values = spatial_colors_section) +
+    NoLegend()
+```
+
+### Ribosomal proportion
+
+```{r 8-ribo_violin, message = FALSE, warning = FALSE, results = "hide", fig.height = 3, fig.width = 6}
+VlnPlot(array, features = 'Ribo_proportion', group.by = 'id_number', pt.size = 0) +
+    ggtitle('') + xlab('') + ylab("Percent Ribosomal UMIs") +
+    scale_fill_manual(values = spatial_colors_section) +
+    NoLegend()
+```
+
+# Transform data
+
+Data needs to be transformed and then clustered to create a dataset that can be subsetted. 
+
+SCTransform is the best performing normalization method. It uses a variance stabilizing transform based on Pearson residuals to eliminate count depth differences and robustly approximate log-normalization. 5000 genes are selected as highly variable genes to ensure maximum resolution while removing non-informative features.
+
+```{r 9-sctransform, message = FALSE, warning = FALSE}
+# needs conserve.memory = TRUE, or else it crashes R session on laptop
+array <- SCTransform(array, variable.features.n = 5000, residual_type = "pearson", 
+                     conserve.memory = TRUE, return.only.var.genes = FALSE, verbose = FALSE,
+                     assay = "Spatial", vst.flavor = "v2",
+                     vars.to.regress = "Mito_proportion")
+```
+
+# Dimensionality Reduction
+
+## Principal Component Analysis
+
+Runs a principal component analysis on the imported array using Seurat's RunPCA function, returning results for the first 50 principal components. We aim to use all 50 top principal components explaining for downstream clustering. Adding principal components beyond the first 50 has strong diminishing returns and only serves to introduce noise into the reduction in most cases.
+
+```{r 10-pca, message = FALSE, warning = FALSE}
+array <- RunPCA(array, verbose = FALSE)
+
+# create array for downstream plotting, with PCs, total variance, and cumulative variance
+plot_var_array <- cbind.data.frame(c(1:50),
+                                   (array@reductions$pca@stdev)^2
+                                   / array@reductions$pca@misc$total.variance,
+                                   cumsum((array@reductions$pca@stdev)^2
+                                           / array@reductions$pca@misc$total.variance))
+colnames(plot_var_array) <- c("PC", "Proportion_variance", "Cumulative_variance")
+
+cat(paste0("First 50 PCs explain ", round(plot_var_array$Cumulative_variance[50]*100, 1), "% of the variance"))
+```
+
+### Variance Explained
+
+```{r 11-var_explained, message = FALSE, warning = FALSE}
+variance_explained_plot(plot_var_array)
+```
+
+## Visualization (non-linear DR): tSNE and UMAP {.tabset}
+
+The top two principal components are generally unsuitable for visualizing single cell -omics data. As a result, non-linear dimensionality reduction incorporating all relevant top PCs must be used. This is implemented via tSNE or UMAP. Seurat's tSNE implementation is sufficient at default settings. via UMAP, using Seurat's native RunUMAP function, running uwot under the hood. The number of epochs has been increased to 1000 from defaults (because it increases stability), and the min.dist has been raised to 0.5 (because it makes global structure more legible).
+
+```{r 12-tsne_umap, message = FALSE, warning = FALSE}
+array <- RunTSNE(array, verbose = FALSE, dims.use = 1:50)
+array <- RunUMAP(array, verbose = FALSE, dims = 1:50, n.epochs = 1000, min.dist = 0.2)
+```
+
+### UMIs {.tabset}
+
+```{r 13-dr_umis, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r umis-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, '{{dr_type}}', 'nCount_Spatial', c('lightgrey', 'blue'), NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Genes {.tabset}
+
+```{r 14-dr_genes, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r genes-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, '{{dr_type}}', 'nFeature_Spatial', c('lightgrey', 'blue'), NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### % Mito {.tabset}
+
+```{r 15-dr_mito, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r mito-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, '{{dr_type}}', 'Mito_proportion', c('lightgrey', 'blue'), NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### % Ribo {.tabset}
+
+```{r 16-dr_ribo, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r ribo-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, '{{dr_type}}', 'Ribo_proportion', c('lightgrey', 'blue'), NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Batch
+
+```{r 17-dr_batch, message = FALSE, warning = FALSE, results = "hide"}
+DimPlot_scCustom(array, reduction = "umap", group.by = "id") +
+                  xlab("UMAP 1") + ylab("UMAP 2") +
+                  scale_colour_manual(values = spatial_colors_section) +
+                  theme_classic() +
+                  theme(plot.title = element_blank(), legend.text=element_text(size=8)) + 
+                  guides(colour = guide_legend(ncol = 1))
+```
+
+ Save pre-processed matrix
+
+The output can now be passed to the next step of the pipeline, broad cell type classification.
+
+```{r 18-save_output, message = FALSE, warning = FALSE}
+saveRDS(array, file = "output/spatial/merged/merged_array.rds")
+```
+

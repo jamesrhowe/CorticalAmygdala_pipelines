@@ -1,0 +1,503 @@
+---
+author: "James Howe"
+params:
+  input_path: "output/spatial/merged/merged_array.rds"
+  output_path: "output/spatial/merged/"
+title: "Spatial preprocessing: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This notebook is a basic workflow to go from raw CellRanger ATAC pipeline output to a pre-processed, Signac-formatted dataset with low-quality cells and outliers removed.  Most filtering steps are generally found in other papers, as listed in the methods.
+
+```{r setup, message = FALSE, warning = FALSE}
+# set up paths
+input <- params$input_path
+output <- params$output_path
+id <- params$dataset
+path <- paste0(input, id)
+output_path <- paste0(output, id)
+
+# import helper scripts
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
+
+# load packages
+require(tidyverse)
+require(Seurat)
+require(SeuratData)
+require(patchwork)
+require(hdf5r)
+require(Matrix.utils)
+require(knitr)
+require(future)
+require(scCustomize)
+require(clustree)
+require(chisq.posthoc.test)
+require(speckle)
+require(ggtree)
+require(pvclust)
+require(dendextend)
+require(heatmap3)
+require(colorRamps)
+require(reticulate)
+
+# set up parallelization, multisession for compatibility purposes, assuming 32GB RAM
+plan("multisession", earlySignal = TRUE, gc = TRUE)
+options(future.globals.maxSize = 32 * 1024 ^ 3)
+
+#use_virtualenv("r-reticulate")
+use_python("/Users/jhowe6/anaconda3/bin/python", required = TRUE)
+leidenalg <- import("leidenalg")
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+## Read in data from step 02
+
+Imports the merged and transformed Seurat object from step 02. This object should contain SCT data, all relevant metadata, and it should be barcode- and feature-filtered already.
+
+```{r 1-read_integrated_data, message = FALSE, warning = FALSE}
+array <- readRDS(input)
+```
+
+# Cluster nuclei {.tabset}
+
+Clusters nuclei using Seurat's implementation of the Leiden clustering algorithm (see methods for references), which improves upon the more traditional Louvain algorithm. Clustering is performed at a variety of resolutions so that the best can be chosen from among the different results, ensuring optimal cluster assignments prior to downstream segmentation. 
+
+```{r 2-leiden_clustering, message = FALSE, warning = FALSE}
+array <- FindNeighbors(array, dims = 1:50, k.param = 30, verbose = FALSE)
+
+res_index <- c(0.01, seq(0.1, 2, 0.1))
+
+for (i in 1:length(res_index)){
+  array <- FindClusters(array, algorithm = 4, resolution = res_index[i], verbose = TRUE)
+}
+```
+
+## Clustree {.tabset}
+
+### Standard
+
+```{r 3-clustree_standard, message = FALSE, warning = FALSE, fig.height = 8, fig.width = 14}
+clustree(array, prefix = "SCT_snn_res.")
+```
+
+### Stability
+
+```{r 4-clustree_stability, message = FALSE, warning = FALSE, fig.height = 8, fig.width = 14}
+clustree(array, prefix = "SCT_snn_res.", node_colour = "sc3_stability")
+```
+
+## Scatter {.tabset}
+
+### PCA {.tabset}
+
+```{r 5-pca_res, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(res_index, function(res) {
+    src <- c(
+        "#### Res {{res}} {.unnumbered}",
+        "```{r pca-res-{{res}}, message = FALSE, warning = FALSE}",
+        "resolution_plot_formatted(array, 'pca', {{res}}, 'SCT')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### tSNE {.tabset}
+
+```{r 6-tsne_res, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(res_index, function(res) {
+    src <- c(
+        "#### Res {{res}} {.unnumbered}",
+        "```{r tsne-res-{{res}}, message = FALSE, warning = FALSE}",
+        "resolution_plot_formatted(array, 'tsne', {{res}}, 'SCT')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### UMAP {.tabset}
+
+```{r 7-umap_res, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(res_index, function(res) {
+    src <- c(
+        "#### Res {{res}} {.unnumbered}",
+        "```{r umap-res-{{res}}, message = FALSE, warning = FALSE}",
+        "resolution_plot_formatted(array, 'umap', {{res}}, 'SCT')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Annotate clusters
+
+## Select optimal resolution
+
+Optimal resolution can be selected by examining clustering on dimension-reduced data to determine if they match visual clustering. Further, clustree (and its packaged stability metric) can be used to find the highest resolution that does not lose stability, providing an optimal balance between over- and under-clustering. It is difficult to automate this without some degree of supervision or hand-curation. This is mostly to identify large clusters, so there is little need to get extremely specific so long as clusters are coherent.
+
+```{r 8-select_resolution, message = FALSE, warning = FALSE}
+optimal_res <- 0.7
+
+clusters <- array[[paste0("SCT_snn_res.", optimal_res)]]
+array[["seurat_clusters"]] <- NULL
+for (i in 1:11){
+  array[[paste0("SCT_snn_res.", res_index[i])]] <- NULL 
+}
+array <- AddMetaData(array, clusters, col.name = "clusters")
+Idents(array) <- "clusters"
+
+# helps downstrean formatting to regenerate cluster vector from the array vector
+type_clusters_marker <- type_clusters <- as.character(array$clusters)
+
+paste(optimal_res, "is optimal clustering resolution")
+```
+
+## Visualize initial clusters {.tabset}
+
+### Dimension-reduced space {.tabset}
+
+```{r 9-dr_consolidated, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "#### {{tab_name}} {.unnumbered}",
+        "```{r initial_dr-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "DimPlot_scCustom(array, reduction = '{{dr_type}}', group.by = 'ident', colors_use = spatial_colors_initial) + theme_classic() + theme(plot.title = element_blank(), legend.text=element_text(size=8))",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Map {.tabset}
+
+```{r 10-dr_consolidated_spatial, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(array@images), function(image_name) {
+    src <- c(
+        "#### {{image_name}} {.unnumbered}",
+        "```{r initial_map-{{image_name}}, message = FALSE, warning = FALSE}",
+        "SpatialDimPlot(array, images = '{{image_name}}', pt.size.factor = 25)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Find markers
+
+```{r 11-find_markers, message = FALSE, warning = FALSE, results = "hide"}
+
+# find de novo markers, clusters
+marker_type <- markers_sc_wilcox(array, "clusters")
+
+#array <- FindSpatiallyVariableFeatures(array, assay = "SCT", selection.method = "moransi")
+
+markers_list_celltype <- c("Slc17a7", "Slc17a6", # glutamatergic neuron
+                           "Zfp536", "Maml2", # 0
+                           "Satb2", "Col23a1", # 1
+                           "Gulp1", "Adarb2", # 2
+                           "Fign", "Ccbe1", # 3
+                           "Ror1", "Stard13", # 4
+                           "Reln", "Sema3a", # 5
+                           "Meis1", "Gpc5", # 6
+                           "Smoc1", "Chst9", # 7
+                           "Ntng1", "Rmst", # 8
+                           "Ebf1", "Galnt14", # 9
+                           "Vwc2", "Trhr", # 10
+                           "Ebf2", "Kcnip1", # 11
+                           "Etv1", "Grik3", # 12
+                           "Sim1", "Fbn2") # 13
+
+markers_list_spots <- c("Slc17a7", "Slc17a6", # glutamatergic neuron
+                        "Tmem91", # 0
+                        "Baiap3", # 1
+                        "Ptgds", # 2
+                        "Tafa1", # 3
+                        "Car12", # 4
+                        "Mbp", # 5
+                        "Smoc1", # 6
+                        "Tac1", # 7
+                        "Sim1", # 8
+                        "Gm42418", # 9
+                        "Npy", # 10
+                        "Hbb-bt", # 11
+                        "Cartpt") # 12
+
+markers_list_spots <- c("Slc17a7", "Slc17a6", # glutamatergic neuron
+                        "Baiap3", # 1
+                        "Tafa1", # 2
+                        "Meis2", # 3
+                        "Ptgds", # 4
+                        "Gm42418", # 5
+                        "Car12", # 6
+                        "Tmem91", # 7
+                        "Mbp", # 8
+                        "Sim1", # 9
+                        "Col16a1", # 10
+                        "Cartpt") # 11
+
+markers_list <- unique(c(markers_list_celltype, markers_list_spots))
+```
+
+
+```{r 12-classify_cells, message = FALSE, warning = FALSE}
+type_clusters[type_clusters %in% "1"] <- "aplCoA.1"
+type_clusters_marker[type_clusters_marker %in% "1"] <- "Spatial.Baiap3"
+
+type_clusters[type_clusters %in% "2"] <- "pplCoA.1"
+type_clusters_marker[type_clusters_marker %in% "2"] <- "Spatial.Tafa1"
+
+type_clusters[type_clusters %in% "3"] <- "aplCoA.2"
+type_clusters_marker[type_clusters_marker %in% "3"] <- "Spatial.Meis2"
+
+type_clusters[type_clusters %in% "4"] <- "L1.1"
+type_clusters_marker[type_clusters_marker %in% "4"] <- "Spatial.Ptgds"
+
+type_clusters[type_clusters %in% "5"] <- "L1.2"
+type_clusters_marker[type_clusters_marker %in% "5"] <- "Spatial.Gm42418"
+
+type_clusters[type_clusters %in% "6"] <- "pplCoA.2"
+type_clusters_marker[type_clusters_marker %in% "6"] <- "Spatial.Car12"
+
+type_clusters[type_clusters %in% "7"] <- "aplCoA.3"
+type_clusters_marker[type_clusters_marker %in% "7"] <- "Spatial.Tmem91"
+
+type_clusters[type_clusters %in% "8"] <- "OLG"
+type_clusters_marker[type_clusters_marker %in% "8"] <- "Spatial.Mbp"
+
+type_clusters[type_clusters %in% "9"] <- "NLOT"
+type_clusters_marker[type_clusters_marker %in% "9"] <- "Spatial.Sim1"
+
+type_clusters[type_clusters %in% "10"] <- "aplCoA.4"
+type_clusters_marker[type_clusters_marker %in% "10"] <- "Spatial.Col16a1"
+
+type_clusters[type_clusters %in% "11"] <- "aplCoA.5"
+type_clusters_marker[type_clusters_marker %in% "11"] <- "Spatial.Cartpt"
+
+array <- AddMetaData(array, as.factor(type_clusters), col.name = "Type")
+
+array$Type <- factor(array$Type, levels = c("aplCoA.1", "pplCoA.1", "aplCoA.2", 
+                                            "L1.1", "L1.2", "pplCoA.2", "aplCoA.3", 
+                                            "OLG", "NLOT", "aplCoA.4", "aplCoA.5"))
+
+Idents(array) <- "Type"
+
+table(array$Type)
+
+plot_group_array <- cbind.data.frame(array$Type,
+                                     array$id,
+                                     array$id_number)
+colnames(plot_group_array) <- c("Type", "Slice", "Section")
+```
+
+# Visualize consolidated clusters {.tabset}
+
+## Scatter {.tabset}
+
+```{r 13-dr_consolidated_scatter, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- mapply(function(tab_name, dr_type) {
+    src <- c(
+        "## {{tab_name}} {.unnumbered}",
+        "```{r consolidated_cluster-{{tab_name}}, message = FALSE, warning = FALSE}",
+        "cluster_plot_formatted(array, '{{dr_type}}', 'Type', spatial_colors)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Map {.tabset}
+
+```{r 14-dr_consolidated_map, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(array@images), function(image_name) {
+    src <- c(
+        "### {{image_name}} {.unnumbered}",
+        "```{r consolidated_cluster_map-{{image_name}}, message = FALSE, warning = FALSE}",
+        "SpatialDimPlot(array, images = '{{image_name}}', pt.size.factor = 25) + scale_fill_manual(values = spatial_colors)",
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Visualize marker genes {.tabset}
+
+## Scatter {.tabset}
+
+### PCA {.tabset}
+
+```{r 15-pca_markers, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(markers_list, function(marker) {
+    src <- c(
+        "#### {{marker}} {.unnumbered}",
+        "```{r pca-{{marker}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'pca', '{{marker}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### tSNE {.tabset}
+
+```{r 16-tsne_markers, message = FALSE, warning = FALSE, results = "hide", }
+src_list <- lapply(markers_list, function(marker) {
+    src <- c(
+        "#### {{marker}} {.unnumbered}",
+        "```{r tsne-{{marker}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'tsne', '{{marker}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### UMAP {.tabset}
+
+```{r 17-umap_markers, message = FALSE, warning = FALSE, results = "hide", }
+src_list <- lapply(markers_list, function(marker) {
+    src <- c(
+        "#### {{marker}} {.unnumbered}",
+        "```{r umap-{{marker}}, message = FALSE, warning = FALSE}",
+        "feature_plot_formatted(array, 'umap', '{{marker}}', feature_intensity_colors, NA)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Map {.tabset}
+
+```{r 18-marker_map, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(markers_list, function(marker_name) {
+    src <- c(
+        "### {{marker_name}} {.unnumbered}",
+        "```{r marker_map-{{marker_name}}, message = FALSE, warning = FALSE}",
+        "SpatialFeaturePlot(array, images = 'slice1.16', features = '{{marker_name}}', pt.size.factor = 25)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Visualize Cluster Distances
+
+## Dendrogram {.tabset}
+
+### Batch
+
+```{r 39-library_dendrogram, message = FALSE, warning = FALSE, results = "hide"}
+batch_dend <- create_dendrogram(array, as.factor(array$id_number), spatial_colors_section)
+
+plot(batch_dend[[2]], axes = FALSE)
+```
+
+### Type
+
+```{r 40-type_dendrogram, message = FALSE, warning = FALSE, results = "hide"}
+type_dend <- create_dendrogram(array, as.factor(array$Type), spatial_colors)
+
+plot(type_dend[[2]], axes = FALSE)
+```
+
+## Pseudobulk PCA {.tabset}
+
+### Section
+
+```{r 15-pseudobulk_pca_batch, message = FALSE, warning = FALSE, results = "hide"}
+pseudobulk_pca_spatial(array, "id_number", "Section", spatial_colors_section)
+```
+
+### Type
+
+```{r 16-pseudobulk_pca_type, message = FALSE, warning = FALSE, results = "hide"}
+pseudobulk_pca_spatial(array, "Type", "Type", spatial_colors_section)
+```
+
+## Cluster distance heatmap {.tabset}
+
+### Batch {.tabset}
+
+#### Distance
+
+```{r 44-cluster_heatmap_batch_dist, message = FALSE, warning = FALSE, results = "hide", fig.height = 30, fig.width = 30}
+dendrogram_heatmap(batch_dend, method_id = "distance")
+```
+
+#### Correlation
+
+```{r 45-cluster_heatmap_batch_cor, message = FALSE, warning = FALSE, results = "hide", fig.height = 30, fig.width = 30}
+dendrogram_heatmap(batch_dend, method_id = "correlation")
+```
+
+### Type {.tabset}
+
+#### Distance
+
+```{r 46-cluster_heatmap_type_dist, message = FALSE, warning = FALSE, results = "hide", fig.height = 30, fig.width = 30}
+dendrogram_heatmap(type_dend, method_id = "distance")
+```
+
+#### Correlation
+
+```{r 47-cluster_heatmap_type_cor, message = FALSE, warning = FALSE, results = "hide", fig.height = 30, fig.width = 30}
+dendrogram_heatmap(type_dend, method_id = "correlation")
+```
+
+# Save clustered matrix
+
+The output can now be passed to the next step of the pipeline, broad cell type classification.
+
+```{r 17-save_output, message = FALSE, warning = FALSE}
+saveRDS(array, file = "output/spatial/merged/clustered_array.rds")
+```

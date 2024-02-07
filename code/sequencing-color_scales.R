@@ -61,6 +61,19 @@ tissue_colors <- c(neuron_color, # neurons
 
 
 spatial_colors_initial <- qualitative_hcl(11, palette = "dynamic")
+spatial_colors_section <- qualitative_hcl(21, palette = "dynamic")
+
+spatial_colors <- c("#B2182B", # aplCoA.1
+                    "#15273C", # pplCoA.1
+                    "#67001F", # aplCoA.2
+                    "goldenrod1", # L1.1
+                    "darkgoldenrod3", # L1.2
+                    "#5981B1", # pplCoA.2
+                    "#F4A582", # aplCoA.3
+                    "darkorange", # OLG
+                    "#008944", # NLOT
+                    "violetred3", # aplCoA.4
+                    "#FF0800") # aplCoA.5
 
 glut_color <- "#ADD8E6" # Glut, salmon, separated into VG1 and VG2 blue and orange
 glut_type_colors <- c("#B5DFCF", # Glut.1/Zfp536

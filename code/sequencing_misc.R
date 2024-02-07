@@ -210,6 +210,27 @@ pseudobulk_pca <- function(x, identifier, label, colors){
   return(plot)
 }
 
+pseudobulk_pca_spatial <- function(x, identifier, label, colors){
+
+  pseudobulk_array <- AggregateExpression(x, group.by = identifier, assays = "Spatial", slot = "counts", return.seurat = TRUE)
+  pseudobulk_array <- AddMetaData(pseudobulk_array, metadata = as.factor(names(pseudobulk_array$orig.ident)), col.name = label)
+  pseudobulk_array <- NormalizeData(pseudobulk_array, verbose = FALSE) # results are slightly different
+  pseudobulk_array <- FindVariableFeatures(pseudobulk_array, nfeatures = 3000)
+  pseudobulk_array <- ScaleData(pseudobulk_array, verbose = FALSE)
+  pseudobulk_array <- RunPCA(pseudobulk_array, verbose = FALSE, npcs = 2)
+
+  var_explained <- pseudobulk_array@reductions$pca@stdev ^ 2 /
+    sum(matrixStats::rowVars(GetAssayData(pseudobulk_array, assay = "Spatial", slot = "scale.data")))
+  var_explained <- 100 * round(var_explained, 3)
+
+  plot <- DimPlot_scCustom(pseudobulk_array, reduction = 'pca', group.by = label, pt.size = 5) +
+    xlab(paste0("PC 1 (", var_explained[1], "%)")) + ylab(paste0("PC 2 (", var_explained[2], "%)")) +
+    scale_colour_manual(values = colors) +
+    theme_classic() +
+    theme(plot.title = element_blank(), legend.text=element_text(size=8))
+  return(plot)
+}
+
 vg1vg2_coexpression_stats <- function(x, region){
 
   subset_array <- x[, as.factor(x$Region) %in% region]

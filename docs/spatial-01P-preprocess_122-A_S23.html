@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Spatial preprocessing: 122-A_S23</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Spatial preprocessing: 122-A_S23</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">18 January, 2024</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-01-18
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestreeb97cf7a929d00dde59cdd19e4480c136d4c12e91targetblankb97cf7aa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/b97cf7a929d00dde59cdd19e4480c136d4c12e91" target="_blank">b97cf7a</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestreeb97cf7a929d00dde59cdd19e4480c136d4c12e91targetblankb97cf7aa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/b97cf7a929d00dde59cdd19e4480c136d4c12e91" target="_blank">b97cf7a</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/rnascope/
+    Ignored:    data/sequencing/
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/08A-merge_rd1_ATAC.Rmd
+    Untracked:  analysis/behavior_03-projections.Rmd
+    Untracked:  analysis/behavior_04-projections_silencing_tmt.Rmd
+    Untracked:  analysis/behavior_05-projections_silencing_2PE.Rmd
+    Untracked:  analysis/behavior_06-genes_silencing_tmt.Rmd
+    Untracked:  analysis/behavior_07-genes_silencing_2PE.Rmd
+    Untracked:  analysis/behavior_09-epm_topography.Rmd
+    Untracked:  analysis/behavior_10-epm_projections.Rmd
+    Untracked:  analysis/behavior_12-openfield_projections.Rmd
+    Untracked:  analysis/behavior_13-openfield_genes_silence.Rmd
+    Untracked:  analysis/behavior_14-openfield_projections_silence.Rmd
+    Untracked:  analysis/behavior_15-epm_genes_silence.Rmd
+    Untracked:  analysis/behavior_16-epm_projections_silence.Rmd
+    Untracked:  analysis/projections.Rmd
+    Untracked:  analysis/rnascope.Rmd
+    Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02D-Neuron_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02E-reprocess_Glut_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02F-reprocess_GABA_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02G-Glut_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-03A-merge_filtered_RNA.Rmd
+    Untracked:  analysis/sequencing-03B-initial_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04-initial_deg.Rmd
+    Untracked:  analysis/sequencing-04A-reprocess_Neuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04B-reprocess_Nonneuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04C-Neuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04D-Nonneuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05C-reprocess_Astro_RNA.Rmd
+    Untracked:  analysis/sequencing-05L-Glut_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05M-GABA_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05N-Astro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05O-Macro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05P-NFOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05Q-MOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05R-ABC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05S-VLMC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05T-Immune_classification+labeling_RNA.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Astro.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_GABAergic.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Glutamatergic.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Microglia.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Neuron.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Nonneuron.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_OLG.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_OPC.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_VLMC.Rmd
+    Untracked:  analysis/sequencing-06A-merged_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
+    Untracked:  analysis/sequencing-06B-merged_deg_discovery_RNA.Rmd
+    Untracked:  analysis/sequencing-07A-preprocess_aplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07B-preprocess_aplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07C-preprocess_aplCoA-2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07D-preprocess_pplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07E-preprocess_pplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07F-preprocess_pplCoA-2_ATAC.Rmd
+    Untracked:  analysis/spatial-01A-preprocess_039-A_S18.Rmd
+    Untracked:  analysis/spatial-01B-preprocess_039-B_S19.Rmd
+    Untracked:  analysis/spatial-01C-preprocess_042-A_S22.Rmd
+    Untracked:  analysis/spatial-01D-preprocess_061-D_S1.Rmd
+    Untracked:  analysis/spatial-01E-preprocess_062-B_S2.Rmd
+    Untracked:  analysis/spatial-01F-preprocess_063-A_S4.Rmd
+    Untracked:  analysis/spatial-01G-preprocess_063-B_S5.Rmd
+    Untracked:  analysis/spatial-01H-preprocess_063-D_S7.Rmd
+    Untracked:  analysis/spatial-01I-preprocess_105-A_S8.Rmd
+    Untracked:  analysis/spatial-01J-preprocess_105-B_S9.Rmd
+    Untracked:  analysis/spatial-01K-preprocess_106-B_S11.Rmd
+    Untracked:  analysis/spatial-01L-preprocess_106-C_S12.Rmd
+    Untracked:  analysis/spatial-01M-preprocess_107-A_S15.Rmd
+    Untracked:  analysis/spatial-01N-preprocess_107-B_S16.Rmd
+    Untracked:  analysis/spatial-01O-preprocess_108-A_S13.Rmd
+    Untracked:  analysis/spatial-01P-preprocess_122-A_S23.Rmd
+    Untracked:  code/sequencing-color_scales.R
+    Untracked:  code/sequencing-plot_functions.R
+    Untracked:  code/sequencing_misc.R
+    Untracked:  output/sequencing/
+    Untracked:  output/spatial/
+
+Unstaged changes:
+    Modified:   analysis/sequencing-02A-merge_rd1_RNA.Rmd
+    Modified:   analysis/sequencing-03-initial_classification.Rmd
+    Modified:   analysis/sequencing-05A-reprocess_Glut_RNA.Rmd
+    Modified:   code/behavior-refs.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This notebook is a basic workflow to go from raw CellRanger ATAC
+pipeline output to a pre-processed, Signac-formatted dataset with
+low-quality cells and outliers removed. Most filtering steps are
+generally found in other papers, as listed in the methods.</p>
+<pre class="r"><code># set up paths
+input &lt;- params$input_path
+output &lt;- params$output_path
+id &lt;- params$dataset
+path &lt;- paste0(input, id)
+output_path &lt;- paste0(output, id)
+
+# import helper scripts
+source(&quot;code/sequencing_misc.R&quot;)
+source(&quot;code/sequencing-color_scales.R&quot;)
+source(&quot;code/sequencing-plot_functions.R&quot;)
+
+# load packages
+require(tidyverse)
+require(Seurat)
+require(SeuratData)
+require(patchwork)
+require(hdf5r)
+require(Matrix.utils)
+require(knitr)
+require(future)
+require(scCustomize)
+require(clustree)
+
+# set up parallelization, multisession for compatibility purposes, assuming 32GB RAM
+plan(&quot;multisession&quot;, earlySignal = TRUE, gc = TRUE)
+options(future.globals.maxSize = 32 * 1024 ^ 3)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = &#39;pdf&#39;)</code></pre>
+</div>
+<div id="load-the-data" class="section level1">
+<h1>Load the data</h1>
+<p>Reads in the singlecell.csv file generated by CellRanger ATAC
+containing metadata from the pipeline useful for QC steps. Generates
+initial pre-QC (but post-CellRanger cell calling) metrics, a knee plot
+(for observation of the general per-cell library complexity), and a peak
+targeting plot (to determine relationship between per-cell library
+complexity and peak enrichment).</p>
+<div id="read-in-data" class="section level2 tabset">
+<h2 class="tabset">Read in data</h2>
+<pre class="r"><code>array &lt;- Load10X_Spatial(path)</code></pre>
+</div>
+</div>
+<div id="examine-metrics" class="section level1 tabset">
+<h1 class="tabset">Examine metrics</h1>
+<div id="complexity" class="section level2 tabset">
+<h2 class="tabset">Complexity</h2>
+<div id="scatter" class="section level3">
+<h3>Scatter</h3>
+<pre class="r"><code># Store pre-filter population metrics for plotting
+plot_complex_array &lt;- cbind.data.frame(array$nCount_Spatial, 
+                                       array$nFeature_Spatial, 
+                                       array$nFeature_Spatial &gt; 1)
+colnames(plot_complex_array) &lt;- c(&quot;UMIs&quot;, &quot;Genes&quot;, &quot;Include all&quot;)
+
+filter_plot(plot_complex_array, &quot;Genes&quot;, &quot;UMIs&quot;, &quot;Include all&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/2-complexity_plot-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="histogram" class="section level3 tabset">
+<h3 class="tabset">Histogram</h3>
+<div id="genes" class="section level4">
+<h4>Genes</h4>
+<pre class="r"><code>filter_histogram(plot_complex_array, &quot;Genes&quot;, &quot;Include all&quot;, 20, 0)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/3-complexity_histogram_genes-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="umis" class="section level4">
+<h4>UMIs</h4>
+<pre class="r"><code>filter_histogram(plot_complex_array, &quot;UMIs&quot;, &quot;Include all&quot;, 100, 0)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/4-complexity_histogram_features-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="map" class="section level3 tabset">
+<h3 class="tabset">Map</h3>
+<div id="umis-1" class="section level4">
+<h4>UMIs</h4>
+<pre class="r"><code>SpatialFeaturePlot(array, features = &quot;nCount_Spatial&quot;, pt.size.factor = 5) + 
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/5-complexity_map_umis-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="genes-1" class="section level4">
+<h4>Genes</h4>
+<pre class="r"><code>SpatialFeaturePlot(array, features = &quot;nFeature_Spatial&quot;, pt.size.factor = 5) + 
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/6-complexity_map_genes-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="mitochondrial-reads" class="section level2 tabset">
+<h2 class="tabset">Mitochondrial reads</h2>
+<div id="scatter-1" class="section level3">
+<h3>Scatter</h3>
+<pre class="r"><code># add non-nuclear read proportion metadata
+Mito_proportion &lt;- Matrix::colSums(array[grepl(&quot;^mt-|-mt-&quot;, rownames(array)),]) / array$nCount_Spatial * 100
+array &lt;- AddMetaData(array, Mito_proportion, col.name = &quot;Mito_proportion&quot;)
+
+plot_mito_array &lt;- cbind.data.frame(array$nCount_Spatial, 
+                                    array$Mito_proportion,
+                                    array$Mito_proportion &lt;= 100)
+colnames(plot_mito_array) &lt;- c(&quot;UMIs&quot;, &quot;Mito_proportion&quot;, &quot;Include all&quot;)
+
+filter_plot(plot_mito_array, &quot;UMIs&quot;, &quot;Mito_proportion&quot;, &quot;Include all&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/7-mito_plot-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="histogram-1" class="section level3">
+<h3>Histogram</h3>
+<pre class="r"><code>filter_histogram(plot_mito_array, &quot;Mito_proportion&quot;, &quot;Include all&quot;, .5, 50)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/8-mito_histogram-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="map-1" class="section level3">
+<h3>Map</h3>
+<pre class="r"><code>SpatialFeaturePlot(array, features = &quot;Mito_proportion&quot;, pt.size.factor = 5) + 
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/9-mito_map-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="ribosomal-reads" class="section level2">
+<h2>Ribosomal reads</h2>
+<div id="scatter-2" class="section level3">
+<h3>Scatter</h3>
+<pre class="r"><code># add non-nuclear read proportion metadata
+Ribo_proportion &lt;- Matrix::colSums(array[grepl(&quot;rpl|rps&quot;, rownames(array)),]) / array$nCount_Spatial * 100
+array &lt;- AddMetaData(array, Ribo_proportion, col.name = &quot;Ribo_proportion&quot;)
+
+plot_ribo_array &lt;- cbind.data.frame(array$nCount_Spatial, 
+                                    array$Ribo_proportion,
+                                    array$Ribo_proportion &lt;= 100)
+colnames(plot_ribo_array) &lt;- c(&quot;UMIs&quot;, &quot;Ribo_proportion&quot;, &quot;Include all&quot;)
+
+filter_plot(plot_ribo_array, &quot;UMIs&quot;, &quot;Ribo_proportion&quot;, &quot;Include all&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/10-ribo_plot-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="histogram-2" class="section level3">
+<h3>Histogram</h3>
+<pre class="r"><code>filter_histogram(plot_ribo_array, &quot;Ribo_proportion&quot;, &quot;Include all&quot;, .01, 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/11-mito_histogram-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="map-2" class="section level3">
+<h3>Map</h3>
+<pre class="r"><code>SpatialFeaturePlot(array, features = &quot;Ribo_proportion&quot;, pt.size.factor = 5) + 
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/12-complexity_map_umis-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="transform-data" class="section level1">
+<h1>Transform data</h1>
+<p>Data needs to be transformed and then clustered to create a dataset
+that can be subsetted.</p>
+<p>SCTransform is the best performing normalization method. It uses a
+variance stabilizing transform based on Pearson residuals to eliminate
+count depth differences and robustly approximate log-normalization. 5000
+genes are selected as highly variable genes to ensure maximum resolution
+while removing non-informative features.</p>
+<pre class="r"><code># needs conserve.memory = TRUE, or else it crashes R session on laptop
+array &lt;- SCTransform(array, variable.features.n = 5000, residual_type = &quot;pearson&quot;, 
+                     conserve.memory = TRUE, return.only.var.genes = TRUE, verbose = FALSE,
+                     assay = &quot;Spatial&quot;)</code></pre>
+</div>
+<div id="dimensionality-reduction" class="section level1">
+<h1>Dimensionality Reduction</h1>
+<div id="principal-component-analysis" class="section level2">
+<h2>Principal Component Analysis</h2>
+<p>Runs a principal component analysis on the imported array using
+Seurat’s RunPCA function, returning results for the first 50 principal
+components. We aim to use all 50 top principal components explaining for
+downstream clustering. Adding principal components beyond the first 50
+has strong diminishing returns and only serves to introduce noise into
+the reduction in most cases.</p>
+<pre class="r"><code>array &lt;- RunPCA(array, verbose = FALSE)
+
+# create array for downstream plotting, with PCs, total variance, and cumulative variance
+plot_var_array &lt;- cbind.data.frame(c(1:50),
+                                   (array@reductions$pca@stdev)^2
+                                   / array@reductions$pca@misc$total.variance,
+                                   cumsum((array@reductions$pca@stdev)^2
+                                           / array@reductions$pca@misc$total.variance))
+colnames(plot_var_array) &lt;- c(&quot;PC&quot;, &quot;Proportion_variance&quot;, &quot;Cumulative_variance&quot;)
+
+cat(paste0(&quot;First 50 PCs explain &quot;, round(plot_var_array$Cumulative_variance[50]*100, 1), &quot;% of the variance&quot;))</code></pre>
+<pre><code>First 50 PCs explain 25.9% of the variance</code></pre>
+<div id="variance-explained" class="section level3">
+<h3>Variance Explained</h3>
+<pre class="r"><code>variance_explained_plot(plot_var_array)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/15-var_explained-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="visualization-non-linear-dr-tsne-and-umap"
+class="section level2 tabset">
+<h2 class="tabset">Visualization (non-linear DR): tSNE and UMAP</h2>
+<p>The top two principal components are generally unsuitable for
+visualizing single cell -omics data. As a result, non-linear
+dimensionality reduction incorporating all relevant top PCs must be
+used. This is implemented via tSNE or UMAP. Seurat’s tSNE implementation
+is sufficient at default settings. via UMAP, using Seurat’s native
+RunUMAP function, running uwot under the hood. The number of epochs has
+been increased to 1000 from defaults (because it increases stability),
+and the min.dist has been raised to 0.5 (because it makes global
+structure more legible).</p>
+<pre class="r"><code>array &lt;- RunTSNE(array, verbose = FALSE, dims.use = 1:50)
+array &lt;- RunUMAP(array, verbose = FALSE, dims = 1:50, n.epochs = 1000, min.dist = 0.1)</code></pre>
+<div id="umis-2" class="section level3 tabset">
+<h3 class="tabset">UMIs</h3>
+<pre class="r"><code>src_list &lt;- mapply(function(tab_name, dr_type) {
+    src &lt;- c(
+        &quot;#### {{tab_name}} {.unnumbered}&quot;,
+        &quot;```{r umis-{{tab_name}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;feature_plot_formatted(array, &#39;{{dr_type}}&#39;, &#39;nCount_Spatial&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="pca" class="section level4 unnumbered">
+<h4 class="unnumbered">PCA</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;nCount_Spatial&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umis-PCA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tsne" class="section level4 unnumbered">
+<h4 class="unnumbered">tSNE</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;nCount_Spatial&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umis-tSNE-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="umap" class="section level4 unnumbered">
+<h4 class="unnumbered">UMAP</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;nCount_Spatial&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umis-UMAP-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="genes-2" class="section level3 tabset">
+<h3 class="tabset">Genes</h3>
+<pre class="r"><code>src_list &lt;- mapply(function(tab_name, dr_type) {
+    src &lt;- c(
+        &quot;#### {{tab_name}} {.unnumbered}&quot;,
+        &quot;```{r genes-{{tab_name}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;feature_plot_formatted(array, &#39;{{dr_type}}&#39;, &#39;nFeature_Spatial&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="pca-1" class="section level4 unnumbered">
+<h4 class="unnumbered">PCA</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;nFeature_Spatial&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/genes-PCA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tsne-1" class="section level4 unnumbered">
+<h4 class="unnumbered">tSNE</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;nFeature_Spatial&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/genes-tSNE-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="umap-1" class="section level4 unnumbered">
+<h4 class="unnumbered">UMAP</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;nFeature_Spatial&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/genes-UMAP-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="mito" class="section level3 tabset">
+<h3 class="tabset">% Mito</h3>
+<pre class="r"><code>src_list &lt;- mapply(function(tab_name, dr_type) {
+    src &lt;- c(
+        &quot;#### {{tab_name}} {.unnumbered}&quot;,
+        &quot;```{r mito-{{tab_name}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;feature_plot_formatted(array, &#39;{{dr_type}}&#39;, &#39;Mito_proportion&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="pca-2" class="section level4 unnumbered">
+<h4 class="unnumbered">PCA</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Mito_proportion&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/mito-PCA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tsne-2" class="section level4 unnumbered">
+<h4 class="unnumbered">tSNE</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Mito_proportion&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/mito-tSNE-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="umap-2" class="section level4 unnumbered">
+<h4 class="unnumbered">UMAP</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Mito_proportion&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/mito-UMAP-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="ribo" class="section level3 tabset">
+<h3 class="tabset">% Ribo</h3>
+<pre class="r"><code>src_list &lt;- mapply(function(tab_name, dr_type) {
+    src &lt;- c(
+        &quot;#### {{tab_name}} {.unnumbered}&quot;,
+        &quot;```{r ribo-{{tab_name}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;feature_plot_formatted(array, &#39;{{dr_type}}&#39;, &#39;Ribo_proportion&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="pca-3" class="section level4 unnumbered">
+<h4 class="unnumbered">PCA</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Ribo_proportion&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/ribo-PCA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tsne-3" class="section level4 unnumbered">
+<h4 class="unnumbered">tSNE</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Ribo_proportion&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/ribo-tSNE-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="umap-3" class="section level4 unnumbered">
+<h4 class="unnumbered">UMAP</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Ribo_proportion&#39;, c(&#39;lightgrey&#39;, &#39;blue&#39;), NA)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/ribo-UMAP-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="cluster-nuclei" class="section level1 tabset">
+<h1 class="tabset">Cluster nuclei</h1>
+<p>Clusters nuclei using Seurat’s implementation of the Leiden
+clustering algorithm (see methods for references), which improves upon
+the more traditional Louvain algorithm. Clustering is performed at a
+variety of resolutions so that the best can be chosen from among the
+different results, ensuring optimal cluster assignments prior to
+downstream segmentation.</p>
+<pre class="r"><code>array &lt;- FindNeighbors(array, dims = 1:50, k.param = 30, verbose = FALSE)
+
+res_index &lt;- c(0.01, seq(0.1, 2, 0.1))
+for (i in 1:length(res_index)){
+  array &lt;- FindClusters(array, method = 4, resolution = res_index[i], verbose = FALSE)
+}</code></pre>
+<div id="clustree" class="section level2 tabset">
+<h2 class="tabset">Clustree</h2>
+<div id="standard" class="section level3">
+<h3>Standard</h3>
+<pre class="r"><code>clustree(array, prefix = &quot;SCT_snn_res.&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/22-clustree_standard-1.pdf" width="1344" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="stability" class="section level3">
+<h3>Stability</h3>
+<pre class="r"><code>clustree(array, prefix = &quot;SCT_snn_res.&quot;, node_colour = &quot;sc3_stability&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/23-clustree_stability-1.pdf" width="1344" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="scatter-3" class="section level2 tabset">
+<h2 class="tabset">Scatter</h2>
+<div id="pca-4" class="section level3 tabset">
+<h3 class="tabset">PCA</h3>
+<pre class="r"><code>src_list &lt;- lapply(res_index, function(res) {
+    src &lt;- c(
+        &quot;#### Res {{res}} {.unnumbered}&quot;,
+        &quot;```{r pca-res-{{res}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;resolution_plot_formatted(array, &#39;pca&#39;, {{res}}, &#39;SCT&#39;)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="res-0.01" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.01</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.01, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.01-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.3" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.4" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.5" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.6" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.7" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.8" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.9" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-0.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.3" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.4" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.5" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.6" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.7" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.8" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.9" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-1.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/pca-res-2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="tsne-4" class="section level3 tabset">
+<h3 class="tabset">tSNE</h3>
+<pre class="r"><code>src_list &lt;- lapply(res_index, function(res) {
+    src &lt;- c(
+        &quot;#### Res {{res}} {.unnumbered}&quot;,
+        &quot;```{r tsne-res-{{res}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;resolution_plot_formatted(array, &#39;tsne&#39;, {{res}}, &#39;SCT&#39;)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="res-0.01-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.01</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.01, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.01-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.1-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.2-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.3-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.4-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.5-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.6-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.7-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.8-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.9-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-0.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.1-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.2-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.3-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.4-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.5-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.6-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.7-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.8-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.9-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-1.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-2-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/tsne-res-2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="umap-4" class="section level3 tabset">
+<h3 class="tabset">UMAP</h3>
+<pre class="r"><code>src_list &lt;- lapply(res_index, function(res) {
+    src &lt;- c(
+        &quot;#### Res {{res}} {.unnumbered}&quot;,
+        &quot;```{r umap-res-{{res}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;resolution_plot_formatted(array, &#39;umap&#39;, {{res}}, &#39;SCT&#39;)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="res-0.01-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.01</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.01, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.01-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.1-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.2-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.3-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.4-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.5-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.6-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.7-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.8-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.9-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-0.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.1-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.2-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.3-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.4-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.5-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.6-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.7-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.8-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.9-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-1.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-2-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/umap-res-2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="map-3" class="section level2 tabset">
+<h2 class="tabset">Map</h2>
+<pre class="r"><code>src_list &lt;- lapply(res_index, function(res) {
+    src &lt;- c(
+        &quot;### Res {{res}} {.unnumbered}&quot;,
+        &quot;```{r map-res-{{res}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.{{res}}&#39;, label.size = 3)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="res-0.01-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.01</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.01&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.01-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.1-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.1</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.1&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.2-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.2</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.2&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.3-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.3</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.3&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.4-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.4</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.4&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.5-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.5</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.5&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.6-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.6</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.6&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.7-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.7</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.7&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.8-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.8</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.8&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.9-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 0.9</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.0.9&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-0.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.1-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.1</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.1&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.2-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.2</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.2&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.3-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.3</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.3&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.4-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.4</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.4&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.5-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.5</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.5&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.6-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.6</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.6&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.7-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.7</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.7&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.8-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.8</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.8&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1.9-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 1.9</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.1.9&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-1.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-2-3" class="section level3 unnumbered">
+<h3 class="unnumbered">Res 2</h3>
+<pre class="r"><code>SpatialDimPlot(array, label = TRUE, pt.size.factor = 5, 
+                        group.by = &#39;SCT_snn_res.2&#39;, label.size = 3)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/map-res-2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="cut-down-to-plcoa" class="section level1 tabset">
+<h1 class="tabset">Cut down to plCoA</h1>
+<div id="cropped-region" class="section level2">
+<h2>Cropped region</h2>
+<pre class="r"><code>front_bound &lt;- 70
+back_bound &lt;- 96
+top_bound &lt;- 212
+bottom_bound &lt;- 1000
+
+SpatialDimPlot(array, pt.size.factor = 4,
+               cells.highlight = WhichCells(array, 
+                                            expression = slice1_imagecol &gt; front_bound &amp; 
+                                                         slice1_imagecol &lt; back_bound &amp; 
+                                                         slice1_imagerow &gt; top_bound &amp;
+                                                         slice1_imagerow &lt; bottom_bound))</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/28-map_plCoA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="zoomed-clusters" class="section level2">
+<h2>Zoomed clusters</h2>
+<pre class="r"><code>cropped_array &lt;- subset(array, slice1_imagecol &gt; front_bound &amp; 
+                               slice1_imagecol &lt; back_bound &amp; 
+                               slice1_imagerow &gt; top_bound &amp;
+                               slice1_imagerow &lt; bottom_bound)
+
+SpatialDimPlot(cropped_array, pt.size.factor = 25, crop = TRUE)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/29-zoom_plCoA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="plcoa-features" class="section level2 tabset">
+<h2 class="tabset">plCoA features</h2>
+<div id="genes-3" class="section level3">
+<h3>Genes</h3>
+<pre class="r"><code>SpatialFeaturePlot(cropped_array, features = &quot;nFeature_Spatial&quot;, pt.size.factor = 25) + 
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/30-complexity_map_genes_cropped-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="umis-3" class="section level3">
+<h3>UMIs</h3>
+<pre class="r"><code>SpatialFeaturePlot(cropped_array, features = &quot;nCount_Spatial&quot;, pt.size.factor = 25) + 
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/31-complexity_map_umis_cropped-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mito-proportion" class="section level3">
+<h3>Mito proportion</h3>
+<pre class="r"><code>SpatialFeaturePlot(cropped_array, features = &quot;Mito_proportion&quot;, pt.size.factor = 25) + 
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/32-mito_map_cropped-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ribo-proportion" class="section level3">
+<h3>Ribo proportion</h3>
+<pre class="r"><code>SpatialFeaturePlot(cropped_array, features = &quot;Ribo_proportion&quot;, pt.size.factor = 25) + 
+  theme(legend.position = &quot;right&quot;)</code></pre>
+<embed src="figure/spatial-01P-preprocess_122-A_S23.Rmd/33-ribo_map_cropped-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="save-arrays" class="section level1">
+<h1>Save arrays</h1>
+<pre class="r"><code>saveRDS(array, file = paste0(output_path, &quot;full_array.rds&quot;))
+saveRDS(cropped_array, file = paste0(output_path, &quot;cropped_array.rds&quot;))</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.1.2
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Los_Angeles
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base     
+
+other attached packages:
+ [1] clustree_0.5.0      ggraph_2.1.0        scCustomize_1.1.3  
+ [4] future_1.33.0       knitr_1.44          Matrix.utils_0.9.7 
+ [7] Matrix_1.6-1.1      hdf5r_1.3.9         patchwork_1.1.3    
+[10] SeuratObject_4.1.4  Seurat_4.4.0        lubridate_1.9.3    
+[13] forcats_1.0.0       stringr_1.5.0       dplyr_1.1.3        
+[16] purrr_1.0.2         readr_2.1.4         tidyr_1.3.0        
+[19] tibble_3.2.1        ggplot2_3.4.3       tidyverse_2.0.0    
+[22] matrixStats_1.0.0   colorspace_2.1-0    farver_2.1.1       
+[25] colorjam_0.0.27.900 jamba_0.0.96.900    viridis_0.6.4      
+[28] viridisLite_0.4.2   workflowr_1.7.1    
+
+loaded via a namespace (and not attached):
+  [1] RcppAnnoy_0.0.21       splines_4.3.1          later_1.3.1           
+  [4] polyclip_1.10-6        janitor_2.2.0          lifecycle_1.0.3       
+  [7] rprojroot_2.0.3        globals_0.16.2         processx_3.8.2        
+ [10] lattice_0.21-9         MASS_7.3-60            backports_1.4.1       
+ [13] magrittr_2.0.3         plotly_4.10.2          sass_0.4.7            
+ [16] rmarkdown_2.25         jquerylib_0.1.4        yaml_2.3.7            
+ [19] httpuv_1.6.11          sctransform_0.4.0      sp_2.1-0              
+ [22] spatstat.sparse_3.0-2  reticulate_1.32.0      cowplot_1.1.1         
+ [25] pbapply_1.7-2          RColorBrewer_1.1-3     abind_1.4-5           
+ [28] Rtsne_0.16             tweenr_2.0.2           git2r_0.32.0          
+ [31] circlize_0.4.15        ggrepel_0.9.3          irlba_2.3.5.1         
+ [34] listenv_0.9.0          spatstat.utils_3.0-3   goftest_1.2-3         
+ [37] spatstat.random_3.1-6  fitdistrplus_1.1-11    parallelly_1.36.0     
+ [40] leiden_0.4.3           codetools_0.2-19       ggforce_0.4.1         
+ [43] tidyselect_1.2.0       shape_1.4.6            spatstat.explore_3.2-3
+ [46] jsonlite_1.8.7         ellipsis_0.3.2         tidygraph_1.2.3       
+ [49] progressr_0.14.0       ggridges_0.5.4         survival_3.5-7        
+ [52] tools_4.3.1            ica_1.0-3              Rcpp_1.0.11           
+ [55] glue_1.6.2             gridExtra_2.3          xfun_0.40             
+ [58] withr_2.5.1            BiocManager_1.30.22    fastmap_1.1.1         
+ [61] fansi_1.0.4            callr_3.7.3            digest_0.6.33         
+ [64] timechange_0.2.0       R6_2.5.1               mime_0.12             
+ [67] ggprism_1.0.4          scattermore_1.2        tensor_1.5            
+ [70] spatstat.data_3.0-1    utf8_1.2.3             generics_0.1.3        
+ [73] renv_0.15.4            data.table_1.14.8      graphlayouts_1.0.1    
+ [76] httr_1.4.7             htmlwidgets_1.6.2      whisker_0.4.1         
+ [79] uwot_0.1.16            pkgconfig_2.0.3        gtable_0.3.4          
+ [82] lmtest_0.9-40          htmltools_0.5.6        scales_1.2.1          
+ [85] png_0.1-8              snakecase_0.11.1       rstudioapi_0.15.0     
+ [88] tzdb_0.4.0             reshape2_1.4.4         checkmate_2.2.0       
+ [91] nlme_3.1-163           cachem_1.0.8           zoo_1.8-12            
+ [94] GlobalOptions_0.1.2    KernSmooth_2.23-22     parallel_4.3.1        
+ [97] miniUI_0.1.1.1         vipor_0.4.5            ggrastr_1.0.2         
+[100] pillar_1.9.0           grid_4.3.1             vctrs_0.6.3           
+[103] RANN_2.6.1             promises_1.2.1         xtable_1.8-4          
+[106] cluster_2.1.4          beeswarm_0.4.0         paletteer_1.5.0       
+[109] evaluate_0.22          cli_3.6.1              compiler_4.3.1        
+[112] rlang_1.1.1            grr_0.9.5              future.apply_1.11.0   
+[115] labeling_0.4.3         rematch2_2.1.2         ps_1.7.5              
+[118] getPass_0.2-2          plyr_1.8.9             fs_1.6.3              
+[121] ggbeeswarm_0.7.2       stringi_1.7.12         deldir_1.0-9          
+[124] munsell_0.5.0          lazyeval_0.2.2         spatstat.geom_3.2-5   
+[127] hms_1.1.3              bit64_4.0.5            shiny_1.7.5           
+[130] ROCR_1.0-11            igraph_1.5.1           bslib_0.5.1           
+[133] bit_4.0.5             </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
