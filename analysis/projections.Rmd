@@ -1,0 +1,667 @@
+---
+author: "James Howe"
+title: "Fluorescence projections analysis"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
+
+require(ggtree)
+require(pvclust)
+require(dendextend)
+require(heatmap3)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+# Topographic MeA and NAc
+
+## Retrograde NAc and MeA to plCoA {.tabset}
+
+### Total numbers {.tabset}
+
+```{r 1-read_data_retrograde, message = FALSE, warning = FALSE}
+# set up the object
+retro_mea_nac <- read.csv("data/projections/retrograde_mea_nac.csv")
+
+mea_means <- retro_mea_nac[retro_mea_nac$group == "MeA",] %>% group_by(ap_location) %>% 
+  summarise(sem = sd(number)/sqrt(4), number = mean(number))
+
+nac_means <- retro_mea_nac[retro_mea_nac$group == "NAc",] %>% group_by(ap_location) %>% 
+  summarise(sem = sd(number)/sqrt(4), number = mean(number))
+```
+
+#### MeA
+
+```{r 2-mea_total, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 4}
+ggplot(retro_mea_nac[retro_mea_nac$group == "MeA",], aes(x = ap_location, y = number, group = animal_id)) +
+  geom_line(aes(y = number, x = ap_location), data = mea_means, group = 1, colour = mea_color) +
+  geom_errorbar(aes(ymin = number - sem, ymax = number + sem), 
+                data = mea_means, group = 1, width = 0, colour = mea_color) +
+  geom_line(colour = "gray") +
+  theme_classic() +
+  scale_x_reverse(limits = c(-1.29, -2.51), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 202)) +
+  ylab("Labeled Cells") + xlab("AP location (mm from bregma)") +
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
+        axis.text.x = element_text(colour = "black"), axis.text.y = element_text(colour = "black"),
+        legend.position = "none", legend.title = element_blank())
+```
+
+#### NAc
+
+```{r 3-nac_total, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 4}
+ggplot(retro_mea_nac[retro_mea_nac$group == "NAc",], aes(x = ap_location, y = number, group = animal_id)) +
+  geom_line(aes(y = number, x = ap_location), data = nac_means, group = 1, colour = nac_color) +
+  geom_errorbar(aes(ymin = number - sem, ymax = number + sem), 
+                data = nac_means, group = 1, width = 0, colour = nac_color) +
+  geom_line(colour = "gray") +
+  theme_classic() +
+  scale_x_reverse(limits = c(-1.29, -2.51), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 120)) +
+  ylab("Labeled Cells") + xlab("AP location (mm from bregma)") +
+  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
+        axis.text.x = element_text(colour = "black"), axis.text.y = element_text(colour = "black"),
+        legend.position = "none", legend.title = element_blank())
+```
+
+### Proportion
+
+```{r 4-label_proportion, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 5}
+new_proportions <- retro_mea_nac %>% group_by(group, ap_location) %>% summarise(number = sum(number))
+divisor <- retro_mea_nac %>% group_by(ap_location) %>% summarise(number = sum(number))
+new_proportions$number[1:13] <- new_proportions$number[1:13] / divisor$number
+new_proportions$number[14:26] <- new_proportions$number[14:26] / divisor$number
+
+new_proportions$ap_location <- factor(new_proportions$ap_location, levels = rev(new_proportions$ap_location[1:13]))
+
+ggplot(new_proportions, aes(x = ap_location, y = number, fill = group)) +
+  geom_bar(position="stack", stat="identity") +
+  geom_hline(yintercept = 0.568, linetype = "dashed") +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_fill_manual(values = c(mea_color, nac_color)) +
+  labs(fill = '') + xlab("") + ylab('Proportion in bin') +
+  theme_classic() +
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+### Projection in Region {.tabset}
+
+```{r 5-projection_proportion, message = FALSE, warning = FALSE}
+retro_list <- split(retro_mea_nac, f = retro_mea_nac$animal_id)
+
+percent_retro <- cbind.data.frame(c("A", "B", "C", "D", "E", "F", "G", "H"),
+                                  c("MeA", "NAc", "MeA", "MeA", "NAc", "NAc", "MeA", "NAc"),
+                                  unlist(lapply(retro_list, function(x) sum(x$number[1:5]) / sum(x$number))),
+                                  unlist(lapply(retro_list, function(x) sum(x$number[6:8]) / sum(x$number))),
+                                  unlist(lapply(retro_list, function(x) sum(x$number[9:13]) / sum(x$number))))
+colnames(percent_retro) <- c("id", "group", "aplCoA", "mplCoA", "pplCoA")
+
+percent_retro  <- percent_retro %>% pivot_longer(cols = c(aplCoA, mplCoA, pplCoA))
+
+percent_retro %>%
+  group_by(group, name) %>%
+  get_summary_stats(value, type = "mean_se")
+```
+
+#### Two-way ANOVA {.tabset}
+
+##### ANOVA
+
+```{r 6-anova_proportion, message = FALSE, warning = FALSE}
+proportion_anova <- anova_test(data = percent_retro,
+                               dv = value,
+                               wid = id,
+                               between = group,
+                               within = name)
+
+proportion_anova$ANOVA
+```
+
+##### Pairwise comparisons
+
+```{r 7-pairwise_proportion, message = FALSE, warning = FALSE}
+percent_retro %>% tukey_hsd(value ~ name * group, paired = FALSE,
+                            p.adjust.method = "bonferroni")
+```
+
+#### Plot
+
+```{r 8-retro_proportion_plot, message = FALSE, warning = FALSE, fig.height = 2.6, fig.width = 2}
+# remove middle for graphing
+percent_retro <- percent_retro[percent_retro$name != "mplCoA",]
+
+summary <- percent_retro %>%
+    group_by(group, name) %>%
+    summarize(sem = sd(value)/sqrt(n()), value = mean(value))
+
+ggplot(percent_retro, aes(x = name, y = value, group = group, colour = group)) + 
+  geom_bar(stat = "summary", width = 0.7, position = position_dodge(width=0.8), fill = NA) +
+    geom_errorbar(aes(ymin = value - sem, ymax = value + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = "black") +
+    geom_point(aes(fill = group, group = group), shape = 21, color = 'black', 
+               position = position_dodge(width = 0.8)) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 1)) +
+    scale_colour_manual(values = c(mea_color, nac_color)) +
+    scale_fill_manual(values = c(mea_color, nac_color)) +
+    xlab("") +
+    ylab("Proportion from zone") +
+    theme_classic() +
+    theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+# MeA-NAc Anterograde Collateralization {.tabset}
+
+```{r 9-read_collateralization_data, message = FALSE, warning = FALSE}
+# set up the object
+ant_col_mea_nac <- read.csv("data/projections/anterograde_collateralization_mea_nac.csv")
+ant_col_mea_nac[,3:8] <- ant_col_mea_nac[,3:8] / 10000000
+
+paired_nac <- cbind.data.frame(rep(ant_col_mea_nac$animal_id[1:5], 6),
+                               c(rep("NAc", 5), rep("MeA", 5), rep("AHi", 5), rep("OT", 5), 
+                                 rep("pmCoA", 5), rep("BNST", 5)),
+                               c(rep(1, 5), 
+                                 ant_col_mea_nac$MeA_density[1:5] / ant_col_mea_nac$NAc_density[1:5],
+                                 ant_col_mea_nac$AHi_density[1:5] / ant_col_mea_nac$NAc_density[1:5],
+                                 ant_col_mea_nac$OT_density[1:5] / ant_col_mea_nac$NAc_density[1:5],
+                                 ant_col_mea_nac$pmCoA_density[1:5] / ant_col_mea_nac$NAc_density[1:5],
+                                 ant_col_mea_nac$BNST_density[1:5] / ant_col_mea_nac$NAc_density[1:5]))
+colnames(paired_nac) <- c("animal_id", "region", "NAc_norm_density")
+paired_nac$region <- factor(paired_nac$region, levels = c("NAc", "MeA", "AHi", 
+                                                          "OT", "pmCoA", "BNST"))
+
+paired_mea <- cbind.data.frame(rep(ant_col_mea_nac$animal_id[6:length(rownames(ant_col_mea_nac))], 6),
+                               c(rep("MeA", 7), rep("NAc", 7), rep("AHi", 7), rep("OT", 7), 
+                                 rep("pmCoA", 7), rep("BNST", 7)),
+                               c(rep(1, times = 7),
+                                 ant_col_mea_nac$NAc_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))],
+                                 ant_col_mea_nac$AHi_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))],
+                                 ant_col_mea_nac$OT_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))],
+                                 ant_col_mea_nac$pmCoA_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))],
+                                 ant_col_mea_nac$BNST_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))]))
+colnames(paired_mea) <- c("animal_id", "region", "MeA_norm_density")
+paired_mea$region <- factor(paired_mea$region, levels = c("MeA", "NAc", "AHi", 
+                                                          "OT", "pmCoA", "BNST"))
+```
+
+## Absolute Difference {.tabset}
+
+### MeA {.tabset}
+
+#### Plot
+
+```{r 10-ant_col_mea_plot, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 2}
+summary <- ant_col_mea_nac %>%
+    group_by(retroaav_site) %>%
+    summarize(sem = sd(MeA_density)/sqrt(n()), MeA_density = mean(MeA_density))
+
+ggplot(ant_col_mea_nac, aes(x = retroaav_site, y = MeA_density, group = retroaav_site, colour = retroaav_site)) + 
+    geom_bar(stat = "summary", fill = NA) +
+    geom_errorbar(aes(ymin = MeA_density - sem, ymax = MeA_density + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = "black") +
+    geom_point(aes(fill = retroaav_site, group = retroaav_site), shape = 21, color = 'black') +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 5)) +
+    scale_colour_manual(values = c(mea_color, nac_color)) +
+    scale_fill_manual(values = c(mea_color, nac_color)) +
+    xlab("") +
+    ylab("MeA integrated fluorescence (a.u.)") +
+    theme_classic() +
+    theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+#### T-test
+
+```{r 11-ant_col_mea_ttest, message = FALSE, warning = FALSE}
+t.test(x = ant_col_mea_nac$MeA_density[ant_col_mea_nac$retroaav_site %in% "MeA"], 
+       y = ant_col_mea_nac$MeA_density[ant_col_mea_nac$retroaav_site %in% "NAc"])
+```
+
+### NAc {.tabset}
+
+#### Plot
+
+```{r 12-ant_col_nac_plot, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 2}
+summary <- ant_col_mea_nac %>%
+    group_by(retroaav_site) %>%
+    summarize(sem = sd(NAc_density)/sqrt(n()), NAc_density = mean(NAc_density))
+
+ggplot(ant_col_mea_nac, aes(x = retroaav_site, y = NAc_density, group = retroaav_site, colour = retroaav_site)) + 
+    geom_bar(stat = "summary", fill = NA) +
+    geom_errorbar(aes(ymin = NAc_density - sem, ymax = NAc_density + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = "black") +
+    geom_point(aes(fill = retroaav_site, group = retroaav_site), shape = 21, color = 'black') +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 5)) +
+    scale_colour_manual(values = c(mea_color, nac_color)) +
+    scale_fill_manual(values = c(mea_color, nac_color)) +
+    xlab("") +
+    ylab("NAc integrated fluorescence (a.u.)") +
+    theme_classic() +
+    theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+#### T-test
+
+```{r 13-ant_col_nac_ttest, message = FALSE, warning = FALSE}
+t.test(x = ant_col_mea_nac$NAc_density[ant_col_mea_nac$retroaav_site %in% "NAc"], 
+       y = ant_col_mea_nac$NAc_density[ant_col_mea_nac$retroaav_site %in% "MeA"])
+```
+
+### Combined Plot
+
+```{r 14-ant_col_nac_combined, message = FALSE, warning = FALSE, fig.height = 2.6, fig.width = 2.6}
+ant_col_mea_nac <- ant_col_mea_nac[,1:4]
+
+ant_col_mea_nac <- ant_col_mea_nac %>%
+  gather(key = "region", value = "density", MeA_density, NAc_density) %>%
+  convert_as_factor(animal_id, retroaav_site, region)
+levels(ant_col_mea_nac$region) <- c("MeA", "NAc")
+
+summary <- ant_col_mea_nac %>%
+  group_by(retroaav_site, region) %>%
+  summarize(sem = sd(density)/sqrt(n()), density= mean(density))
+
+ggplot(ant_col_mea_nac, aes(x = region, y = density, colour = as.character(retroaav_site))) +
+    geom_bar(stat = "summary", position = "dodge", fill = NA) +
+    geom_errorbar(aes(ymin = density - sem, ymax = density + sem), 
+                  data = summary, width = .5, position = position_dodge(width = 0.9)) +
+    #geom_point(aes(group = animal_id), shape = 21, color = 'black') +
+    geom_point(aes(fill = as.character(retroaav_site), 
+                   group = as.character(retroaav_site)), shape = 21, color = 'black', 
+               position = position_dodge(width = 0.8)) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 5)) +
+    scale_colour_manual(values = c(mea_color, nac_color)) +
+    scale_fill_manual(values = c(mea_color, nac_color)) +
+    xlab("") +
+    ylab("Integrated fluorescence (a.u.)" ) +
+    facet_wrap(~ retroaav_site) +
+    theme_classic() +
+    theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+#### Two-way ANOVA {.tabset}
+
+##### ANOVA
+
+```{r 17-collateralization_anova, message = FALSE, warning = FALSE}
+proportion_anova <- anova_test(data = ant_col_mea_nac,
+                               dv = density,
+                               wid = animal_id,
+                               between =  retroaav_site,
+                               within = region)
+
+proportion_anova
+```
+
+##### Pairwise comparisons
+
+```{r 18-collateralization_pairwise, message = FALSE, warning = FALSE}
+pairwise_group_anova <- ant_col_mea_nac %>%
+    tukey_hsd(density ~ region * retroaav_site, paired = FALSE,
+              p.adjust.method = "bonferroni")
+  
+pairwise_group_anova
+```
+
+## Within-animal Relative Difference {.tabset}
+
+### retro-MeA {.tabset}
+
+#### Plot
+
+```{r 19-ant_col_retromea_plot, message = FALSE, warning = FALSE, fig.height = 2.2, fig.width = 4}
+summary <- paired_mea %>%
+    group_by(region) %>%
+    summarize(sem = sd(MeA_norm_density)/sqrt(n()), MeA_norm_density = mean(MeA_norm_density))
+
+ggplot(paired_mea, aes(x = region, y = MeA_norm_density, group = region, colour = region)) + 
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_line(aes(group = animal_id), colour = "black") +
+    geom_bar(stat = "summary", fill = NA) +
+    geom_errorbar(aes(ymin = MeA_norm_density - sem, ymax = MeA_norm_density + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = "black") +
+    geom_point(aes(fill = region, group = region), shape = 21, color = 'black') +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 2)) +
+    scale_colour_manual(values = rep(mea_color, 6)) +
+    scale_fill_manual(values = rep(mea_color, 6)) +
+    xlab("") +
+    ylab("Within-animal integrated fluorescence (% MeA fluorescence)") +
+    theme_classic() +
+    theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+#### Paired T-test
+
+```{r 20-ant_col_retromea_pairedttest, message = FALSE, warning = FALSE}
+t.test(x = paired_mea$MeA_norm_density[paired_mea$region %in% "MeA"], 
+       y = paired_mea$MeA_norm_density[paired_mea$region %in% "NAc"],
+       paired = TRUE)
+```
+
+### retro-NAc {.tabset}
+
+#### Plot
+
+```{r 21-ant_col_retronac_plot, message = FALSE, warning = FALSE, fig.height = 2.2, fig.width = 4}
+summary <- paired_nac %>%
+    group_by(region) %>%
+    summarize(sem = sd(NAc_norm_density)/sqrt(n()), NAc_norm_density = mean(NAc_norm_density))
+
+ggplot(paired_nac, aes(x = region, y = NAc_norm_density, group = region, colour = region)) + 
+    geom_hline(yintercept = 1, linetype = "dashed") +
+    geom_line(aes(group = animal_id), colour = "black") +
+    geom_bar(stat = "summary", fill = NA) +
+    geom_errorbar(aes(ymin = NAc_norm_density - sem, ymax = NAc_norm_density + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = "black") +
+    geom_point(aes(fill = region, group = region), shape = 21, color = 'black') +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 1.2)) +
+    scale_colour_manual(values = rep(nac_color, 6)) +
+    scale_fill_manual(values = rep(nac_color, 6)) +
+    xlab("") +
+    ylab("Within-animal integrated fluorescence (% NAc fluorescence)") +
+    theme_classic() +
+    theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+#### Paired T-test
+
+```{r 22-ant_col_retronac_pairedttest, message = FALSE, warning = FALSE}
+t.test(x = paired_nac$NAc_norm_density[paired_nac$region %in% "NAc"], 
+       y = paired_nac$NAc_norm_density[paired_nac$region %in% "MeA"],
+       paired = TRUE)
+```
+
+# Anterograde SypEGFP
+
+```{r 23-anterograde_graph, message = FALSE, warning = FALSE, fig.height = 2.5, fig.width = 9.6}
+# set up the object with pointers
+anterograde_syp <- read.csv("data/projections/anterograde_syp.csv", row.names = 1)
+
+# change names to something more recognizable
+rownames(anterograde_syp)[rownames(anterograde_syp) %in% "CPu"] <- "Str"
+rownames(anterograde_syp)[rownames(anterograde_syp) %in% "Tu"] <- "OT"
+rownames(anterograde_syp)[rownames(anterograde_syp) %in% "MPA"] <- "MPOA"
+
+anterograde_syp <- anterograde_syp[!rownames(anterograde_syp) %in% "sox",]
+anterograde_syp <- anterograde_syp[!rownames(anterograde_syp) %in% "mfb",]
+
+# get means for each region
+avg_anterograde_syp <- cbind.data.frame(apply(anterograde_syp, 1, mean),
+                                        apply(anterograde_syp, 1, function(x) sd(x)/sqrt(5)))
+colnames(avg_anterograde_syp) <- c("Mean", "SEM")
+
+norm_anterograde_syp <- anterograde_syp / apply(anterograde_syp[76,], 1, mean)
+
+# cut at half of plCoA fluorescence
+norm_anterograde_syp <- norm_anterograde_syp[apply(norm_anterograde_syp, 1, mean) > 0.1,]
+
+summary_anterograde_syp <- cbind.data.frame(apply(norm_anterograde_syp, 1, mean),
+                                            apply(norm_anterograde_syp, 1, 
+                                                  function(x) sd(x)/sqrt(5)),
+                                           rownames(norm_anterograde_syp))
+colnames(summary_anterograde_syp) <- c("value", "sem", "region")
+
+norm_anterograde_syp <- cbind.data.frame(norm_anterograde_syp, rownames(norm_anterograde_syp))
+colnames(norm_anterograde_syp) <- c("M1", "M2", "M3", "M4", "M5", "region")
+
+# remove BMA because it could be some leak, and Nv and MPA, which are buoyed by outliers
+norm_anterograde_syp <- norm_anterograde_syp[!rownames(norm_anterograde_syp) %in% c("BMA", "MPOA", "Nv"),]
+summary_anterograde_syp <- summary_anterograde_syp[!rownames(summary_anterograde_syp) %in% c("BMA", "MPOA", "Nv"),]
+
+norm_anterograde_syp <- norm_anterograde_syp %>% pivot_longer(M1:M5)
+norm_anterograde_syp$region <- factor(norm_anterograde_syp$region)
+norm_anterograde_syp$region <- reorder(norm_anterograde_syp$region, -norm_anterograde_syp$value) 
+
+#
+ggplot(data = norm_anterograde_syp, aes(x = region, y = value)) + 
+  geom_bar(stat = "summary", position = "dodge", width = 0.5, fill = "grey") +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  geom_errorbar(aes(ymin = value - sem, ymax = value + sem), data = summary_anterograde_syp, 
+                width = .3, position = position_dodge(width = 0.9)) +
+  ylab("SypEGFP Fiber Density (a.u.)") +
+  xlab("") +
+  scale_y_continuous(expand = c(0, 0)) +
+  coord_cartesian(ylim = c(0, 5)) +
+  theme_classic() +
+  theme(legend.position="none",
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(colour = "black", angle = 45, vjust = 1, hjust = 1),
+        axis.text.y = element_text(colour = "black"))
+```
+
+# Two color anterograde projection mapping
+
+## plCoA zone fluorescence
+
+```{r 24-plCoA_zones_2color, message = FALSE, warning = FALSE, fig.height = 8, fig.width = 4}
+# set up the object with pointers
+anterograde_2c <- read.csv("data/projections/anterograde_2color.csv", row.names = 1)
+
+anterograde_2c_test <- cbind.data.frame(rownames(anterograde_2c), anterograde_2c) 
+colnames(anterograde_2c_test)[1] <- "id"
+anterograde_2c_test <- anterograde_2c_test %>% pivot_longer(AA:VP)
+
+anterograde_2coa <- anterograde_2c[, colnames(anterograde_2c) %in% c("group", 
+                                                                     "plCoAa", "plCoAm", "plCoAp")]
+colnames(anterograde_2coa) <- c("group", "aplCoA", "mplCoA", "pplCoA")
+
+summary_anterograde_2coa <- cbind.data.frame(c(rep("aplCoA", times = 3), rep("pplCoA", times = 3)),
+                                             rep(c("aplCoA", "mplCoA", "pplCoA"), times = 2),
+                                             c(mean(anterograde_2coa[1:5,2]),
+                                               mean(anterograde_2coa[1:5,3]),
+                                               mean(anterograde_2coa[c(1:3,5),4]),
+                                               mean(anterograde_2coa[6:9,2]),
+                                               mean(anterograde_2coa[6:9,3]),
+                                               mean(anterograde_2coa[6:9,4])),
+                                             c(sd(anterograde_2coa[1:5,2])/sqrt(5),
+                                               sd(anterograde_2coa[1:5,3])/sqrt(5),
+                                               sd(anterograde_2coa[c(1:3,5),4])/sqrt(4),
+                                               sd(anterograde_2coa[6:9,2])/sqrt(4),
+                                               sd(anterograde_2coa[6:9,3])/sqrt(4),
+                                               sd(anterograde_2coa[6:9,4])/sqrt(4)))
+colnames(summary_anterograde_2coa) <- c("group", "name", "value", "sem")
+
+anterograde_2coa <- anterograde_2coa %>% pivot_longer(aplCoA:pplCoA)
+
+ggplot(anterograde_2coa, aes(x = group, y = value, fill = name)) +
+  geom_bar(stat = "summary", position = "dodge") + 
+  geom_errorbar(aes(ymin = value - sem, ymax = value + sem), 
+                data = summary_anterograde_2coa, width = .5, 
+                position = position_dodge(width = 0.9)) +
+  geom_point(aes(group = name), shape = 21, color = 'black', position = position_dodge(width = .9)) +
+  scale_fill_manual(values = c(anterior_color, mid_color, posterior_color)) +
+  xlab("") + ylab("Output proportion") +
+  scale_y_continuous(expand = c(0,0), limits = c(0, .27)) +
+  theme_classic() +
+  theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+## Everywhere else fluorescence
+
+```{r 25-brain_2color, message = FALSE, warning = FALSE, fig.height = 2.6, fig.width = 2}
+# set up the object with pointers
+anterograde_2noncoa <- anterograde_2c[, colnames(anterograde_2c) %in% 
+                                        c("group", "MeA", "Nac")]
+
+mea_test <- t.test(x = anterograde_2noncoa$MeA[anterograde_2noncoa$group == "aplCoA"],
+       y = anterograde_2noncoa$MeA[anterograde_2noncoa$group == "pplCoA"])
+
+nac_test <- t.test(x = anterograde_2noncoa$Nac[anterograde_2noncoa$group == "aplCoA"],
+       y = anterograde_2noncoa$Nac[anterograde_2noncoa$group == "pplCoA"])
+
+summary_anterograde_2noncoa <- cbind.data.frame(c(rep("aplCoA", times = 2), 
+                                                  rep("pplCoA", times = 2)),
+                                                c(rep(colnames(anterograde_2noncoa[2:3]), 
+                                                      times = 2)),
+                                                c(colMeans(anterograde_2noncoa[1:5,2:3], 
+                                                           na.rm = TRUE),
+                                                  colMeans(anterograde_2noncoa[6:9,2:3], 
+                                                           na.rm = TRUE)),
+                                                c(apply(anterograde_2noncoa[1:5,2:3], 2, 
+                                                        function(x) sd(x, na.rm = TRUE) /
+                                                          sum(!is.na(x))),
+                                                  apply(anterograde_2noncoa[6:9,2:3], 2, 
+                                                        function(x) sd(x, na.rm = TRUE) / 
+                                                          sum(!is.na(x)))))
+colnames(summary_anterograde_2noncoa) <- c("group", "name", "value", "sem")
+
+anterograde_2noncoa <- anterograde_2noncoa %>% pivot_longer(!group)
+
+ggplot(anterograde_2noncoa, aes(x = name, y = value, group = group, colour = group)) + 
+  geom_bar(stat = "summary", width = 0.7, position = position_dodge(width=0.8), fill = NA) +
+    geom_errorbar(aes(ymin = value - sem, ymax = value + sem), data = summary_anterograde_2noncoa, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = "black") +
+    geom_point(aes(fill = group, group = group), shape = 21, color = 'black', 
+               position = position_dodge(width = 0.8)) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, .08)) +
+    scale_colour_manual(values = c(anterior_color, posterior_color)) +
+    scale_fill_manual(values = c(anterior_color, posterior_color)) +
+    xlab("") +
+    ylab("Output proportion") +
+    theme_classic() +
+    theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = "black"),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+# Two color anterograde projection mapping
+
+## plCoA zone fluorescence
+
+```{r 26-plCoA_zones_2color, message = FALSE, warning = FALSE, fig.height = 3.2, fig.width = 18}
+# set up the object with pointers
+anterograde_cre <- read.csv("data/projections/anterograde_cre.csv", row.names = 1)
+
+anterograde_cre_nonamy <- anterograde_cre[, !colnames(anterograde_cre) %in% 
+                                        c("BMA", "plCoAa", "plCoAm", "plCoAp", "NAc")]
+
+summary_anterograde_cre_nonamy  <- cbind.data.frame(c(rep("Slc17a6-Cre", times = 16), 
+                                                  rep("Slc17a7-Cre", times = 16)),
+                                                  rep(colnames(anterograde_cre_nonamy[2:17]), 
+                                                      times = 2),
+                                             c(colMeans(anterograde_cre_nonamy[1:4,2:17], 
+                                                           na.rm = TRUE),
+                                                  colMeans(anterograde_cre_nonamy[5:9,2:17], 
+                                                           na.rm = TRUE)),
+                                                c(apply(anterograde_cre_nonamy[1:4,2:17], 2, 
+                                                        function(x) sd(x, na.rm = TRUE) /
+                                                          sum(!is.na(x))),
+                                                  apply(anterograde_cre_nonamy[5:9,2:17], 2, 
+                                                        function(x) sd(x, na.rm = TRUE) / 
+                                                          sum(!is.na(x)))))
+colnames(summary_anterograde_cre_nonamy) <- c("group", "name", "value", "sem")
+
+anterograde_cre_nonamy <- anterograde_cre_nonamy %>% pivot_longer(!group)
+```
+
+```{r 27-nacmea_solo, message = FALSE, warning = FALSE, fig.height = 3.2, fig.width = 2.6}
+ggplot(anterograde_cre_nonamy[anterograde_cre_nonamy$name %in% c("Nac", "MeA"),], aes(x = name, y = value, group = group, colour = group)) +
+  geom_bar(stat = "summary", width = 0.7, position = position_dodge(width=0.8), fill = NA) +
+  geom_errorbar(aes(ymin = value - sem, ymax = value + sem), 
+                data = summary_anterograde_cre_nonamy[summary_anterograde_cre_nonamy$name %in% c("Nac", "MeA"),], width = .5, 
+                position = position_dodge(width = 0.8), color = "black") +
+  geom_point(aes(fill = group, group = group), shape = 21, color = 'black', 
+               position = position_dodge(width = 0.8)) +
+  scale_colour_manual(values = c(VGlut2_color, VGlut1_color)) +
+  scale_fill_manual(values = c(VGlut2_color, VGlut1_color)) +
+  xlab("") + ylab("Output proportion") +
+  scale_y_continuous(expand = c(0,0), limits = c(0, 14)) +
+  theme_classic() +
+  theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+```{r 28-vg1vg2_solo, message = FALSE, warning = FALSE, fig.height = 3.2, fig.width = 2.6}
+ggplot(anterograde_cre_nonamy[anterograde_cre_nonamy$name %in% c("Nac", "MeA"),], aes(x = group, y = value, group = name, colour = name)) +
+  geom_bar(stat = "summary", width = 0.7, position = position_dodge(width=0.8), fill = NA) +
+  geom_errorbar(aes(ymin = value - sem, ymax = value + sem), 
+                data = summary_anterograde_cre_nonamy[summary_anterograde_cre_nonamy$name %in% c("Nac", "MeA"),], width = .5, 
+                position = position_dodge(width = 0.8), color = "black") +
+  geom_point(aes(fill = name, group = name), shape = 21, color = 'black', 
+               position = position_dodge(width = 0.8)) +
+  scale_colour_manual(values = c(mea_color, nac_color)) +
+  scale_fill_manual(values = c(mea_color, nac_color)) +
+  xlab("") + ylab("Output proportion") +
+  scale_y_continuous(expand = c(0,0), limits = c(0, 14)) +
+  theme_classic() +
+  theme(legend.position="none",
+          axis.ticks.x=element_blank(),
+          axis.text.y = element_text(colour = "black"),
+          strip.background = element_blank())
+```
+
+```{r 29-vg1_solo, message = FALSE, warning = FALSE}
+anterograde_cre_nonamy_vg1 <- anterograde_cre_nonamy[anterograde_cre_nonamy$group %in% "Slc17a7-Cre",]
+
+anterograde_cre_nonamy_vg2 <- anterograde_cre_nonamy[anterograde_cre_nonamy$group %in% "Slc17a6-Cre",]
+
+t.test(x = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == "Nac"],
+       y = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == "Nac"])
+
+t.test(x = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == "MeA"],
+       y = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == "MeA"])
+
+t.test(x = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == "Nac"],
+       y = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == "MeA"])
+
+t.test(x = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == "Nac"],
+       y = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == "MeA"])
+```
+
+# Correlations {.tabset}
+
+## SypEGFP {.tabset}
+
+
+
+```{r 30-correlation_anterograde_sypegfp, message = FALSE, warning = FALSE}
+
+```
