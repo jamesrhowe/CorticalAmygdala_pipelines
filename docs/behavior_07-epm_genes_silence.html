@@ -374,7 +374,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Behavioral analysis: genes</h1>
 <h4 class="author">James Howe</h4>
-<h4 class="date">21 January, 2024</h4>
+<h4 class="date">13 February, 2024</h4>
 
 </div>
 
@@ -382,7 +382,7 @@ div.tocify {
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
 <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+workflowr <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span>
 </button>
 </p>
@@ -393,8 +393,8 @@ aria-hidden="true"></span>
 </li>
 <li>
 <a data-toggle="tab" href="#checks"> Checks <span
-class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> </a>
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
 </li>
 <li>
 <a data-toggle="tab" href="#versions">Past versions</a>
@@ -403,13 +403,13 @@ aria-hidden="true"></span> </a>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-01-21
+<strong>Last updated:</strong> 2024-02-13
 </p>
 <p>
 <strong>Checks:</strong> <span
-class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
 <span class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> 1
+aria-hidden="true"></span> 0
 </p>
 <p>
 <strong>Knit directory:</strong>
@@ -433,21 +433,18 @@ versions</em> tab lists the development history.
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
-<span class="glyphicon glyphicon-exclamation-sign text-danger"
-aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
-changes </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
 </p>
 </div>
-<div id="strongRMarkdownfilestronguncommittedchanges"
+<div id="strongRMarkdownfilestronguptodate"
 class="panel-collapse collapse">
 <div class="panel-body">
-<p>The R Markdown is untracked by Git. To know which version of the R
-Markdown file created these results, you’ll want to first commit it to
-the Git repo. If you’re still working on the analysis, you can ignore
-this warning. When you’re finished, you can run
-<code>wflow_publish</code> to commit the R Markdown file and build the
-HTML.</p>
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
 </div>
 </div>
 </div>
@@ -538,15 +535,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestreefba58a9f1c88c60b5879aeba11fcd3fbb4823bfdtargetblankfba58a9a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree84a831c767d122aed3805628d699525c77cf8ca6targetblank84a831ca">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/fba58a9f1c88c60b5879aeba11fcd3fbb4823bfd" target="_blank">fba58a9</a>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/84a831c767d122aed3805628d699525c77cf8ca6" target="_blank">84a831c</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestreefba58a9f1c88c60b5879aeba11fcd3fbb4823bfdtargetblankfba58a9a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree84a831c767d122aed3805628d699525c77cf8ca6targetblank84a831ca"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -556,7 +553,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/fba58a9f1c88c60b5879aeba11fcd3fbb4823bfd" target="_blank">fba58a9</a>.
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/84a831c767d122aed3805628d699525c77cf8ca6" target="_blank">84a831c</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -586,18 +583,8 @@ Ignored files:
 
 Untracked files:
     Untracked:  analysis/08A-merge_rd1_ATAC.Rmd
-    Untracked:  analysis/behavior_03-projections.Rmd
-    Untracked:  analysis/behavior_04-projections_silencing_tmt.Rmd
-    Untracked:  analysis/behavior_05-projections_silencing_2PE.Rmd
-    Untracked:  analysis/behavior_06-genes_silencing_tmt.Rmd
-    Untracked:  analysis/behavior_07-epm_genes_silence.Rmd
-    Untracked:  analysis/behavior_09-epm_topography.Rmd
-    Untracked:  analysis/behavior_10-epm_projections.Rmd
-    Untracked:  analysis/behavior_12-openfield_projections.Rmd
-    Untracked:  analysis/behavior_13-openfield_genes_silence.Rmd
-    Untracked:  analysis/behavior_14-openfield_projections_silence.Rmd
-    Untracked:  analysis/behavior_15-epm_genes_silence.Rmd
-    Untracked:  analysis/behavior_16-epm_projections_silence.Rmd
+    Untracked:  analysis/behavior_10-projections_silencing_TMT.Rmd
+    Untracked:  analysis/behavior_11-projections_silencing_2PE.Rmd
     Untracked:  analysis/projections.Rmd
     Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
     Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
@@ -622,15 +609,6 @@ Untracked files:
     Untracked:  analysis/sequencing-05R-ABC_classification_RNA.Rmd
     Untracked:  analysis/sequencing-05S-VLMC_classification_RNA.Rmd
     Untracked:  analysis/sequencing-05T-Immune_classification+labeling_RNA.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_Astro.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_GABAergic.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_Glutamatergic.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_Microglia.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_Neuron.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_Nonneuron.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_OLG.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_OPC.Rmd
-    Untracked:  analysis/sequencing-05X-reprocess_VLMC.Rmd
     Untracked:  analysis/sequencing-06A-merged_classification_RNA.Rmd
     Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
     Untracked:  analysis/sequencing-06B-merged_deg_discovery_RNA.Rmd
@@ -640,29 +618,6 @@ Untracked files:
     Untracked:  analysis/sequencing-07D-preprocess_pplCoA-1_P1_ATAC.Rmd
     Untracked:  analysis/sequencing-07E-preprocess_pplCoA-1_P2_ATAC.Rmd
     Untracked:  analysis/sequencing-07F-preprocess_pplCoA-2_ATAC.Rmd
-    Untracked:  analysis/spatial-01A-preprocess_039-A_S18.Rmd
-    Untracked:  analysis/spatial-01B-preprocess_039-B_S19.Rmd
-    Untracked:  analysis/spatial-01C-preprocess_042-A_S22.Rmd
-    Untracked:  analysis/spatial-01D-preprocess_061-D_S1.Rmd
-    Untracked:  analysis/spatial-01E-preprocess_062-B_S2.Rmd
-    Untracked:  analysis/spatial-01F-preprocess_063-A_S4.Rmd
-    Untracked:  analysis/spatial-01G-preprocess_063-B_S5.Rmd
-    Untracked:  analysis/spatial-01H-preprocess_063-D_S7.Rmd
-    Untracked:  analysis/spatial-01I-preprocess_105-A_S8.Rmd
-    Untracked:  analysis/spatial-01J-preprocess_105-B_S9.Rmd
-    Untracked:  analysis/spatial-01K-preprocess_106-B_S11.Rmd
-    Untracked:  analysis/spatial-01L-preprocess_106-C_S12.Rmd
-    Untracked:  analysis/spatial-01M-preprocess_107-A_S15.Rmd
-    Untracked:  analysis/spatial-01N-preprocess_107-B_S16.Rmd
-    Untracked:  analysis/spatial-01O-preprocess_108-A_S13.Rmd
-    Untracked:  analysis/spatial-01P-preprocess_122-A_S23.Rmd
-    Untracked:  analysis/spatial-01Q-preprocess_122-B_S24.Rmd
-    Untracked:  analysis/spatial-01R-preprocess_122-C_S25.Rmd
-    Untracked:  analysis/spatial-01S-preprocess_123-A_S30.Rmd
-    Untracked:  analysis/spatial-01T-preprocess_063-C_S6.Rmd
-    Untracked:  analysis/spatial-01U-preprocess_108-C_S14.Rmd
-    Untracked:  analysis/spatial-02-merge.Rmd
-    Untracked:  analysis/spatial-03-classify.Rmd
     Untracked:  output/sequencing/
     Untracked:  output/spatial/
 
@@ -684,10 +639,75 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
+
 <p>
-There are no past versions. Publish this analysis with
-<code>wflow_publish()</code> to start tracking its development.
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/behavior_07-epm_genes_silence.Rmd</code>) and HTML
+(<code>docs/behavior_07-epm_genes_silence.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
 </p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/analysis/behavior_07-epm_genes_silence.Rmd" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+<td>
+Added molecular behavior info.
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/jamesrhowe/CorticalAmygdala_pipelines/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/behavior_07-epm_genes_silence.html" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+<td>
+Added molecular behavior info.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <hr>
 </div>
 </div>
@@ -706,10 +726,10 @@ source(&quot;code/behavior-refs.R&quot;)</code></pre>
 <pre><code>Loading required package: MASS</code></pre>
 <pre><code>Loading required package: tidyverse</code></pre>
 <pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.3     ✔ readr     2.1.4
-✔ forcats   1.0.0     ✔ stringr   1.5.0
-✔ ggplot2   3.4.3     ✔ tibble    3.2.1
-✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
 ✔ purrr     1.0.2     
 ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ✖ dplyr::filter() masks stats::filter()
@@ -726,7 +746,7 @@ Loading required package: spatstat.data
 
 Loading required package: spatstat.geom
 
-spatstat.geom 3.2-5
+spatstat.geom 3.2-8
 
 
 Attaching package: &#39;spatstat.geom&#39;
@@ -739,7 +759,7 @@ The following object is masked from &#39;package:MASS&#39;:
 
 Loading required package: spatstat.random
 
-spatstat.random 3.1-6
+spatstat.random 3.2-2
 
 Loading required package: spatstat.explore
 
@@ -754,20 +774,20 @@ The following object is masked from &#39;package:dplyr&#39;:
     collapse
 
 
-spatstat.explore 3.2-3
+spatstat.explore 3.2-6
 
 Loading required package: spatstat.model
 
 Loading required package: rpart
 
-spatstat.model 3.2-6
+spatstat.model 3.2-10
 
 Loading required package: spatstat.linnet
 
-spatstat.linnet 3.1-1
+spatstat.linnet 3.1-4
 
 
-spatstat 3.0-6 
+spatstat 3.0-7 
 For an introduction to spatstat, type &#39;beginner&#39; 
 
 
@@ -994,7 +1014,7 @@ VGlut1_group_gene %&gt;%
   get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"OpenTime","4":"12","5":"0.201","6":"0.043"},{"1":"mCh","2":"CNO","3":"OpenTime","4":"12","5":"0.154","6":"0.033"},{"1":"Gi","2":"SAL","3":"OpenTime","4":"11","5":"0.226","6":"0.035"},{"1":"Gi","2":"CNO","3":"OpenTime","4":"11","5":"0.163","6":"0.032"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"OpenTime","4":"11","5":"0.212","6":"0.045"},{"1":"mCh","2":"CNO","3":"OpenTime","4":"11","5":"0.139","6":"0.032"},{"1":"Gi","2":"SAL","3":"OpenTime","4":"11","5":"0.226","6":"0.035"},{"1":"Gi","2":"CNO","3":"OpenTime","4":"11","5":"0.163","6":"0.032"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1029,7 +1049,7 @@ VGlut2_group_gene %&gt;%
 <pre class="r"><code>display_anova(VGlut1_group_gene, &quot;OpenTime&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"21","4":"0.288","5":"0.597","6":"","7":"0.005","_rn_":"1"},{"1":"time","2":"1","3":"21","4":"1.840","5":"0.189","6":"","7":"0.051","_rn_":"2"},{"1":"group:time","2":"1","3":"21","4":"0.038","5":"0.848","6":"","7":"0.001","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"20","4":"0.314","5":"0.581","6":"","7":"0.006000","_rn_":"1"},{"1":"time","2":"1","3":"20","4":"2.919","5":"0.103","6":"","7":"0.079000","_rn_":"2"},{"1":"group:time","2":"1","3":"20","4":"0.018","5":"0.896","6":"","7":"0.000516","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1038,7 +1058,7 @@ VGlut2_group_gene %&gt;%
 <pre class="r"><code>pairwise_comp_anova(VGlut1_group_gene, &quot;OpenTime&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.04687500","7":"-0.1593976","8":"0.06564760","9":"0.397","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.06257576","7":"-0.1617182","8":"0.03656671","9":"0.203","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.07310606","7":"-0.1895049","8":"0.04329273","9":"0.205","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.06257576","7":"-0.1617182","8":"0.03656671","9":"0.203","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1053,13 +1073,13 @@ t.test(x = VGlut1_group_gene$OpenTime[VGlut1_group_gene$group == &quot;mCh&quot;
     Welch Two Sample t-test
 
 data:  VGlut1_group_gene$OpenTime[VGlut1_group_gene$group == &quot;mCh&quot; &amp; VGlut1_group_gene$time == &quot;SAL&quot;] and VGlut1_group_gene$OpenTime[VGlut1_group_gene$group == &quot;Gi&quot; &amp; VGlut1_group_gene$time == &quot;SAL&quot;]
-t = -0.45025, df = 20.46, p-value = 0.6573
+t = -0.23414, df = 18.725, p-value = 0.8174
 alternative hypothesis: true difference in means is not equal to 0
 95 percent confidence interval:
- -0.14031744  0.09043739
+ -0.1333955  0.1065773
 sample estimates:
 mean of x mean of y 
-0.2005903 0.2255303 </code></pre>
+0.2121212 0.2255303 </code></pre>
 <pre class="r"><code># CNO
 t.test(x = VGlut1_group_gene$OpenTime[VGlut1_group_gene$group == &quot;mCh&quot; &amp; 
                                               VGlut1_group_gene$time == &quot;CNO&quot;], 
@@ -1069,13 +1089,13 @@ t.test(x = VGlut1_group_gene$OpenTime[VGlut1_group_gene$group == &quot;mCh&quot;
     Welch Two Sample t-test
 
 data:  VGlut1_group_gene$OpenTime[VGlut1_group_gene$group == &quot;mCh&quot; &amp; VGlut1_group_gene$time == &quot;CNO&quot;] and VGlut1_group_gene$OpenTime[VGlut1_group_gene$group == &quot;Gi&quot; &amp; VGlut1_group_gene$time == &quot;CNO&quot;]
-t = -0.19998, df = 20.983, p-value = 0.8434
+t = -0.52329, df = 20, p-value = 0.6065
 alternative hypothesis: true difference in means is not equal to 0
 95 percent confidence interval:
- -0.10532647  0.08684794
+ -0.1193676  0.0714888
 sample estimates:
 mean of x mean of y 
-0.1537153 0.1629545 </code></pre>
+0.1390152 0.1629545 </code></pre>
 </div>
 </div>
 <div id="vglut2-1" class="section level4 tabset">
@@ -1142,12 +1162,86 @@ mean of x mean of y
 <pre class="r"><code>bg_twogroup(VGlut1_group_gene, &quot;Proportion Time in Open Arms&quot;, 
             c(control_color, VGlut1_color), topo_corner_axes, &quot;white&quot;)</code></pre>
 <embed src="figure/behavior_07-epm_genes_silence.Rmd/11-VGlut1_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-11-VGlut1_open_prepost-1">
+Past versions of 11-VGlut1_open_prepost-1.pdf
+</button>
+</p>
+<div id="fig-11-VGlut1_open_prepost-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/11-VGlut1_open_prepost-1.pdf" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="vglut2-2" class="section level4">
 <h4>VGlut2</h4>
 <pre class="r"><code>bg_twogroup(VGlut2_group_gene, &quot;Proportion Time in Open Arms&quot;, 
             c(control_color, VGlut2_color), topo_corner_axes, &quot;white&quot;)</code></pre>
 <embed src="figure/behavior_07-epm_genes_silence.Rmd/12-VGlut2_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-12-VGlut2_open_prepost-1">
+Past versions of 12-VGlut2_open_prepost-1.pdf
+</button>
+</p>
+<div id="fig-12-VGlut2_open_prepost-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/12-VGlut2_open_prepost-1.pdf" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1177,7 +1271,7 @@ VGlut1_group_gene %&gt;%
   get_summary_stats(OpenEntry, type = &quot;mean_se&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"OpenEntry","4":"12","5":"14.833","6":"2.471"},{"1":"mCh","2":"CNO","3":"OpenEntry","4":"12","5":"16.500","6":"3.283"},{"1":"Gi","2":"SAL","3":"OpenEntry","4":"11","5":"15.091","6":"2.201"},{"1":"Gi","2":"CNO","3":"OpenEntry","4":"11","5":"16.000","6":"1.991"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"OpenEntry","4":"11","5":"15.545","6":"2.591"},{"1":"mCh","2":"CNO","3":"OpenEntry","4":"11","5":"14.545","6":"2.890"},{"1":"Gi","2":"SAL","3":"OpenEntry","4":"11","5":"15.091","6":"2.201"},{"1":"Gi","2":"CNO","3":"OpenEntry","4":"11","5":"16.000","6":"1.991"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1212,7 +1306,7 @@ VGlut2_group_gene %&gt;%
 <pre class="r"><code>display_anova(VGlut1_group_gene, &quot;OpenEntry&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"21","4":"0.003","5":"0.957","6":"","7":"5.27e-05","_rn_":"1"},{"1":"time","2":"1","3":"21","4":"0.198","5":"0.661","6":"","7":"6.00e-03","_rn_":"2"},{"1":"group:time","2":"1","3":"21","4":"0.017","5":"0.897","6":"","7":"5.15e-04","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"20","4":"0.051000","5":"0.824","6":"","7":"1.00e-03","_rn_":"1"},{"1":"time","2":"1","3":"20","4":"0.000294","5":"0.986","6":"","7":"8.65e-06","_rn_":"2"},{"1":"group:time","2":"1","3":"20","4":"0.130000","5":"0.723","6":"","7":"4.00e-03","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1221,7 +1315,7 @@ VGlut2_group_gene %&gt;%
 <pre class="r"><code>pairwise_comp_anova(VGlut1_group_gene, &quot;OpenEntry&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"1.6666667","7":"-6.854866","8":"10.188200","9":"0.689","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"0.9090909","7":"-5.281781","8":"7.099963","9":"0.763","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-1.0000000","7":"-9.097131","8":"7.097131","9":"0.799","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"0.9090909","7":"-5.281781","8":"7.099963","9":"0.763","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1236,13 +1330,13 @@ t.test(x = VGlut1_group_gene$OpenEntry[VGlut1_group_gene$group == &quot;mCh&quot
     Welch Two Sample t-test
 
 data:  VGlut1_group_gene$OpenEntry[VGlut1_group_gene$group == &quot;mCh&quot; &amp; VGlut1_group_gene$time == &quot;SAL&quot;] and VGlut1_group_gene$OpenEntry[VGlut1_group_gene$group == &quot;Gi&quot; &amp; VGlut1_group_gene$time == &quot;SAL&quot;]
-t = -0.077846, df = 20.905, p-value = 0.9387
+t = 0.13369, df = 19.489, p-value = 0.895
 alternative hypothesis: true difference in means is not equal to 0
 95 percent confidence interval:
- -7.140510  6.625359
+ -6.649761  7.558852
 sample estimates:
 mean of x mean of y 
- 14.83333  15.09091 </code></pre>
+ 15.54545  15.09091 </code></pre>
 <pre class="r"><code># CNO
 t.test(x = VGlut1_group_gene$OpenEntry[VGlut1_group_gene$group == &quot;mCh&quot; &amp; 
                                               VGlut1_group_gene$time == &quot;CNO&quot;], 
@@ -1252,13 +1346,13 @@ t.test(x = VGlut1_group_gene$OpenEntry[VGlut1_group_gene$group == &quot;mCh&quot
     Welch Two Sample t-test
 
 data:  VGlut1_group_gene$OpenEntry[VGlut1_group_gene$group == &quot;mCh&quot; &amp; VGlut1_group_gene$time == &quot;CNO&quot;] and VGlut1_group_gene$OpenEntry[VGlut1_group_gene$group == &quot;Gi&quot; &amp; VGlut1_group_gene$time == &quot;CNO&quot;]
-t = 0.13022, df = 17.912, p-value = 0.8978
+t = -0.41447, df = 17.747, p-value = 0.6835
 alternative hypothesis: true difference in means is not equal to 0
 95 percent confidence interval:
- -7.56992  8.56992
+ -8.835016  5.925925
 sample estimates:
 mean of x mean of y 
-     16.5      16.0 </code></pre>
+ 14.54545  16.00000 </code></pre>
 </div>
 </div>
 <div id="vglut2-4" class="section level4 tabset">
@@ -1325,12 +1419,86 @@ mean of x mean of y
 <pre class="r"><code>bg_twogroup(VGlut1_group_gene, &quot;Open Arm Entries&quot;, 
             c(control_color, VGlut1_color), epm_axes_entry_genes, &quot;white&quot;)</code></pre>
 <embed src="figure/behavior_07-epm_genes_silence.Rmd/22-VGlut1_Corner_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-22-VGlut1_Corner_prepost-1">
+Past versions of 22-VGlut1_Corner_prepost-1.pdf
+</button>
+</p>
+<div id="fig-22-VGlut1_Corner_prepost-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/22-VGlut1_Corner_prepost-1.pdf" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="vglut2-5" class="section level4">
 <h4>VGlut2</h4>
 <pre class="r"><code>bg_twogroup(VGlut2_group_gene, &quot;Open Arm Entries&quot;, 
             c(control_color, VGlut2_color), epm_axes_entry_genes, &quot;white&quot;)</code></pre>
 <embed src="figure/behavior_07-epm_genes_silence.Rmd/23-VGlut2_Corner_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-23-VGlut2_Corner_prepost-1">
+Past versions of 23-VGlut2_Corner_prepost-1.pdf
+</button>
+</p>
+<div id="fig-23-VGlut2_Corner_prepost-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/23-VGlut2_Corner_prepost-1.pdf" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1362,7 +1530,7 @@ VGlut1_group_gene %&gt;%
   get_summary_stats(Distance, type = &quot;mean_se&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"Distance","4":"12","5":"23.576","6":"2.081"},{"1":"mCh","2":"CNO","3":"Distance","4":"12","5":"22.773","6":"2.721"},{"1":"Gi","2":"SAL","3":"Distance","4":"11","5":"22.281","6":"2.168"},{"1":"Gi","2":"CNO","3":"Distance","4":"11","5":"22.791","6":"1.426"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"Distance","4":"11","5":"23.857","6":"2.259"},{"1":"mCh","2":"CNO","3":"Distance","4":"11","5":"21.419","6":"2.586"},{"1":"Gi","2":"SAL","3":"Distance","4":"11","5":"22.281","6":"2.168"},{"1":"Gi","2":"CNO","3":"Distance","4":"11","5":"22.791","6":"1.426"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1399,7 +1567,7 @@ VGlut2_group_gene %&gt;%
 <pre class="r"><code>display_anova(VGlut1_group_gene, &quot;Distance&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"21","4":"0.077","5":"0.784","6":"","7":"0.002000","_rn_":"1"},{"1":"time","2":"1","3":"21","4":"0.005","5":"0.944","6":"","7":"0.000108","_rn_":"2"},{"1":"group:time","2":"1","3":"21","4":"0.102","5":"0.752","6":"","7":"0.002000","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"20","4":"0.002","5":"0.966","6":"","7":"5.64e-05","_rn_":"1"},{"1":"time","2":"1","3":"20","4":"0.244","5":"0.627","6":"","7":"5.00e-03","_rn_":"2"},{"1":"group:time","2":"1","3":"20","4":"0.570","5":"0.459","6":"","7":"1.20e-02","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1408,7 +1576,7 @@ VGlut2_group_gene %&gt;%
 <pre class="r"><code>pairwise_comp_anova(VGlut1_group_gene, &quot;Distance&quot;)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.8036672","7":"-7.908595","8":"6.301261","9":"0.817","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"0.5099058","7":"-4.902388","8":"5.922200","9":"0.846","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-2.4386874","7":"-9.601089","8":"4.723714","9":"0.486","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"0.5099058","7":"-4.902388","8":"5.922200","9":"0.846","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1423,13 +1591,13 @@ t.test(x = VGlut1_group_gene$Distance[VGlut1_group_gene$group == &quot;mCh&quot;
     Welch Two Sample t-test
 
 data:  VGlut1_group_gene$Distance[VGlut1_group_gene$group == &quot;mCh&quot; &amp; VGlut1_group_gene$time == &quot;SAL&quot;] and VGlut1_group_gene$Distance[VGlut1_group_gene$group == &quot;Gi&quot; &amp; VGlut1_group_gene$time == &quot;SAL&quot;]
-t = 0.43106, df = 20.837, p-value = 0.6708
+t = 0.50353, df = 19.966, p-value = 0.6201
 alternative hypothesis: true difference in means is not equal to 0
 95 percent confidence interval:
- -4.957100  7.547908
+ -4.955105  8.108065
 sample estimates:
 mean of x mean of y 
- 23.57632  22.28092 </code></pre>
+ 23.85740  22.28092 </code></pre>
 <pre class="r"><code># CNO
 t.test(x = VGlut1_group_gene$Distance[VGlut1_group_gene$group == &quot;mCh&quot; &amp; 
                                               VGlut1_group_gene$time == &quot;CNO&quot;], 
@@ -1439,13 +1607,13 @@ t.test(x = VGlut1_group_gene$Distance[VGlut1_group_gene$group == &quot;mCh&quot;
     Welch Two Sample t-test
 
 data:  VGlut1_group_gene$Distance[VGlut1_group_gene$group == &quot;mCh&quot; &amp; VGlut1_group_gene$time == &quot;CNO&quot;] and VGlut1_group_gene$Distance[VGlut1_group_gene$group == &quot;Gi&quot; &amp; VGlut1_group_gene$time == &quot;CNO&quot;]
-t = -0.005914, df = 16.5, p-value = 0.9954
+t = -0.46467, df = 15.565, p-value = 0.6486
 alternative hypothesis: true difference in means is not equal to 0
 95 percent confidence interval:
- -6.514862  6.478524
+ -7.646169  4.901943
 sample estimates:
 mean of x mean of y 
- 22.77266  22.79082 </code></pre>
+ 21.41871  22.79082 </code></pre>
 </div>
 </div>
 <div id="vglut2-7" class="section level4 tabset">
@@ -1512,12 +1680,86 @@ mean of x mean of y
 <pre class="r"><code>bg_twogroup(VGlut1_group_gene, &quot;Distance (m)&quot;, 
             c(control_color, VGlut1_color), openfield_axes_dist_silence_epm, &quot;white&quot;)</code></pre>
 <embed src="figure/behavior_07-epm_genes_silence.Rmd/33-VGlut1_distance_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-33-VGlut1_distance_prepost-1">
+Past versions of 33-VGlut1_distance_prepost-1.pdf
+</button>
+</p>
+<div id="fig-33-VGlut1_distance_prepost-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/33-VGlut1_distance_prepost-1.pdf" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="vglut2-8" class="section level4">
 <h4>VGlut2</h4>
 <pre class="r"><code>bg_twogroup(VGlut2_group_gene, &quot;Distance (m)&quot;, 
             c(control_color, VGlut2_color), openfield_axes_dist_silence_epm, &quot;white&quot;)</code></pre>
 <embed src="figure/behavior_07-epm_genes_silence.Rmd/34-VGlut2_distance_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-34-VGlut2_distance_prepost-1">
+Past versions of 34-VGlut2_distance_prepost-1.pdf
+</button>
+</p>
+<div id="fig-34-VGlut2_distance_prepost-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/34-VGlut2_distance_prepost-1.pdf" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1533,11 +1775,85 @@ cno_heatmap &lt;- get_heatmap_epm(data_gene_cno, &quot;full&quot;)</code></pre>
 <h4>SAL</h4>
 <pre class="r"><code>plot_heatmap_epm(sal_heatmap$`VGlut1-control`)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/36-VGlut1_mCh_sal_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-36-VGlut1_mCh_sal_heatmap-1">
+Past versions of 36-VGlut1_mCh_sal_heatmap-1.png
+</button>
+</p>
+<div id="fig-36-VGlut1_mCh_sal_heatmap-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/36-VGlut1_mCh_sal_heatmap-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="cno" class="section level4">
 <h4>CNO</h4>
 <pre class="r"><code>plot_heatmap_epm(cno_heatmap$`VGlut1-control`)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/37-VGlut1_mCh_cno_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-37-VGlut1_mCh_cno_heatmap-1">
+Past versions of 37-VGlut1_mCh_cno_heatmap-1.png
+</button>
+</p>
+<div id="fig-37-VGlut1_mCh_cno_heatmap-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/37-VGlut1_mCh_cno_heatmap-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="gi" class="section level3 tabset">
@@ -1546,11 +1862,85 @@ cno_heatmap &lt;- get_heatmap_epm(data_gene_cno, &quot;full&quot;)</code></pre>
 <h4>SAL</h4>
 <pre class="r"><code>plot_heatmap_epm(sal_heatmap$`VGlut1-Gi`)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/38-VGlut1_Gi_sal_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-38-VGlut1_Gi_sal_heatmap-1">
+Past versions of 38-VGlut1_Gi_sal_heatmap-1.png
+</button>
+</p>
+<div id="fig-38-VGlut1_Gi_sal_heatmap-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/38-VGlut1_Gi_sal_heatmap-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="cno-1" class="section level4">
 <h4>CNO</h4>
 <pre class="r"><code>plot_heatmap_epm(cno_heatmap$`VGlut1-Gi`)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/39-VGlut1_Gi_cno_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-39-VGlut1_Gi_cno_heatmap-1">
+Past versions of 39-VGlut1_Gi_cno_heatmap-1.png
+</button>
+</p>
+<div id="fig-39-VGlut1_Gi_cno_heatmap-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/39-VGlut1_Gi_cno_heatmap-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1562,11 +1952,85 @@ cno_heatmap &lt;- get_heatmap_epm(data_gene_cno, &quot;full&quot;)</code></pre>
 <h4>SAL</h4>
 <pre class="r"><code>plot_heatmap_epm(sal_heatmap$`VGlut2-control`)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/40-VGlut2_mCh_sal_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-40-VGlut2_mCh_sal_heatmap-1">
+Past versions of 40-VGlut2_mCh_sal_heatmap-1.png
+</button>
+</p>
+<div id="fig-40-VGlut2_mCh_sal_heatmap-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/40-VGlut2_mCh_sal_heatmap-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="cno-2" class="section level4">
 <h4>CNO</h4>
 <pre class="r"><code>plot_heatmap_epm(cno_heatmap$`VGlut2-control`)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/41-VGlut2_mCh_cno_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-41-VGlut2_mCh_cno_heatmap-1">
+Past versions of 41-VGlut2_mCh_cno_heatmap-1.png
+</button>
+</p>
+<div id="fig-41-VGlut2_mCh_cno_heatmap-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/41-VGlut2_mCh_cno_heatmap-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="gi-1" class="section level3 tabset">
@@ -1575,11 +2039,85 @@ cno_heatmap &lt;- get_heatmap_epm(data_gene_cno, &quot;full&quot;)</code></pre>
 <h4>SAL</h4>
 <pre class="r"><code>plot_heatmap_epm(sal_heatmap$`VGlut2-Gi`)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/42-VGlut2_Gi_sal_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-42-VGlut2_Gi_sal_heatmap-1">
+Past versions of 42-VGlut2_Gi_sal_heatmap-1.png
+</button>
+</p>
+<div id="fig-42-VGlut2_Gi_sal_heatmap-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/42-VGlut2_Gi_sal_heatmap-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="cno-3" class="section level4">
 <h4>CNO</h4>
 <pre class="r"><code>plot_heatmap_epm(cno_heatmap$`VGlut2-Gi`)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/43-VGlut2_Gi_cno_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-43-VGlut2_Gi_cno_heatmap-1">
+Past versions of 43-VGlut2_Gi_cno_heatmap-1.png
+</button>
+</p>
+<div id="fig-43-VGlut2_Gi_cno_heatmap-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/43-VGlut2_Gi_cno_heatmap-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1592,6 +2130,43 @@ cno_heatmap &lt;- get_heatmap_epm(data_gene_cno, &quot;full&quot;)</code></pre>
 grid.newpage()
 grid.draw(plot_legend)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/44-scale_bar_horizontal-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-44-scale_bar_horizontal-1">
+Past versions of 44-scale_bar_horizontal-1.png
+</button>
+</p>
+<div id="fig-44-scale_bar_horizontal-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/44-scale_bar_horizontal-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="vertical" class="section level3">
 <h3>Vertical</h3>
@@ -1600,6 +2175,43 @@ grid.draw(plot_legend)</code></pre>
 grid.newpage()
 grid.draw(plot_legend)</code></pre>
 <p><img src="figure/behavior_07-epm_genes_silence.Rmd/45-scale_bar_vertical-1.png" width="288" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-45-scale_bar_vertical-1">
+Past versions of 45-scale_bar_vertical-1.png
+</button>
+</p>
+<div id="fig-45-scale_bar_vertical-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/bde8e6882ba45cdf683f26f4fd40bfbb15200cb6/docs/figure/behavior_07-epm_genes_silence.Rmd/45-scale_bar_vertical-1.png" target="_blank">bde8e68</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1628,47 +2240,47 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] knitr_1.44             ggpubr_0.6.0           emmeans_1.8.8         
+ [1] knitr_1.45             ggpubr_0.6.0           emmeans_1.10.0        
  [4] rstatix_0.7.2          multcomp_1.4-25        TH.data_1.1-2         
- [7] survival_3.5-7         mvtnorm_1.2-3          car_3.1-2             
+ [7] survival_3.5-7         mvtnorm_1.2-4          car_3.1-2             
 [10] carData_3.0-5          gmodels_2.18.1.1       zoo_1.8-12            
-[13] scales_1.2.1           colorspace_2.1-0       gridExtra_2.3         
-[16] cowplot_1.1.1          viridis_0.6.4          viridisLite_0.4.2     
-[19] spatstat_3.0-6         spatstat.linnet_3.1-1  spatstat.model_3.2-6  
-[22] rpart_4.1.19           spatstat.explore_3.2-3 nlme_3.1-163          
-[25] spatstat.random_3.1-6  spatstat.geom_3.2-5    spatstat.data_3.0-1   
+[13] scales_1.3.0           colorspace_2.1-0       gridExtra_2.3         
+[16] cowplot_1.1.3          viridis_0.6.5          viridisLite_0.4.2     
+[19] spatstat_3.0-7         spatstat.linnet_3.1-4  spatstat.model_3.2-10 
+[22] rpart_4.1.23           spatstat.explore_3.2-6 nlme_3.1-164          
+[25] spatstat.random_3.2-2  spatstat.geom_3.2-8    spatstat.data_3.0-4   
 [28] RColorBrewer_1.1-3     colorRamps_2.3.1       lubridate_1.9.3       
-[31] forcats_1.0.0          stringr_1.5.0          dplyr_1.1.3           
-[34] purrr_1.0.2            readr_2.1.4            tidyr_1.3.0           
-[37] tibble_3.2.1           ggplot2_3.4.3          tidyverse_2.0.0       
-[40] MASS_7.3-60            workflowr_1.7.1       
+[31] forcats_1.0.0          stringr_1.5.1          dplyr_1.1.4           
+[34] purrr_1.0.2            readr_2.1.5            tidyr_1.3.1           
+[37] tibble_3.2.1           ggplot2_3.4.4          tidyverse_2.0.0       
+[40] MASS_7.3-60.0.1        workflowr_1.7.1       
 
 loaded via a namespace (and not attached):
- [1] deldir_1.0-9          sandwich_3.0-2        rlang_1.1.1          
- [4] magrittr_2.0.3        git2r_0.32.0          compiler_4.3.1       
- [7] getPass_0.2-2         mgcv_1.9-0            gdata_2.19.0         
-[10] reshape2_1.4.4        callr_3.7.3           vctrs_0.6.3          
+ [1] deldir_2.0-2          sandwich_3.1-0        rlang_1.1.3          
+ [4] magrittr_2.0.3        git2r_0.33.0          compiler_4.3.1       
+ [7] getPass_0.2-4         mgcv_1.9-1            gdata_3.0.0          
+[10] reshape2_1.4.4        callr_3.7.3           vctrs_0.6.5          
 [13] pkgconfig_2.0.3       fastmap_1.1.1         backports_1.4.1      
-[16] labeling_0.4.3        utf8_1.2.3            promises_1.2.1       
-[19] rmarkdown_2.25        tzdb_0.4.0            ps_1.7.5             
-[22] xfun_0.40             cachem_1.0.8          jsonlite_1.8.7       
-[25] goftest_1.2-3         later_1.3.1           spatstat.utils_3.0-3 
-[28] broom_1.0.5           R6_2.5.1              bslib_0.5.1          
-[31] stringi_1.7.12        estimability_1.4.1    jquerylib_0.1.4      
-[34] Rcpp_1.0.11           tensor_1.5            httpuv_1.6.11        
-[37] Matrix_1.6-1.1        splines_4.3.1         timechange_0.2.0     
-[40] tidyselect_1.2.0      rstudioapi_0.15.0     abind_1.4-5          
-[43] yaml_2.3.7            codetools_0.2-19      processx_3.8.2       
-[46] plyr_1.8.9            lattice_0.21-9        withr_2.5.1          
-[49] evaluate_0.22         polyclip_1.10-6       pillar_1.9.0         
-[52] BiocManager_1.30.22   whisker_0.4.1         renv_0.15.4          
-[55] generics_0.1.3        rprojroot_2.0.3       hms_1.1.3            
-[58] munsell_0.5.0         xtable_1.8-4          gtools_3.9.4         
-[61] glue_1.6.2            tools_4.3.1           ggsignif_0.6.4       
-[64] fs_1.6.3              cli_3.6.1             spatstat.sparse_3.0-2
-[67] fansi_1.0.4           gtable_0.3.4          sass_0.4.7           
-[70] digest_0.6.33         farver_2.1.1          htmltools_0.5.6      
-[73] lifecycle_1.0.3       httr_1.4.7           </code></pre>
+[16] labeling_0.4.3        utf8_1.2.4            promises_1.2.1       
+[19] rmarkdown_2.25        tzdb_0.4.0            ps_1.7.6             
+[22] xfun_0.41             cachem_1.0.8          jsonlite_1.8.8       
+[25] goftest_1.2-3         highr_0.10            later_1.3.2          
+[28] spatstat.utils_3.0-4  broom_1.0.5           R6_2.5.1             
+[31] bslib_0.6.1           stringi_1.8.3         estimability_1.4.1   
+[34] jquerylib_0.1.4       Rcpp_1.0.12           tensor_1.5           
+[37] httpuv_1.6.14         Matrix_1.6-5          splines_4.3.1        
+[40] timechange_0.3.0      tidyselect_1.2.0      rstudioapi_0.15.0    
+[43] abind_1.4-5           yaml_2.3.8            codetools_0.2-19     
+[46] processx_3.8.3        plyr_1.8.9            lattice_0.22-5       
+[49] withr_3.0.0           evaluate_0.23         polyclip_1.10-6      
+[52] pillar_1.9.0          BiocManager_1.30.22   whisker_0.4.1        
+[55] renv_1.0.3            generics_0.1.3        rprojroot_2.0.4      
+[58] hms_1.1.3             munsell_0.5.0         xtable_1.8-4         
+[61] gtools_3.9.5          glue_1.7.0            tools_4.3.1          
+[64] ggsignif_0.6.4        fs_1.6.3              cli_3.6.2            
+[67] spatstat.sparse_3.0-3 fansi_1.0.6           gtable_0.3.4         
+[70] sass_0.4.8            digest_0.6.34         farver_2.1.1         
+[73] htmltools_0.5.7       lifecycle_1.0.4       httr_1.4.7           </code></pre>
 </div>
 </div>
 </div>
