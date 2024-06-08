@@ -1,0 +1,220 @@
+---
+author: "James Howe"
+params:
+  id: "plCoA"
+  input_path: "output/sequencing/03-processed_datasets-RNA/"
+  output_path: "output/sequencing/04-subcluster_datasets-RNA/"
+title: "Reclassification and merging of clusters: `r params$id`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This notebook assigns broad identities based on well-known marker genes, consolidates them into legible identities, and then exports them for subclustering within their broad identities.
+
+```{r setup, message = FALSE, warning = FALSE}
+id <- params$id
+input <- paste0(params$input_path, id)
+output <- params$output_path
+dimn <- params$dimn
+
+source("../code/sequencing_misc.R")
+source("../code/sequencing-color_scales.R")
+source("../code/sequencing-plot_functions.R")
+
+require(Seurat)
+require(tidyverse)
+require(knitr)
+require(scCustomize)
+require(clustree)
+require(chisq.posthoc.test)
+require(speckle)
+require(ggtree)
+require(pvclust)
+require(dendextend)
+require(heatmap3)
+require(colorRamps)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+## Read in data from step 02
+
+Imports the merged and transformed Seurat object from step 02. This object should contain SCT data, all relevant metadata, and it should be barcode- and feature-filtered already.
+
+```{r 1-read_integrated_data, message = FALSE, warning = FALSE}
+array <- readRDS("output/sequencing/04-subcluster_datasets-RNA/plCoA_all_RNA.rds")
+```
+
+# Import annotation {.tabset}
+
+Adds annotation from lower level clusters.
+
+```{r 2-import_annotate, message = FALSE, warning = FALSE}
+# neuron vs nonneuron
+neuron_clusters <- read.csv("output/sequencing/cluster_lists/04C-Neuron_class_clusters.csv", row.names = 1)
+nonneuron_clusters <- read.csv("output/sequencing/cluster_lists/03F-Nonneuron_class_clusters.csv", row.names = 1)
+
+# type annotation
+glut_clusters <- read.csv("output/sequencing/cluster_lists/05L-Glut_type_clusters.csv", row.names = 1)
+gaba_clusters <- read.csv("output/sequencing/cluster_lists/05M-GABA_type_clusters.csv", row.names = 1)
+astro_clusters <- read.csv("output/sequencing/cluster_lists/05N-Astro_type_clusters.csv", row.names = 1)
+macro_clusters <- read.csv("output/sequencing/cluster_lists/05O-Macro_type_clusters.csv", row.names = 1)
+nfol_clusters <- read.csv("output/sequencing/cluster_lists/05P-NFOL_type_clusters.csv", row.names = 1)
+mol_clusters <- read.csv("output/sequencing/cluster_lists/05Q-MOL_type_clusters.csv", row.names = 1)
+abc_clusters <- read.csv("output/sequencing/cluster_lists/05R-ABC_type_clusters.csv", row.names = 1)
+vlmc_clusters <- read.csv("output/sequencing/cluster_lists/05S-VLMC_type_clusters.csv", row.names = 1)
+
+# replace classes
+array <- AddMetaData(array, metadata = as.character(array$Tissue), col.name = "Class")
+
+array$Class[array$Class == "Neuron"] <- neuron_clusters$Class
+array$Class[array$Class == "Nonneuron"] <- nonneuron_clusters$Class
+
+# replace types
+array <- AddMetaData(array, metadata = array$Class, col.name = "Type")
+array <- AddMetaData(array, metadata = array$Class, col.name = "Type_Marker")
+
+array$Type[array$Type %in% "Glut"] <- glut_clusters$Type
+array$Type_Marker[array$Type_Marker == "Glut"] <- glut_clusters$Type.Marker
+
+array$Type[array$Type %in% "GABA"] <- gaba_clusters$Type
+array$Type_Marker[array$Type_Marker == "GABA"] <- gaba_clusters$Type.Marker
+
+array$Type[array$Type == "Astro"] <- astro_clusters$Type
+array$Type_Marker[array$Type_Marker == "Astro"] <- astro_clusters$Type.Marker
+
+array$Type[array$Type == "Macro"] <- macro_clusters$Type
+array$Type_Marker[array$Type_Marker == "Macro"] <- macro_clusters$Type.Marker
+
+array$Type[array$Type == "NFOL"] <- nfol_clusters$Type
+array$Type_Marker[array$Type_Marker == "NFOL"] <- nfol_clusters$Type.Marker
+
+array$Type[array$Type == "MOL"] <- mol_clusters$Type
+array$Type_Marker[array$Type_Marker == "MOL"] <- mol_clusters$Type.Marker
+
+array$Type[array$Type == "ABC"] <- abc_clusters$Type
+array$Type_Marker[array$Type_Marker == "ABC"] <- abc_clusters$Type.Marker
+
+array$Type[array$Type == "VLMC"] <- vlmc_clusters$Type
+array$Type_Marker[array$Type_Marker == "VLMC"] <- vlmc_clusters$Type.Marker
+
+array$Class <- factor(array$Class, levels = c("Glut", "GABA", "Astro", "Micro", "Macro", 
+                                              "OPC", "NFOL", "MOL", "Endo", "Mural", "ABC", "VLMC"))
+
+array$Type <- factor(array$Type, levels = c("Glut.1", "Glut.2", "Glut.3",
+                                            "Glut.4", "Glut.5", "Glut.6",
+                                            "Glut.7", "Glut.8", "Glut.9",
+                                            "Glut.10", "Glut.11", "Glut.12", "Glut.13", "Glut.14",
+                                            "GABA.1", "GABA.2", "GABA.3",
+                                            "GABA.4", "GABA.5", "GABA.6",
+                                            "GABA.7", "GABA.8", "GABA.9",
+                                            "GABA.10", "GABA.11", "GABA.12", "GABA.13",
+                                            "Astro.1", "Astro.2",
+                                            "Micro", "Macro.1", "Macro.2", 
+                                            "OPC", "NFOL.1", "NFOL.2", "MOL.1", "MOL.2", 
+                                            "Endo", "Mural", 
+                                            "ABC.1", "ABC.2", "ABC.3", "VLMC.1", "VLMC.2", "VLMC.3"))
+array$Type_Marker <- factor(array$Type_Marker, 
+                            levels = c("Glut.Zfp536", "Glut.Satb2",
+                                       "Glut.Gulp1", "Glut.Fign", 
+                                       "Glut.Ror1", "Glut.Reln",
+                                       "Glut.Meis1", "Glut.Smoc1", "Glut.Ntng1",
+                                       "Glut.Ebf1", "Glut.Vwc2", 
+                                       "Glut.Ebf2", "Glut.Etv1", "Glut.Sim1",
+                                       "GABA.Lamp5", "GABA.Nxph2", "GABA.Vip",
+                                       "GABA.Sst", "GABA.Nell2", "GABA.Slc16a2",
+                                       "GABA.Npas1", "GABA.Tacr1", "GABA.Pdzrn3",
+                                       "GABA.Vcan", "GABA.Npsr1", "GABA.Spon1", "GABA.Rai14", 
+                                       "Astro.Luzp2", "Astro.Myoc",
+                                       "Micro", "Macro.F13a1", "Macro.Cd74", 
+                                       "OPC", "NFOL.Frmd4a", "NFOL.Sgcd", "MOL.Mast4", "MOL.Prom1", 
+                                       "Endo", "Mural", 
+                                       "ABC.Slc4a10", "ABC.Ranbp3l", "VLMC.Mgat4c", "VLMC.Bnc2", "VLMC.Hecw2"))
+
+plot_group_array <- cbind.data.frame(array$Tissue,
+                                     array$Class,
+                                     array$Type,
+                                     array$orig.ident,
+                                     array$Region)
+colnames(plot_group_array) <- c("Tissue", "Class", "Type", "Batch", "Region")
+```
+
+# Identify marker genes
+
+```{r 9-find_markers, message = FALSE, warning = FALSE, results = "hide"}
+pct_expressed_aplCoA <- do.call(cbind.data.frame, 
+                         (lapply(levels(array$Class), 
+                 function(x) rowSums(array@assays$RNA@counts[, array$Class == x & array$Region == "aplCoA"] != 0) 
+                             / length(array$Class[array$Class == x & array$Region == "aplCoA"]))))
+
+pct_expressed_pplCoA <- do.call(cbind.data.frame, 
+                         (lapply(levels(array$Class), 
+                 function(x) rowSums(array@assays$RNA@counts[, array$Class == x & array$Region == "pplCoA"] != 0) 
+                             / length(array$Class[array$Class == x & array$Region == "pplCoA"]))))
+
+pct_expressed <- pmax(pct_expressed_aplCoA, pct_expressed_pplCoA)
+
+colnames(pct_expressed) <- levels(array$Class)
+
+rm(pct_expressed_aplCoA, pct_expressed_pplCoA)
+
+
+# find de novo markers, clusters
+marker_class <- markers_sc_wilcox(array, "Class")
+marker_type <- markers_sc_wilcox(array, "Type")
+
+# find regional markers within cell types
+marker_class_region <- markers_pb_edgeRLRT(array, "Class", 0.1)
+marker_type_region <- markers_pb_edgeRLRT(array, "Type", 0.1)
+```
+
+# Select marker genes
+
+```{r 10-choose_markers, message = FALSE, warning = FALSE, results = "hide"}
+# region-specific
+marker_class_region_aplCoA <- lapply(marker_class_region, 
+                                    function(x) {x[x$p_val_adj < .05 & x$avg_logFC > 0.585,]})
+marker_class_region_pplCoA <- lapply(marker_class_region, 
+                                    function(x) {x[x$p_val_adj < .05 & x$avg_logFC < -0.585,]})
+
+marker_type_region_aplCoA <- lapply(marker_type_region, 
+                                    function(x) {x[x$p_val_adj < .05 & x$avg_logFC > 0.585,]})
+marker_type_region_pplCoA <- lapply(marker_type_region, 
+                                    function(x) {x[x$p_val_adj < .05 & x$avg_logFC < -0.585,]})
+
+# based on numbers for max of each one
+deg_range_class <- c(0, 90)
+deg_range_type <- c(0, 90)
+```
+
+## DEG Abundance {.tabset}
+
+### Class {.tabset}
+
+#### aplCoA
+
+```{r 11-deg_abundance_magnitude_class_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 2.5}
+deg_abundance_plot_magnitude(marker_class_region_aplCoA, deg_intensity_colors_aplCoA, deg_range_class, "aplCoA")
+```
+
+#### pplCoA
+
+```{r 12-deg_abundance_magnitude_class_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 2.5}
+deg_abundance_plot_magnitude(marker_class_region_pplCoA, deg_intensity_colors_pplCoA, deg_range_class, "pplCoA")
+```
+
+### Type {.tabset}
+
+#### aplCoA
+
+```{r 13-deg_abundance_magnitude_class_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 2.5}
+deg_abundance_plot_magnitude(marker_type_region_aplCoA, deg_intensity_colors_aplCoA, deg_range_type, "aplCoA")
+```
+
+#### pplCoA
+
+```{r 14-deg_abundance_magnitude_class_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 2.5}
+deg_abundance_plot_magnitude(marker_type_region_pplCoA, deg_intensity_colors_pplCoA, deg_range_type, "pplCoA")
+```
