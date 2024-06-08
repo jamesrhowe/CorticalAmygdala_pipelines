@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Behavioral analysis: projections</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Behavioral analysis: projections</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">21 February, 2024</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-02-21
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree576b196d4ec263a1f2896b578054061d1ce4b0ebtargetblank576b196a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/576b196d4ec263a1f2896b578054061d1ce4b0eb" target="_blank">576b196</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree576b196d4ec263a1f2896b578054061d1ce4b0ebtargetblank576b196a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/576b196d4ec263a1f2896b578054061d1ce4b0eb" target="_blank">576b196</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/rnascope/
+    Ignored:    data/sequencing/
+    Ignored:    output/.DS_Store
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/08A-merge_rd1_ATAC.Rmd
+    Untracked:  analysis/behavior_10-projections_silencing_TMT.Rmd
+    Untracked:  analysis/behavior_11-projections_silencing_2PE.Rmd
+    Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02D-Neuron_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02E-reprocess_Glut_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02F-reprocess_GABA_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02G-Glut_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-03A-merge_filtered_RNA.Rmd
+    Untracked:  analysis/sequencing-03B-initial_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04-initial_deg.Rmd
+    Untracked:  analysis/sequencing-04A-reprocess_Neuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04B-reprocess_Nonneuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04C-Neuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04D-Nonneuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05C-reprocess_Astro_RNA.Rmd
+    Untracked:  analysis/sequencing-05L-Glut_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05M-GABA_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05N-Astro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05O-Macro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05P-NFOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05Q-MOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05R-ABC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05S-VLMC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05T-Immune_classification+labeling_RNA.Rmd
+    Untracked:  analysis/sequencing-06A-merged_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
+    Untracked:  analysis/sequencing-06B-merged_deg_discovery_RNA.Rmd
+    Untracked:  analysis/sequencing-07A-preprocess_aplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07B-preprocess_aplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07C-preprocess_aplCoA-2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07D-preprocess_pplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07E-preprocess_pplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07F-preprocess_pplCoA-2_ATAC.Rmd
+    Untracked:  output/sequencing/
+    Untracked:  output/spatial/
+
+Unstaged changes:
+    Modified:   analysis/sequencing-02A-merge_rd1_RNA.Rmd
+    Modified:   analysis/sequencing-03-initial_classification.Rmd
+    Modified:   analysis/sequencing-05A-reprocess_Glut_RNA.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/behavior_15-epm_projections_silence.Rmd</code>) and HTML
+(<code>docs/behavior_15-epm_projections_silence.html</code>) files. If
+you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/86c4464b24e834d51f55909bbe7c5b2945c83dcd/analysis/behavior_15-epm_projections_silence.Rmd" target="_blank">86c4464</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-22
+</td>
+<td>
+Added additional projection behavior notebooks.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is a notebook that processes 4-quad data and outputs analyses
+and figures for publication.</p>
+<pre class="r"><code># set up paths
+projection_id &lt;- params$dataset
+projection_path &lt;- params$path
+start_min &lt;- params$start_min
+end_min &lt;- params$end_min
+
+source(&quot;code/behavior-refs.R&quot;)</code></pre>
+<pre><code>Loading required package: MASS</code></pre>
+<pre><code>Loading required package: tidyverse</code></pre>
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+✖ dplyr::select() masks MASS::select()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+Loading required package: colorRamps
+
+Loading required package: RColorBrewer
+
+Loading required package: spatstat
+
+Loading required package: spatstat.data
+
+Loading required package: spatstat.geom
+
+spatstat.geom 3.2-8
+
+
+Attaching package: &#39;spatstat.geom&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    area
+
+
+Loading required package: spatstat.random
+
+spatstat.random 3.2-2
+
+Loading required package: spatstat.explore
+
+Loading required package: nlme
+
+
+Attaching package: &#39;nlme&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    collapse
+
+
+spatstat.explore 3.2-6
+
+Loading required package: spatstat.model
+
+Loading required package: rpart
+
+spatstat.model 3.2-10
+
+Loading required package: spatstat.linnet
+
+spatstat.linnet 3.1-4
+
+
+spatstat 3.0-7 
+For an introduction to spatstat, type &#39;beginner&#39; 
+
+
+Loading required package: viridis
+
+Loading required package: viridisLite
+
+Loading required package: cowplot
+
+
+Attaching package: &#39;cowplot&#39;
+
+
+The following object is masked from &#39;package:lubridate&#39;:
+
+    stamp
+
+
+Loading required package: grid
+
+
+Attaching package: &#39;grid&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    as.mask
+
+
+Loading required package: gridExtra
+
+
+Attaching package: &#39;gridExtra&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    combine
+
+
+Loading required package: colorspace
+
+
+Attaching package: &#39;colorspace&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    coords
+
+
+Loading required package: scales
+
+
+Attaching package: &#39;scales&#39;
+
+
+The following object is masked from &#39;package:viridis&#39;:
+
+    viridis_pal
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    rescale
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    discard
+
+
+The following object is masked from &#39;package:readr&#39;:
+
+    col_factor
+
+
+
+Attaching package: &#39;zoo&#39;
+
+
+The following objects are masked from &#39;package:base&#39;:
+
+    as.Date, as.Date.numeric
+
+
+Loading required package: carData
+
+
+Attaching package: &#39;car&#39;
+
+
+The following object is masked from &#39;package:spatstat.model&#39;:
+
+    bc
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    ellipse
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    recode
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    some
+
+
+Loading required package: mvtnorm
+
+Loading required package: survival
+
+Loading required package: TH.data
+
+
+Attaching package: &#39;TH.data&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    geyser
+
+
+
+Attaching package: &#39;rstatix&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    select
+
+
+The following object is masked from &#39;package:stats&#39;:
+
+    filter
+
+
+
+Attaching package: &#39;ggpubr&#39;
+
+
+The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend
+
+
+The following objects are masked from &#39;package:spatstat.geom&#39;:
+
+    border, rotate</code></pre>
+<pre class="r"><code>source(&quot;code/behavior-misc_processes.R&quot;)
+source(&quot;code/behavior-plot_functions.R&quot;)
+
+projection_groups &lt;- unlist(strsplit(Sys.glob(paste0(projection_path, &quot;SAL/*&quot;)),
+                                         paste0(projection_path, &quot;SAL/&quot;)))[c(FALSE, TRUE)]</code></pre>
+</div>
+<div id="load-the-data" class="section level1">
+<h1>Load the data</h1>
+<p>Names have to be given manually in most cases. Also for now copy into
+console because it does not load due to odd workspace issues. This loads
+all files in a directory and puts it into the correct format
+automatically.</p>
+<pre class="r"><code># set up the object with pointers
+data_projection_sal &lt;- vector(mode = &quot;list&quot;, length = 4)
+data_projection_sal &lt;- lapply(projection_groups, 
+                        function(x) lapply(Sys.glob(paste0(projection_path, &quot;SAL/&quot;, x, &quot;/*&quot;)),
+                                           function(y) process_series_epm(y, &quot;silence&quot;)))
+
+data_projection_cno &lt;- vector(mode = &quot;list&quot;, length = 4)
+data_projection_cno &lt;- lapply(projection_groups, 
+                        function(x) lapply(Sys.glob(paste0(projection_path, &quot;CNO/&quot;, x, &quot;/*&quot;)),
+                                           function(y) process_series_epm(y, &quot;silence&quot;)))
+
+# add names to each
+names(data_projection_sal) &lt;- Sys.glob(paste0(projection_path, &quot;SAL/&quot;, &quot;*&quot;))
+names(data_projection_sal) &lt;- unlist(strsplit(names(data_projection_sal), 
+                                                  paste0(projection_path, &quot;SAL/&quot;)))[c(FALSE, TRUE)]
+
+names(data_projection_cno) &lt;- Sys.glob(paste0(projection_path, &quot;CNO/&quot;, &quot;*&quot;))
+names(data_projection_cno) &lt;- unlist(strsplit(names(data_projection_cno), 
+                                                  paste0(projection_path, &quot;CNO/&quot;)))[c(FALSE, TRUE)]
+
+for (i in 1:length(projection_groups)){
+  data_projection_sal &lt;- add_custom_names(data_projection_sal, paste0(projection_path, &quot;SAL/&quot;), 
+                                              projection_groups[i], projection_labels[i])
+  data_projection_cno &lt;- add_custom_names(data_projection_cno, paste0(projection_path, &quot;CNO/&quot;), 
+                                              projection_groups[i], projection_labels[i])
+}
+
+data_projection_sal &lt;- list(data_projection_sal$`MeA-control`, data_projection_sal$`MeA-Gi`, 
+                                data_projection_sal$`NAc-control`, data_projection_sal$`NAc-Gi`)
+names(data_projection_sal) &lt;- c(&quot;MeA-control&quot;, &quot;MeA-Gi&quot;, &quot;NAc-control&quot;, &quot;NAc-Gi&quot;)
+
+data_projection_cno &lt;- list(data_projection_cno$`MeA-control`, data_projection_cno$`MeA-Gi`, 
+                                data_projection_cno$`NAc-control`, data_projection_cno$`NAc-Gi`)
+names(data_projection_cno) &lt;- c(&quot;MeA-control&quot;, &quot;MeA-Gi&quot;, &quot;NAc-control&quot;, &quot;NAc-Gi&quot;)</code></pre>
+</div>
+<div id="open-time-based-metrics" class="section level1">
+<h1>Open Time-based metrics</h1>
+<div id="summary-statistics" class="section level3">
+<h3>Summary statistics</h3>
+<pre class="r"><code>projection_sal_array &lt;- transform_epm_opentime(data_projection_sal, &quot;full&quot;, &quot;Region&quot;, 1, 2400)
+
+projection_cno_array &lt;- transform_epm_opentime(data_projection_cno, &quot;full&quot;, &quot;Region&quot;, 1, 2400)
+
+opentime_group_projection &lt;- group_array(data_projection_sal, projection_sal_array,
+                                         projection_cno_array, &quot;OpenTime&quot;)</code></pre>
+<div id="mea" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- opentime_group_projection[opentime_group_projection$group 
+                                     %in% c(&quot;MeA Gi&quot;, &quot;MeA mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, baseline_OpenTime, treatment_OpenTime) %&gt;%
+  convert_as_factor(group, time)
+levels(MeA_group_projection$time) &lt;- c(&quot;SAL&quot;, &quot;CNO&quot;)
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                  levels = c(&quot;MeA mCh&quot;, &quot;MeA Gi&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"OpenTime","4":"8","5":"0.188","6":"0.037"},{"1":"mCh","2":"CNO","3":"OpenTime","4":"8","5":"0.145","6":"0.027"},{"1":"Gi","2":"SAL","3":"OpenTime","4":"6","5":"0.237","6":"0.081"},{"1":"Gi","2":"CNO","3":"OpenTime","4":"6","5":"0.160","6":"0.026"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="nac" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- opentime_group_projection[opentime_group_projection$group 
+                                     %in% c(&quot;NAc Gi&quot;, &quot;NAc mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, baseline_OpenTime, treatment_OpenTime) %&gt;%
+  convert_as_factor(group, time)
+levels(NAc_group_projection$time) &lt;- c(&quot;SAL&quot;, &quot;CNO&quot;)
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                  levels = c(&quot;NAc mCh&quot;, &quot;NAc Gi&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"OpenTime","4":"8","5":"0.226","6":"0.042"},{"1":"mCh","2":"CNO","3":"OpenTime","4":"8","5":"0.203","6":"0.046"},{"1":"Gi","2":"SAL","3":"OpenTime","4":"5","5":"0.276","6":"0.101"},{"1":"Gi","2":"CNO","3":"OpenTime","4":"5","5":"0.325","6":"0.127"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="mea-1" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"12","4":"0.546","5":"0.474","6":"","7":"0.021","_rn_":"1"},{"1":"time","2":"1","3":"12","4":"1.620","5":"0.227","6":"","7":"0.068","_rn_":"2"},{"1":"group:time","2":"1","3":"12","4":"0.133","5":"0.722","6":"","7":"0.006","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.04229167","7":"-0.1402783","8":"0.05569492","9":"0.370","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.07618056","7":"-0.2646053","8":"0.11224419","9":"0.389","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># SAL
+t.test(x = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;mCh&quot; &amp; 
+                                              MeA_group_projection$time == &quot;SAL&quot;], 
+       y = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;Gi&quot; &amp; 
+                                         MeA_group_projection$time == &quot;SAL&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;mCh&quot; &amp; MeA_group_projection$time == &quot;SAL&quot;] and MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;Gi&quot; &amp; MeA_group_projection$time == &quot;SAL&quot;]
+t = -0.55173, df = 7.0858, p-value = 0.5981
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.2576301  0.1599565
+sample estimates:
+mean of x mean of y 
+0.1877604 0.2365972 </code></pre>
+<pre class="r"><code># CNO
+t.test(x = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;mCh&quot; &amp; 
+                                              MeA_group_projection$time == &quot;CNO&quot;], 
+       y = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;Gi&quot; &amp; 
+                                         MeA_group_projection$time == &quot;CNO&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;mCh&quot; &amp; MeA_group_projection$time == &quot;CNO&quot;] and MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;Gi&quot; &amp; MeA_group_projection$time == &quot;CNO&quot;]
+t = -0.39899, df = 11.821, p-value = 0.697
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.09671417  0.06681834
+sample estimates:
+mean of x mean of y 
+0.1454688 0.1604167 </code></pre>
+</div>
+</div>
+<div id="nac-1" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-1" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"11","4":"0.878","5":"0.369","6":"","7":"0.058","_rn_":"1"},{"1":"time","2":"1","3":"11","4":"0.071","5":"0.795","6":"","7":"0.001","_rn_":"2"},{"1":"group:time","2":"1","3":"11","4":"0.516","5":"0.488","6":"","7":"0.010","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-1" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.0225","7":"-0.1555193","8":"0.1105193","9":"0.722","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"0.0490","7":"-0.3249630","8":"0.4229630","9":"0.770","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-1" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># SAL
+t.test(x = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;mCh&quot; &amp; 
+                                              NAc_group_projection$time == &quot;SAL&quot;], 
+       y = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;Gi&quot; &amp; 
+                                         NAc_group_projection$time == &quot;SAL&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;mCh&quot; &amp; NAc_group_projection$time == &quot;SAL&quot;] and NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;Gi&quot; &amp; NAc_group_projection$time == &quot;SAL&quot;]
+t = -0.4611, df = 5.3873, p-value = 0.6627
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.3261196  0.2250987
+sample estimates:
+mean of x mean of y 
+0.2255729 0.2760833 </code></pre>
+<pre class="r"><code># CNO
+t.test(x = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;mCh&quot; &amp; 
+                                              NAc_group_projection$time == &quot;CNO&quot;], 
+       y = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;Gi&quot; &amp; 
+                                         NAc_group_projection$time == &quot;CNO&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;mCh&quot; &amp; NAc_group_projection$time == &quot;CNO&quot;] and NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;Gi&quot; &amp; NAc_group_projection$time == &quot;CNO&quot;]
+t = -0.90576, df = 5.0672, p-value = 0.4061
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.4669046  0.2228838
+sample estimates:
+mean of x mean of y 
+0.2030729 0.3250833 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-2" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_twogroup(MeA_group_projection, &quot;Proportion Time in Open Arms&quot;, 
+            c(control_color, mea_color), topo_ot_axes_min, &quot;white&quot;)</code></pre>
+<embed src="figure/behavior_15-epm_projections_silence.Rmd/11-MeA_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-2" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_twogroup(NAc_group_projection, &quot;Proportion Time in Open Arms&quot;, 
+            c(control_color, nac_color), topo_ot_axes_min, &quot;white&quot;)</code></pre>
+<embed src="figure/behavior_15-epm_projections_silence.Rmd/12-NAc_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="open-entry-based-metrics" class="section level1">
+<h1>Open Entry-based metrics</h1>
+<div id="summary-statistics-1" class="section level3">
+<h3>Summary statistics</h3>
+<pre class="r"><code>projection_sal_array &lt;- transform_epm_openentry(data_projection_sal, &quot;full&quot;, &quot;OpenEntry&quot;, 1, 2400)
+
+projection_cno_array &lt;- transform_epm_openentry(data_projection_cno, &quot;full&quot;, &quot;OpenEntry&quot;, 1, 2400)
+
+openentry_group_projection &lt;- group_array(data_projection_sal, projection_sal_array, projection_cno_array, &quot;OpenEntry&quot;)</code></pre>
+<div id="mea-3" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- openentry_group_projection[openentry_group_projection$group 
+                                     %in% c(&quot;MeA Gi&quot;, &quot;MeA mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenEntry&quot;, baseline_OpenEntry, treatment_OpenEntry) %&gt;%
+  convert_as_factor(group, time)
+levels(MeA_group_projection$time) &lt;- c(&quot;SAL&quot;, &quot;CNO&quot;)
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                  levels = c(&quot;MeA mCh&quot;, &quot;MeA Gi&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenEntry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"OpenEntry","4":"8","5":"17.250","6":"2.671"},{"1":"mCh","2":"CNO","3":"OpenEntry","4":"8","5":"13.125","6":"1.959"},{"1":"Gi","2":"SAL","3":"OpenEntry","4":"6","5":"14.833","6":"1.797"},{"1":"Gi","2":"CNO","3":"OpenEntry","4":"6","5":"17.000","6":"3.162"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="nac-3" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- openentry_group_projection[openentry_group_projection$group 
+                                     %in% c(&quot;NAc Gi&quot;, &quot;NAc mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenEntry&quot;, baseline_OpenEntry, treatment_OpenEntry) %&gt;%
+  convert_as_factor(group, time)
+levels(NAc_group_projection$time) &lt;- c(&quot;SAL&quot;, &quot;CNO&quot;)
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                  levels = c(&quot;NAc mCh&quot;, &quot;NAc Gi&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenEntry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"OpenEntry","4":"8","5":"21.875","6":"3.758"},{"1":"mCh","2":"CNO","3":"OpenEntry","4":"8","5":"18.500","6":"4.563"},{"1":"Gi","2":"SAL","3":"OpenEntry","4":"5","5":"17.400","6":"2.804"},{"1":"Gi","2":"CNO","3":"OpenEntry","4":"5","5":"10.600","6":"3.356"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-1" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="mea-4" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-2" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;OpenEntry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"12","4":"0.086","5":"0.774","6":"","7":"0.004","_rn_":"1"},{"1":"time","2":"1","3":"12","4":"0.157","5":"0.699","6":"","7":"0.006","_rn_":"2"},{"1":"group:time","2":"1","3":"12","4":"1.616","5":"0.228","6":"","7":"0.063","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-2" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;OpenEntry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-4.125000","7":"-11.229064","8":"2.979064","9":"0.233","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"2.166667","7":"-5.937077","8":"10.270410","9":"0.565","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-2" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># SAL
+t.test(x = MeA_group_projection$OpenEntry[MeA_group_projection$group == &quot;mCh&quot; &amp; 
+                                              MeA_group_projection$time == &quot;SAL&quot;], 
+       y = MeA_group_projection$OpenEntry[MeA_group_projection$group == &quot;Gi&quot; &amp; 
+                                         MeA_group_projection$time == &quot;SAL&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenEntry[MeA_group_projection$group == &quot;mCh&quot; &amp; MeA_group_projection$time == &quot;SAL&quot;] and MeA_group_projection$OpenEntry[MeA_group_projection$group == &quot;Gi&quot; &amp; MeA_group_projection$time == &quot;SAL&quot;]
+t = 0.75076, df = 11.478, p-value = 0.4679
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.632399  9.465732
+sample estimates:
+mean of x mean of y 
+ 17.25000  14.83333 </code></pre>
+<pre class="r"><code># CNO
+t.test(x = MeA_group_projection$OpenEntry[MeA_group_projection$group == &quot;mCh&quot; &amp; 
+                                              MeA_group_projection$time == &quot;CNO&quot;], 
+       y = MeA_group_projection$OpenEntry[MeA_group_projection$group == &quot;Gi&quot; &amp; 
+                                         MeA_group_projection$time == &quot;CNO&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenEntry[MeA_group_projection$group == &quot;mCh&quot; &amp; MeA_group_projection$time == &quot;CNO&quot;] and MeA_group_projection$OpenEntry[MeA_group_projection$group == &quot;Gi&quot; &amp; MeA_group_projection$time == &quot;CNO&quot;]
+t = -1.0417, df = 8.6622, p-value = 0.3257
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -12.340097   4.590097
+sample estimates:
+mean of x mean of y 
+   13.125    17.000 </code></pre>
+</div>
+</div>
+<div id="nac-4" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-3" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;OpenEntry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"11","4":"2.242","5":"0.162","6":"","7":"0.091","_rn_":"1"},{"1":"time","2":"1","3":"11","4":"1.481","5":"0.249","6":"","7":"0.064","_rn_":"2"},{"1":"group:time","2":"1","3":"11","4":"0.168","5":"0.690","6":"","7":"0.008","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-3" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;OpenEntry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-3.375","7":"-16.05361","8":"9.303610","9":"0.577","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"-6.800","7":"-16.88333","8":"3.283331","9":"0.159","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-3" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># SAL
+t.test(x = NAc_group_projection$OpenEntry[NAc_group_projection$group == &quot;mCh&quot; &amp; 
+                                              NAc_group_projection$time == &quot;SAL&quot;], 
+       y = NAc_group_projection$OpenEntry[NAc_group_projection$group == &quot;Gi&quot; &amp; 
+                                         NAc_group_projection$time == &quot;SAL&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenEntry[NAc_group_projection$group == &quot;mCh&quot; &amp; NAc_group_projection$time == &quot;SAL&quot;] and NAc_group_projection$OpenEntry[NAc_group_projection$group == &quot;Gi&quot; &amp; NAc_group_projection$time == &quot;SAL&quot;]
+t = 0.95445, df = 10.998, p-value = 0.3604
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.844693 14.794693
+sample estimates:
+mean of x mean of y 
+   21.875    17.400 </code></pre>
+<pre class="r"><code># CNO
+t.test(x = NAc_group_projection$OpenEntry[NAc_group_projection$group == &quot;mCh&quot; &amp; 
+                                              NAc_group_projection$time == &quot;CNO&quot;], 
+       y = NAc_group_projection$OpenEntry[NAc_group_projection$group == &quot;Gi&quot; &amp; 
+                                         NAc_group_projection$time == &quot;CNO&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenEntry[NAc_group_projection$group == &quot;mCh&quot; &amp; NAc_group_projection$time == &quot;CNO&quot;] and NAc_group_projection$OpenEntry[NAc_group_projection$group == &quot;Gi&quot; &amp; NAc_group_projection$time == &quot;CNO&quot;]
+t = 1.3948, df = 10.992, p-value = 0.1906
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.567536 20.367536
+sample estimates:
+mean of x mean of y 
+     18.5      10.6 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-1" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-5" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_twogroup(MeA_group_projection, &quot;Open Arm Entries&quot;, 
+            c(control_color, mea_color), proj_entry_axes_silence, &quot;white&quot;)</code></pre>
+<embed src="figure/behavior_15-epm_projections_silence.Rmd/22-MeA_openarm_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-5" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_twogroup(NAc_group_projection, &quot;Open Arm Entries&quot;, 
+            c(control_color, nac_color), proj_entry_axes_silence, &quot;white&quot;)</code></pre>
+<embed src="figure/behavior_15-epm_projections_silence.Rmd/23-NAc_openarm_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="distance-based-metrics" class="section level1">
+<h1>Distance-based metrics</h1>
+<div id="summary-statistics-2" class="section level3">
+<h3>Summary statistics</h3>
+<pre class="r"><code>projection_sal_array &lt;- transform_epm_openentry(data_projection_sal, &quot;full&quot;, &quot;Distance&quot;, 1, 2400)
+
+projection_cno_array &lt;- transform_epm_openentry(data_projection_cno, &quot;full&quot;, &quot;Distance&quot;, 1, 2400)
+
+distance_group_projection &lt;- group_array(data_projection_sal, projection_sal_array, projection_cno_array, &quot;Distance&quot;)</code></pre>
+<div id="mea-6" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- distance_group_projection[distance_group_projection$group 
+                                     %in% c(&quot;MeA Gi&quot;, &quot;MeA mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;Distance&quot;, baseline_Distance, treatment_Distance) %&gt;%
+  convert_as_factor(group, time)
+levels(MeA_group_projection$time) &lt;- c(&quot;SAL&quot;, &quot;CNO&quot;)
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                  levels = c(&quot;MeA mCh&quot;, &quot;MeA Gi&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+MeA_group_projection$Distance &lt;- MeA_group_projection$Distance / 100
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(Distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"Distance","4":"8","5":"21.543","6":"1.426"},{"1":"mCh","2":"CNO","3":"Distance","4":"8","5":"19.118","6":"1.521"},{"1":"Gi","2":"SAL","3":"Distance","4":"6","5":"17.831","6":"1.598"},{"1":"Gi","2":"CNO","3":"Distance","4":"6","5":"22.751","6":"2.756"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="nac-6" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- distance_group_projection[distance_group_projection$group 
+                                     %in% c(&quot;NAc Gi&quot;, &quot;NAc mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;Distance&quot;, baseline_Distance, treatment_Distance) %&gt;%
+  convert_as_factor(group, time)
+levels(NAc_group_projection$time) &lt;- c(&quot;SAL&quot;, &quot;CNO&quot;)
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                  levels = c(&quot;NAc mCh&quot;, &quot;NAc Gi&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+NAc_group_projection$Distance &lt;- NAc_group_projection$Distance / 100
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(Distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"Distance","4":"8","5":"25.417","6":"2.203"},{"1":"mCh","2":"CNO","3":"Distance","4":"8","5":"19.905","6":"2.835"},{"1":"Gi","2":"SAL","3":"Distance","4":"5","5":"22.731","6":"2.892"},{"1":"Gi","2":"CNO","3":"Distance","4":"5","5":"15.777","6":"3.318"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-2" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="mea-7" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-4" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;Distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"12","4":"0.000413","5":"0.984","6":"","7":"1.92e-05","_rn_":"1"},{"1":"time","2":"1","3":"12","4":"0.529000","5":"0.481","6":"","7":"1.90e-02","_rn_":"2"},{"1":"group:time","2":"1","3":"12","4":"4.580000","5":"0.054","6":"","7":"1.44e-01","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-4" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;Distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-2.424290","7":"-6.897051","8":"2.048471","9":"0.264","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"4.920192","7":"-2.178693","8":"12.019077","9":"0.154","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-4" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># SAL
+t.test(x = MeA_group_projection$Distance[MeA_group_projection$group == &quot;mCh&quot; &amp; 
+                                              MeA_group_projection$time == &quot;SAL&quot;], 
+       y = MeA_group_projection$Distance[MeA_group_projection$group == &quot;Gi&quot; &amp; 
+                                         MeA_group_projection$time == &quot;SAL&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$Distance[MeA_group_projection$group == &quot;mCh&quot; &amp; MeA_group_projection$time == &quot;SAL&quot;] and MeA_group_projection$Distance[MeA_group_projection$group == &quot;Gi&quot; &amp; MeA_group_projection$time == &quot;SAL&quot;]
+t = 1.7329, df = 11.106, p-value = 0.1108
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.9970652  8.4199165
+sample estimates:
+mean of x mean of y 
+ 21.54272  17.83130 </code></pre>
+<pre class="r"><code># CNO
+t.test(x = MeA_group_projection$Distance[MeA_group_projection$group == &quot;mCh&quot; &amp; 
+                                              MeA_group_projection$time == &quot;CNO&quot;], 
+       y = MeA_group_projection$Distance[MeA_group_projection$group == &quot;Gi&quot; &amp; 
+                                         MeA_group_projection$time == &quot;CNO&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$Distance[MeA_group_projection$group == &quot;mCh&quot; &amp; MeA_group_projection$time == &quot;CNO&quot;] and MeA_group_projection$Distance[MeA_group_projection$group == &quot;Gi&quot; &amp; MeA_group_projection$time == &quot;CNO&quot;]
+t = -1.1539, df = 7.9818, p-value = 0.2819
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -10.896210   3.630097
+sample estimates:
+mean of x mean of y 
+ 19.11843  22.75149 </code></pre>
+</div>
+</div>
+<div id="nac-7" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-5" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;Distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"11","4":"1.044","5":"0.329","6":"","7":"0.061","_rn_":"1"},{"1":"time","2":"1","3":"11","4":"7.374","5":"0.020","6":"*","7":"0.177","_rn_":"2"},{"1":"group:time","2":"1","3":"11","4":"0.099","5":"0.759","6":"","7":"0.003","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-5" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;Distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-5.511982","7":"-13.21238","8":"2.188416","9":"0.147","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"-6.954054","7":"-17.10319","8":"3.195082","9":"0.153","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-5" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># SAL
+t.test(x = NAc_group_projection$Distance[NAc_group_projection$group == &quot;mCh&quot; &amp; 
+                                              NAc_group_projection$time == &quot;SAL&quot;], 
+       y = NAc_group_projection$Distance[NAc_group_projection$group == &quot;Gi&quot; &amp; 
+                                         NAc_group_projection$time == &quot;SAL&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$Distance[NAc_group_projection$group == &quot;mCh&quot; &amp; NAc_group_projection$time == &quot;SAL&quot;] and NAc_group_projection$Distance[NAc_group_projection$group == &quot;Gi&quot; &amp; NAc_group_projection$time == &quot;SAL&quot;]
+t = 0.7391, df = 8.3776, p-value = 0.48
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.630368 11.003637
+sample estimates:
+mean of x mean of y 
+ 25.41725  22.73062 </code></pre>
+<pre class="r"><code># CNO
+t.test(x = NAc_group_projection$Distance[NAc_group_projection$group == &quot;mCh&quot; &amp; 
+                                              NAc_group_projection$time == &quot;CNO&quot;], 
+       y = NAc_group_projection$Distance[NAc_group_projection$group == &quot;Gi&quot; &amp; 
+                                         NAc_group_projection$time == &quot;CNO&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$Distance[NAc_group_projection$group == &quot;mCh&quot; &amp; NAc_group_projection$time == &quot;CNO&quot;] and NAc_group_projection$Distance[NAc_group_projection$group == &quot;Gi&quot; &amp; NAc_group_projection$time == &quot;CNO&quot;]
+t = 0.94601, df = 9.1775, p-value = 0.3684
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.715049 13.972462
+sample estimates:
+mean of x mean of y 
+ 19.90527  15.77656 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-2" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-8" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_twogroup(MeA_group_projection, &quot;Distance (m)&quot;, 
+            c(control_color, mea_color), openfield_axes_dist_silence_epm, &quot;white&quot;)</code></pre>
+<embed src="figure/behavior_15-epm_projections_silence.Rmd/33-MeA_distance_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-8" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_twogroup(NAc_group_projection, &quot;Distance (m)&quot;, 
+            c(control_color, nac_color), openfield_axes_dist_silence_epm, &quot;white&quot;)</code></pre>
+<embed src="figure/behavior_15-epm_projections_silence.Rmd/34-NAc_distance_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="heatmaps" class="section level1 tabset">
+<h1 class="tabset">Heatmaps</h1>
+<pre class="r"><code>sal_heatmap &lt;- get_heatmap_epm(data_projection_sal, &quot;full&quot;)
+cno_heatmap &lt;- get_heatmap_epm(data_projection_cno, &quot;full&quot;)</code></pre>
+<div id="mea-9" class="section level2 tabset">
+<h2 class="tabset">MeA</h2>
+<div id="mch" class="section level3 tabset">
+<h3 class="tabset">mCh</h3>
+<div id="sal" class="section level4">
+<h4>SAL</h4>
+<pre class="r"><code>plot_heatmap_epm(sal_heatmap$`MeA-control`)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/36-MeA_mCh_sal_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+<div id="cno" class="section level4">
+<h4>CNO</h4>
+<pre class="r"><code>plot_heatmap_epm(cno_heatmap$`MeA-control`)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/37-MeA_mCh_cno_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="gi" class="section level3 tabset">
+<h3 class="tabset">Gi</h3>
+<div id="sal-1" class="section level4">
+<h4>SAL</h4>
+<pre class="r"><code>plot_heatmap_epm(sal_heatmap$`MeA-Gi`)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/38-MeA_Gi_sal_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+<div id="cno-1" class="section level4">
+<h4>CNO</h4>
+<pre class="r"><code>plot_heatmap_epm(cno_heatmap$`MeA-Gi`)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/39-MeA_Gi_cno_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="nac-9" class="section level2 tabset">
+<h2 class="tabset">NAc</h2>
+<div id="mch-1" class="section level3 tabset">
+<h3 class="tabset">mCh</h3>
+<div id="sal-2" class="section level4">
+<h4>SAL</h4>
+<pre class="r"><code>plot_heatmap_epm(sal_heatmap$`NAc-control`)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/40-NAc_mCh_sal_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+<div id="cno-2" class="section level4">
+<h4>CNO</h4>
+<pre class="r"><code>plot_heatmap_epm(cno_heatmap$`NAc-control`)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/41-NAc_mCh_cno_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="gi-1" class="section level3 tabset">
+<h3 class="tabset">Gi</h3>
+<div id="sal-3" class="section level4">
+<h4>SAL</h4>
+<pre class="r"><code>plot_heatmap_epm(sal_heatmap$`NAc-Gi`)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/42-NAc_Gi_sal_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+<div id="cno-3" class="section level4">
+<h4>CNO</h4>
+<pre class="r"><code>plot_heatmap_epm(cno_heatmap$`NAc-Gi`)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/43-NAc_Gi_cno_heatmap-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="scale-bars" class="section level2 tabset">
+<h2 class="tabset">Scale bars</h2>
+<div id="horizontal" class="section level3">
+<h3>Horizontal</h3>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend(sal_heatmap$`MeA-control`, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/44-scale_bar_horizontal-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+<div id="vertical" class="section level3">
+<h3>Vertical</h3>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend(sal_heatmap$`MeA-control`, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<p><img src="figure/behavior_15-epm_projections_silence.Rmd/45-scale_bar_vertical-1.png" width="288" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.1.2
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: Asia/Ho_Chi_Minh
+tzcode source: internal
+
+attached base packages:
+[1] grid      stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+ [1] knitr_1.45             ggpubr_0.6.0           emmeans_1.10.0        
+ [4] rstatix_0.7.2          multcomp_1.4-25        TH.data_1.1-2         
+ [7] survival_3.5-7         mvtnorm_1.2-4          car_3.1-2             
+[10] carData_3.0-5          gmodels_2.18.1.1       zoo_1.8-12            
+[13] scales_1.3.0           colorspace_2.1-0       gridExtra_2.3         
+[16] cowplot_1.1.3          viridis_0.6.5          viridisLite_0.4.2     
+[19] spatstat_3.0-7         spatstat.linnet_3.1-4  spatstat.model_3.2-10 
+[22] rpart_4.1.23           spatstat.explore_3.2-6 nlme_3.1-164          
+[25] spatstat.random_3.2-2  spatstat.geom_3.2-8    spatstat.data_3.0-4   
+[28] RColorBrewer_1.1-3     colorRamps_2.3.1       lubridate_1.9.3       
+[31] forcats_1.0.0          stringr_1.5.1          dplyr_1.1.4           
+[34] purrr_1.0.2            readr_2.1.5            tidyr_1.3.1           
+[37] tibble_3.2.1           ggplot2_3.4.4          tidyverse_2.0.0       
+[40] MASS_7.3-60.0.1        workflowr_1.7.1       
+
+loaded via a namespace (and not attached):
+ [1] deldir_2.0-2          sandwich_3.1-0        rlang_1.1.3          
+ [4] magrittr_2.0.3        git2r_0.33.0          compiler_4.3.1       
+ [7] getPass_0.2-4         mgcv_1.9-1            gdata_3.0.0          
+[10] reshape2_1.4.4        callr_3.7.3           vctrs_0.6.5          
+[13] pkgconfig_2.0.3       fastmap_1.1.1         backports_1.4.1      
+[16] labeling_0.4.3        utf8_1.2.4            promises_1.2.1       
+[19] rmarkdown_2.25        tzdb_0.4.0            ps_1.7.6             
+[22] xfun_0.41             cachem_1.0.8          jsonlite_1.8.8       
+[25] goftest_1.2-3         highr_0.10            later_1.3.2          
+[28] spatstat.utils_3.0-4  broom_1.0.5           R6_2.5.1             
+[31] bslib_0.6.1           stringi_1.8.3         estimability_1.4.1   
+[34] jquerylib_0.1.4       Rcpp_1.0.12           tensor_1.5           
+[37] httpuv_1.6.14         Matrix_1.6-5          splines_4.3.1        
+[40] timechange_0.3.0      tidyselect_1.2.0      rstudioapi_0.15.0    
+[43] abind_1.4-5           yaml_2.3.8            codetools_0.2-19     
+[46] processx_3.8.3        plyr_1.8.9            lattice_0.22-5       
+[49] withr_3.0.0           evaluate_0.23         polyclip_1.10-6      
+[52] pillar_1.9.0          BiocManager_1.30.22   whisker_0.4.1        
+[55] renv_1.0.3            generics_0.1.3        rprojroot_2.0.4      
+[58] hms_1.1.3             munsell_0.5.0         xtable_1.8-4         
+[61] gtools_3.9.5          glue_1.7.0            tools_4.3.1          
+[64] ggsignif_0.6.4        fs_1.6.3              cli_3.6.2            
+[67] spatstat.sparse_3.0-3 fansi_1.0.6           gtable_0.3.4         
+[70] sass_0.4.8            digest_0.6.34         farver_2.1.1         
+[73] htmltools_0.5.7       lifecycle_1.0.4       httr_1.4.7           </code></pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

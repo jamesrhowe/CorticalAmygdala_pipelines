@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Behavioral analysis: projections_silence</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Behavioral analysis:
+projections_silence</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">21 February, 2024</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-02-21
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree576b196d4ec263a1f2896b578054061d1ce4b0ebtargetblank576b196a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/576b196d4ec263a1f2896b578054061d1ce4b0eb" target="_blank">576b196</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree576b196d4ec263a1f2896b578054061d1ce4b0ebtargetblank576b196a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/576b196d4ec263a1f2896b578054061d1ce4b0eb" target="_blank">576b196</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/rnascope/
+    Ignored:    data/sequencing/
+    Ignored:    output/.DS_Store
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/08A-merge_rd1_ATAC.Rmd
+    Untracked:  analysis/behavior_10-projections_silencing_TMT.Rmd
+    Untracked:  analysis/behavior_11-projections_silencing_2PE.Rmd
+    Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02D-Neuron_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02E-reprocess_Glut_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02F-reprocess_GABA_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02G-Glut_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-03A-merge_filtered_RNA.Rmd
+    Untracked:  analysis/sequencing-03B-initial_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04-initial_deg.Rmd
+    Untracked:  analysis/sequencing-04A-reprocess_Neuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04B-reprocess_Nonneuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04C-Neuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04D-Nonneuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05C-reprocess_Astro_RNA.Rmd
+    Untracked:  analysis/sequencing-05L-Glut_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05M-GABA_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05N-Astro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05O-Macro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05P-NFOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05Q-MOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05R-ABC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05S-VLMC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05T-Immune_classification+labeling_RNA.Rmd
+    Untracked:  analysis/sequencing-06A-merged_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
+    Untracked:  analysis/sequencing-06B-merged_deg_discovery_RNA.Rmd
+    Untracked:  analysis/sequencing-07A-preprocess_aplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07B-preprocess_aplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07C-preprocess_aplCoA-2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07D-preprocess_pplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07E-preprocess_pplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07F-preprocess_pplCoA-2_ATAC.Rmd
+    Untracked:  output/sequencing/
+    Untracked:  output/spatial/
+
+Unstaged changes:
+    Modified:   analysis/sequencing-02A-merge_rd1_RNA.Rmd
+    Modified:   analysis/sequencing-03-initial_classification.Rmd
+    Modified:   analysis/sequencing-05A-reprocess_Glut_RNA.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is a notebook that processes 4-quad data and outputs analyses
+and figures for publication.</p>
+<pre class="r"><code># set up paths
+projection_id &lt;- params$dataset
+projection_path &lt;- params$path
+start_min &lt;- params$start_min
+end_min &lt;- params$end_min
+
+source(&quot;code/behavior-refs.R&quot;)</code></pre>
+<pre><code>Loading required package: MASS</code></pre>
+<pre><code>Loading required package: tidyverse</code></pre>
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+✖ dplyr::select() masks MASS::select()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+Loading required package: colorRamps
+
+Loading required package: RColorBrewer
+
+Loading required package: spatstat
+
+Loading required package: spatstat.data
+
+Loading required package: spatstat.geom
+
+spatstat.geom 3.2-8
+
+
+Attaching package: &#39;spatstat.geom&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    area
+
+
+Loading required package: spatstat.random
+
+spatstat.random 3.2-2
+
+Loading required package: spatstat.explore
+
+Loading required package: nlme
+
+
+Attaching package: &#39;nlme&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    collapse
+
+
+spatstat.explore 3.2-6
+
+Loading required package: spatstat.model
+
+Loading required package: rpart
+
+spatstat.model 3.2-10
+
+Loading required package: spatstat.linnet
+
+spatstat.linnet 3.1-4
+
+
+spatstat 3.0-7 
+For an introduction to spatstat, type &#39;beginner&#39; 
+
+
+Loading required package: viridis
+
+Loading required package: viridisLite
+
+Loading required package: cowplot
+
+
+Attaching package: &#39;cowplot&#39;
+
+
+The following object is masked from &#39;package:lubridate&#39;:
+
+    stamp
+
+
+Loading required package: grid
+
+
+Attaching package: &#39;grid&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    as.mask
+
+
+Loading required package: gridExtra
+
+
+Attaching package: &#39;gridExtra&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    combine
+
+
+Loading required package: colorspace
+
+
+Attaching package: &#39;colorspace&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    coords
+
+
+Loading required package: scales
+
+
+Attaching package: &#39;scales&#39;
+
+
+The following object is masked from &#39;package:viridis&#39;:
+
+    viridis_pal
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    rescale
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    discard
+
+
+The following object is masked from &#39;package:readr&#39;:
+
+    col_factor
+
+
+
+Attaching package: &#39;zoo&#39;
+
+
+The following objects are masked from &#39;package:base&#39;:
+
+    as.Date, as.Date.numeric
+
+
+Loading required package: carData
+
+
+Attaching package: &#39;car&#39;
+
+
+The following object is masked from &#39;package:spatstat.model&#39;:
+
+    bc
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    ellipse
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    recode
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    some
+
+
+Loading required package: mvtnorm
+
+Loading required package: survival
+
+Loading required package: TH.data
+
+
+Attaching package: &#39;TH.data&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    geyser
+
+
+
+Attaching package: &#39;rstatix&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    select
+
+
+The following object is masked from &#39;package:stats&#39;:
+
+    filter
+
+
+
+Attaching package: &#39;ggpubr&#39;
+
+
+The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend
+
+
+The following objects are masked from &#39;package:spatstat.geom&#39;:
+
+    border, rotate</code></pre>
+<pre class="r"><code>source(&quot;code/behavior-misc_processes.R&quot;)
+source(&quot;code/behavior-plot_functions.R&quot;)
+
+projection_groups_tmt &lt;- unlist(strsplit(Sys.glob(paste0(projection_path, &quot;TMT/SAL/*&quot;)),
+                                         paste0(projection_path, &quot;TMT/SAL/&quot;)))[c(FALSE, TRUE)]</code></pre>
+</div>
+<div id="load-the-data" class="section level1">
+<h1>Load the data</h1>
+<p>Names have to be given manually in most cases. Also for now copy into
+console because it does not load due to odd workspace issues. This loads
+all files in a directory and puts it into the correct format
+automatically.</p>
+<pre class="r"><code># set up the object with pointers
+data_projection_tmt_sal &lt;- vector(mode = &quot;list&quot;, length = 4)
+data_projection_tmt_sal &lt;- lapply(projection_groups_tmt, 
+                                  function(x) lapply(Sys.glob(paste0(projection_path, &quot;TMT/SAL/&quot;, x, &quot;/*&quot;)),
+                                                     process_series))
+
+data_projection_tmt_cno &lt;- vector(mode = &quot;list&quot;, length = 4)
+data_projection_tmt_cno &lt;- lapply(projection_groups_tmt, 
+                                  function(x) lapply(Sys.glob(paste0(projection_path, &quot;TMT/CNO/&quot;, x, &quot;/*&quot;)),
+                                                     process_series))
+
+# add names to each
+names(data_projection_tmt_sal) &lt;- Sys.glob(paste0(projection_path, &quot;TMT/SAL/&quot;, &quot;*&quot;))
+names(data_projection_tmt_sal) &lt;- unlist(strsplit(names(data_projection_tmt_sal), 
+                                                  paste0(projection_path, &quot;TMT/SAL/&quot;)))[c(FALSE, TRUE)]
+
+names(data_projection_tmt_cno) &lt;- Sys.glob(paste0(projection_path, &quot;TMT/CNO/&quot;, &quot;*&quot;))
+names(data_projection_tmt_cno) &lt;- unlist(strsplit(names(data_projection_tmt_cno), 
+                                                  paste0(projection_path, &quot;TMT/CNO/&quot;)))[c(FALSE, TRUE)]
+
+for (i in 1:length(projection_groups_tmt)){
+  data_projection_tmt_sal &lt;- add_custom_names(data_projection_tmt_sal, paste0(projection_path, &quot;TMT/SAL/&quot;), 
+                                              projection_groups_tmt[i], projection_labels_tmt[i])
+  data_projection_tmt_cno &lt;- add_custom_names(data_projection_tmt_cno, paste0(projection_path, &quot;TMT/CNO/&quot;), 
+                                              projection_groups_tmt[i], projection_labels_tmt[i])
+}
+
+data_projection_tmt_sal &lt;- list(data_projection_tmt_sal$`MeA-control`, data_projection_tmt_sal$`MeA-Gi`, 
+                                data_projection_tmt_sal$`NAc-control`, data_projection_tmt_sal$`NAc-Gi`)
+names(data_projection_tmt_sal) &lt;- c(&quot;MeA-control&quot;, &quot;MeA-Gi&quot;, &quot;NAc-control&quot;, &quot;NAc-Gi&quot;)
+
+data_projection_tmt_cno &lt;- list(data_projection_tmt_cno$`MeA-control`, data_projection_tmt_cno$`MeA-Gi`, 
+                                data_projection_tmt_cno$`NAc-control`, data_projection_tmt_cno$`NAc-Gi`)
+names(data_projection_tmt_cno) &lt;- c(&quot;MeA-control&quot;, &quot;MeA-Gi&quot;, &quot;NAc-control&quot;, &quot;NAc-Gi&quot;)</code></pre>
+</div>
+<div id="performance-index-metrics" class="section level1">
+<h1>Performance Index metrics</h1>
+<div id="repeated-measures" class="section level2 tabset">
+<h2 class="tabset">Repeated Measures</h2>
+<div id="summary-statistics" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<pre class="r"><code>#saline
+baseline_array_projection_tmt_sal &lt;- transform_pi(data_projection_tmt_sal, &quot;baseline&quot;, &quot;Quadrant&quot;, 1, 2400)
+treatment_array_projection_tmt_sal &lt;- transform_pi(data_projection_tmt_sal, &quot;treatment&quot;, &quot;Quadrant&quot;, 1, 2881)
+
+pi_group_projection_tmt_sal &lt;- group_array(data_projection_tmt_sal, 
+                                           baseline_array_projection_tmt_sal, 
+                                           treatment_array_projection_tmt_sal, &quot;pi&quot;)
+
+# cno
+baseline_array_projection_tmt_cno &lt;- transform_pi(data_projection_tmt_cno, &quot;baseline&quot;, &quot;Quadrant&quot;, 1, 2400)
+treatment_array_projection_tmt_cno &lt;- transform_pi(data_projection_tmt_cno, &quot;treatment&quot;, &quot;Quadrant&quot;, 1, 2881)
+
+pi_group_projection_tmt_cno &lt;- group_array(data_projection_tmt_cno, 
+                                           baseline_array_projection_tmt_cno, 
+                                           treatment_array_projection_tmt_cno, &quot;pi&quot;)</code></pre>
+<div id="nac" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="sal" class="section level5">
+<h5>SAL</h5>
+<pre class="r"><code>NAc_group_projection_tmt_sal &lt;- pi_group_projection_tmt_sal[pi_group_projection_tmt_sal$group 
+                                     %in% c(&quot;NAc Gi&quot;, &quot;NAc mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PI&quot;, baseline_pi, treatment_pi) %&gt;%
+  convert_as_factor(group, time)
+levels(NAc_group_projection_tmt_sal$time) &lt;- c(&quot;Air&quot;, &quot;TMT&quot;)
+
+NAc_group_projection_tmt_sal$group &lt;- factor(NAc_group_projection_tmt_sal$group, 
+                                   levels = c(&quot;NAc mCh&quot;, &quot;NAc Gi&quot;))
+levels(NAc_group_projection_tmt_sal$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+NAc_group_projection_tmt_sal %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PI, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"Air","3":"PI","4":"10","5":"0.065","6":"0.035"},{"1":"mCh","2":"TMT","3":"PI","4":"10","5":"-0.659","6":"0.066"},{"1":"Gi","2":"Air","3":"PI","4":"10","5":"-0.006","6":"0.029"},{"1":"Gi","2":"TMT","3":"PI","4":"10","5":"-0.717","6":"0.038"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="cno" class="section level5">
+<h5>CNO</h5>
+<pre class="r"><code>NAc_group_projection_tmt_cno &lt;- pi_group_projection_tmt_cno[pi_group_projection_tmt_cno$group 
+                                     %in% c(&quot;NAc Gi&quot;, &quot;NAc mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PI&quot;, baseline_pi, treatment_pi) %&gt;%
+  convert_as_factor(group, time)
+levels(NAc_group_projection_tmt_cno$time) &lt;- c(&quot;Air&quot;, &quot;TMT&quot;)
+
+NAc_group_projection_tmt_cno$group &lt;- factor(NAc_group_projection_tmt_cno$group, 
+                                   levels = c(&quot;NAc mCh&quot;, &quot;NAc Gi&quot;))
+levels(NAc_group_projection_tmt_cno$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+NAc_group_projection_tmt_cno %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PI, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"Air","3":"PI","4":"10","5":"0.046","6":"0.040"},{"1":"mCh","2":"TMT","3":"PI","4":"10","5":"-0.688","6":"0.024"},{"1":"Gi","2":"Air","3":"PI","4":"10","5":"0.059","6":"0.032"},{"1":"Gi","2":"TMT","3":"PI","4":"10","5":"-0.709","6":"0.035"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="mea" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="sal-1" class="section level5">
+<h5>SAL</h5>
+<pre class="r"><code>MeA_group_projection_tmt_sal &lt;- pi_group_projection_tmt_sal[pi_group_projection_tmt_sal$group 
+                                     %in% c(&quot;MeA Gi&quot;, &quot;MeA mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PI&quot;, baseline_pi, treatment_pi) %&gt;%
+  convert_as_factor(group, time)
+levels(MeA_group_projection_tmt_sal$time) &lt;- c(&quot;Air&quot;, &quot;TMT&quot;)
+
+MeA_group_projection_tmt_sal$group &lt;- factor(MeA_group_projection_tmt_sal$group, 
+                                             levels = c(&quot;MeA mCh&quot;, &quot;MeA Gi&quot;))
+levels(MeA_group_projection_tmt_sal$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+MeA_group_projection_tmt_sal %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PI, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"Air","3":"PI","4":"11","5":"-0.050","6":"0.032"},{"1":"mCh","2":"TMT","3":"PI","4":"11","5":"-0.604","6":"0.031"},{"1":"Gi","2":"Air","3":"PI","4":"9","5":"0.073","6":"0.045"},{"1":"Gi","2":"TMT","3":"PI","4":"9","5":"-0.645","6":"0.036"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="cno-1" class="section level5">
+<h5>CNO</h5>
+<pre class="r"><code>MeA_group_projection_tmt_cno &lt;- pi_group_projection_tmt_cno[pi_group_projection_tmt_cno$group 
+                                     %in% c(&quot;MeA Gi&quot;, &quot;MeA mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PI&quot;, baseline_pi, treatment_pi) %&gt;%
+  convert_as_factor(group, time)
+levels(MeA_group_projection_tmt_cno$time) &lt;- c(&quot;Air&quot;, &quot;TMT&quot;)
+
+MeA_group_projection_tmt_cno$group &lt;- factor(MeA_group_projection_tmt_cno$group, 
+                                             levels = c(&quot;MeA mCh&quot;, &quot;MeA Gi&quot;))
+levels(MeA_group_projection_tmt_cno$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+MeA_group_projection_tmt_cno %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PI, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"Air","3":"PI","4":"11","5":"-0.025","6":"0.030"},{"1":"mCh","2":"TMT","3":"PI","4":"11","5":"-0.602","6":"0.032"},{"1":"Gi","2":"Air","3":"PI","4":"9","5":"0.030","6":"0.038"},{"1":"Gi","2":"TMT","3":"PI","4":"9","5":"-0.297","6":"0.113"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="difference" class="section level2 tabset">
+<h2 class="tabset">Difference</h2>
+<div id="summary-statistics-1" class="section level3">
+<h3>Summary statistics</h3>
+<div id="nac-1" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_diffs_tmt_sal &lt;- cbind.data.frame(NAc_group_projection_tmt_sal$id[1:                                                                             (length(rownames(NAc_group_projection_tmt_sal))/2)],
+                                        NAc_group_projection_tmt_sal$group[1:                                                                          (length(rownames(NAc_group_projection_tmt_sal))/2)],
+                                    rep(&quot;SAL&quot;, times = length(rownames(NAc_group_projection_tmt_sal))/2),
+                               NAc_group_projection_tmt_sal$PI[(length(rownames(NAc_group_projection_tmt_sal))/2)+1:
+                                                               (length(rownames(NAc_group_projection_tmt_sal))/2)] -
+                                          NAc_group_projection_tmt_sal$PI[1:                                                                         (length(rownames(NAc_group_projection_tmt_sal))/2)])
+colnames(NAc_group_diffs_tmt_sal) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;time&quot;, &quot;PI_diff&quot;)
+
+NAc_group_diffs_tmt_cno &lt;- cbind.data.frame(NAc_group_projection_tmt_cno$id[1:                                                                             (length(rownames(NAc_group_projection_tmt_cno))/2)],
+                                        NAc_group_projection_tmt_cno$group[1:                                                                          (length(rownames(NAc_group_projection_tmt_cno))/2)],
+                                        rep(&quot;CNO&quot;, times = length(rownames(NAc_group_projection_tmt_cno))/2),
+                               NAc_group_projection_tmt_cno$PI[(length(rownames(NAc_group_projection_tmt_cno))/2)+1:
+                                                               (length(rownames(NAc_group_projection_tmt_cno))/2)] -
+                                          NAc_group_projection_tmt_cno$PI[1:                                                                         (length(rownames(NAc_group_projection_tmt_cno))/2)])
+colnames(NAc_group_diffs_tmt_cno) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;time&quot;, &quot;PI_diff&quot;)
+
+NAc_group_diffs_tmt &lt;- rbind.data.frame(NAc_group_diffs_tmt_sal, NAc_group_diffs_tmt_cno)
+
+NAc_group_diffs_tmt$time &lt;- factor(NAc_group_diffs_tmt$time, 
+                                        levels = c(&quot;SAL&quot;, &quot;CNO&quot;))
+
+NAc_group_diffs_tmt %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PI_diff, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"PI_diff","4":"10","5":"-0.724","6":"0.064"},{"1":"mCh","2":"CNO","3":"PI_diff","4":"10","5":"-0.734","6":"0.039"},{"1":"Gi","2":"SAL","3":"PI_diff","4":"10","5":"-0.711","6":"0.055"},{"1":"Gi","2":"CNO","3":"PI_diff","4":"10","5":"-0.768","6":"0.028"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-1" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_diffs_tmt_sal &lt;- cbind.data.frame(MeA_group_projection_tmt_sal$id[1:                                                                             (length(rownames(MeA_group_projection_tmt_sal))/2)],
+                                        MeA_group_projection_tmt_sal$group[1:                                                                          (length(rownames(MeA_group_projection_tmt_sal))/2)],
+                                    rep(&quot;SAL&quot;, times = length(rownames(MeA_group_projection_tmt_sal))/2),
+                               MeA_group_projection_tmt_sal$PI[(length(rownames(MeA_group_projection_tmt_sal))/2)+1:
+                                                               (length(rownames(MeA_group_projection_tmt_sal))/2)] -
+                                          MeA_group_projection_tmt_sal$PI[1:                                                                         (length(rownames(MeA_group_projection_tmt_sal))/2)])
+colnames(MeA_group_diffs_tmt_sal) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;time&quot;, &quot;PI_diff&quot;)
+
+MeA_group_diffs_tmt_cno &lt;- cbind.data.frame(MeA_group_projection_tmt_cno$id[1:                                                                             (length(rownames(MeA_group_projection_tmt_cno))/2)],
+                                        MeA_group_projection_tmt_cno$group[1:                                                                          (length(rownames(MeA_group_projection_tmt_cno))/2)],
+                                        rep(&quot;CNO&quot;, times = length(rownames(MeA_group_projection_tmt_cno))/2),
+                               MeA_group_projection_tmt_cno$PI[(length(rownames(MeA_group_projection_tmt_cno))/2)+1:
+                                                               (length(rownames(MeA_group_projection_tmt_cno))/2)] -
+                                          MeA_group_projection_tmt_cno$PI[1:                                                                         (length(rownames(MeA_group_projection_tmt_cno))/2)])
+colnames(MeA_group_diffs_tmt_cno) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;time&quot;, &quot;PI_diff&quot;)
+
+MeA_group_diffs_tmt &lt;- rbind.data.frame(MeA_group_diffs_tmt_sal, MeA_group_diffs_tmt_cno)
+
+MeA_group_diffs_tmt$time &lt;- factor(MeA_group_diffs_tmt$time, 
+                                        levels = c(&quot;SAL&quot;, &quot;CNO&quot;))
+
+MeA_group_diffs_tmt %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PI_diff, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"PI_diff","4":"11","5":"-0.553","6":"0.053"},{"1":"mCh","2":"CNO","3":"PI_diff","4":"11","5":"-0.576","6":"0.039"},{"1":"Gi","2":"SAL","3":"PI_diff","4":"9","5":"-0.718","6":"0.048"},{"1":"Gi","2":"CNO","3":"PI_diff","4":"9","5":"-0.327","6":"0.084"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="two-way-repeated-measures-anova" class="section level3 tabset">
+<h3 class="tabset">Two-way repeated-measures ANOVA</h3>
+<div id="nac-2" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_diffs_tmt, &quot;PI_diff&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"0.048","5":"0.829","6":"","7":"0.001","_rn_":"1"},{"1":"time","2":"1","3":"18","4":"0.476","5":"0.499","6":"","7":"0.013","_rn_":"2"},{"1":"group:time","2":"1","3":"18","4":"0.233","5":"0.635","6":"","7":"0.006","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_diffs_tmt, &quot;PI_diff&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.01004553","7":"-0.166977","8":"0.14688599","9":"0.895","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.05683623","7":"-0.187201","8":"0.07352856","9":"0.372","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="mea-2" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-1" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_diffs_tmt, &quot;PI_diff&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"0.486","5":"0.495","6":"","7":"0.015","_rn_":"1"},{"1":"time","2":"1","3":"18","4":"12.060","5":"0.003","6":"*","7":"0.226","_rn_":"2"},{"1":"group:time","2":"1","3":"18","4":"15.233","5":"0.001","6":"*","7":"0.270","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-1" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_diffs_tmt, &quot;PI_diff&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.02282898","7":"-0.1595318","8":"0.1138738","9":"0.731000","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"0.39142215","7":"0.1859612","8":"0.5968831","9":"0.000952","10":"***","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+<div id="plots" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="nac-3" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_twogroup(NAc_group_diffs_tmt, diff_pi_label_silence, 
+            c(control_color, nac_color), pi_axes_tmt, &quot;white&quot;)</code></pre>
+<embed src="figure/behavior_10-projections_silencing_TMT.Rmd/13-NAc_pi_diff_tmt-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mea-3" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_twogroup(MeA_group_diffs_tmt, diff_pi_label_silence, 
+            c(control_color, mea_color), pi_axes_tmt, &quot;white&quot;)</code></pre>
+<embed src="figure/behavior_10-projections_silencing_TMT.Rmd/14-MeA_pi_diff_tmt-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="difference-in-differences" class="section level2 tabset">
+<h2 class="tabset">Difference in Differences</h2>
+<div id="nac-4" class="section level3 tabset">
+<h3 class="tabset">NAc</h3>
+<pre class="r"><code>NAc_group_diffs2x_tmt &lt;- cbind.data.frame(NAc_group_diffs_tmt$id[1:                                                                             (length(rownames(NAc_group_diffs_tmt))/2)],
+                                        NAc_group_diffs_tmt$group[1:                                                                          (length(rownames(NAc_group_diffs_tmt))/2)],
+                              NAc_group_diffs_tmt$PI_diff[(length(rownames(NAc_group_diffs_tmt))/2)+1:
+                                                               (length(rownames(NAc_group_diffs_tmt))/2)] -
+                                          NAc_group_diffs_tmt$PI_diff[1:                                                                         (length(rownames(NAc_group_diffs_tmt))/2)])
+
+colnames(NAc_group_diffs2x_tmt) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;PI_diff&quot;)
+
+NAc_group_diffs2x_tmt %&gt;%
+  group_by(group) %&gt;%
+  get_summary_stats(PI_diff, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"PI_diff","3":"10","4":"-0.010","5":"0.071"},{"1":"Gi","2":"PI_diff","3":"10","4":"-0.057","5":"0.066"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-4" class="section level3">
+<h3>MeA</h3>
+<pre class="r"><code>MeA_group_diffs2x_tmt &lt;- cbind.data.frame(MeA_group_diffs_tmt$id[1:                                                                             (length(rownames(MeA_group_diffs_tmt))/2)],
+                                        MeA_group_diffs_tmt$group[1:                                                                          (length(rownames(MeA_group_diffs_tmt))/2)],
+                              MeA_group_diffs_tmt$PI_diff[(length(rownames(MeA_group_diffs_tmt))/2)+1:
+                                                               (length(rownames(MeA_group_diffs_tmt))/2)] -
+                                          MeA_group_diffs_tmt$PI_diff[1:                                                                         (length(rownames(MeA_group_diffs_tmt))/2)])
+
+colnames(MeA_group_diffs2x_tmt) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;PI_diff&quot;)
+
+MeA_group_diffs2x_tmt %&gt;%
+  group_by(group) %&gt;%
+  get_summary_stats(PI_diff, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"PI_diff","3":"11","4":"-0.023","5":"0.053"},{"1":"Gi","2":"PI_diff","3":"9","4":"0.391","5":"0.099"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-tests" class="section level3 tabset">
+<h3 class="tabset">T-tests</h3>
+<div id="nac-5" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>t.test(x = NAc_group_diffs2x_tmt$PI_diff[NAc_group_diffs2x_tmt$group %in% &quot;Gi&quot;], 
+       y = NAc_group_diffs2x_tmt$PI_diff[NAc_group_diffs2x_tmt$group %in% &quot;mCh&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_diffs2x_tmt$PI_diff[NAc_group_diffs2x_tmt$group %in% &quot;Gi&quot;] and NAc_group_diffs2x_tmt$PI_diff[NAc_group_diffs2x_tmt$group %in% &quot;mCh&quot;]
+t = -0.48288, df = 17.901, p-value = 0.635
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.2504507  0.1568693
+sample estimates:
+  mean of x   mean of y 
+-0.05683623 -0.01004553 </code></pre>
+</div>
+<div id="mea-5" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>t.test(x = MeA_group_diffs2x_tmt$PI_diff[MeA_group_diffs2x_tmt$group %in% &quot;Gi&quot;], 
+       y = MeA_group_diffs2x_tmt$PI_diff[MeA_group_diffs2x_tmt$group %in% &quot;mCh&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_diffs2x_tmt$PI_diff[MeA_group_diffs2x_tmt$group %in% &quot;Gi&quot;] and MeA_group_diffs2x_tmt$PI_diff[MeA_group_diffs2x_tmt$group %in% &quot;mCh&quot;]
+t = 3.7077, df = 12.392, p-value = 0.002841
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 0.1716709 0.6568314
+sample estimates:
+  mean of x   mean of y 
+ 0.39142215 -0.02282898 </code></pre>
+</div>
+</div>
+<div id="graphs" class="section level3 tabset">
+<h3 class="tabset">Graphs</h3>
+<div id="nac-6" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_diff(NAc_group_diffs2x_tmt, &quot;CNO - SAL&quot;, nac_color, ap_pi_axes, tmt_colors)</code></pre>
+<embed src="figure/behavior_10-projections_silencing_TMT.Rmd/19-nac_diff_graph_tmt-1.pdf" width="124.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mea-6" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_diff(MeA_group_diffs2x_tmt, &quot;CNO - SAL&quot;, mea_color, ap_pi_axes, tmt_colors)</code></pre>
+<embed src="figure/behavior_10-projections_silencing_TMT.Rmd/20-mea_diff_graph_tmt-1.pdf" width="124.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="port-distance-metrics" class="section level1">
+<h1>Port Distance metrics</h1>
+<div id="difference-1" class="section level2 tabset">
+<h2 class="tabset">Difference</h2>
+<div id="summary-statistics-2" class="section level3">
+<h3>Summary statistics</h3>
+<pre class="r"><code>#saline
+baseline_array_projection_tmt_sal_pd &lt;- transform_pd(data_projection_tmt_sal, &quot;baseline&quot;, &quot;PortDistance&quot;, 1, 2400)
+treatment_array_projection_tmt_sal_pd &lt;- transform_pd(data_projection_tmt_sal, &quot;treatment&quot;, &quot;PortDistance&quot;, 1, 2881)
+
+pd_group_projection_tmt_sal &lt;- group_array(data_projection_tmt_sal, 
+                                           baseline_array_projection_tmt_sal_pd, 
+                                           treatment_array_projection_tmt_sal_pd, &quot;pd&quot;)
+
+# cno
+baseline_array_projection_tmt_cno_pd &lt;- transform_pd(data_projection_tmt_cno, &quot;baseline&quot;, &quot;PortDistance&quot;, 1, 2400)
+treatment_array_projection_tmt_cno_pd &lt;- transform_pd(data_projection_tmt_cno, &quot;treatment&quot;, &quot;PortDistance&quot;, 1, 2881)
+
+pd_group_projection_tmt_cno &lt;- group_array(data_projection_tmt_cno, 
+                                           baseline_array_projection_tmt_cno_pd, 
+                                           treatment_array_projection_tmt_cno_pd, &quot;pd&quot;)</code></pre>
+<div id="nac-7" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code># saline
+NAc_group_projection_tmt_sal_pd &lt;- pd_group_projection_tmt_sal[pd_group_projection_tmt_sal$group 
+                                     %in% c(&quot;NAc Gi&quot;, &quot;NAc mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PD&quot;, baseline_pd, treatment_pd) %&gt;%
+  convert_as_factor(group, time)
+levels(NAc_group_projection_tmt_sal_pd$time) &lt;- c(&quot;Air&quot;, &quot;TMT&quot;)
+
+NAc_group_projection_tmt_sal_pd$group &lt;- factor(NAc_group_projection_tmt_sal_pd$group, 
+                                   levels = c(&quot;NAc mCh&quot;, &quot;NAc Gi&quot;))
+levels(NAc_group_projection_tmt_sal_pd$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+NAc_group_diffs_tmt_sal_pd &lt;- cbind.data.frame(NAc_group_projection_tmt_sal_pd$id[1:                                                                             (length(rownames(NAc_group_projection_tmt_sal_pd))/2)],
+                                        NAc_group_projection_tmt_sal_pd$group[1:                                                                          (length(rownames(NAc_group_projection_tmt_sal_pd))/2)],
+                                    rep(&quot;SAL&quot;, times = length(rownames(NAc_group_projection_tmt_sal_pd))/2),
+                               NAc_group_projection_tmt_sal_pd$PD[(length(rownames(NAc_group_projection_tmt_sal_pd))/2)+1:
+                                                               (length(rownames(NAc_group_projection_tmt_sal_pd))/2)] -
+                                          NAc_group_projection_tmt_sal_pd$PD[1:                                                                         (length(rownames(NAc_group_projection_tmt_sal_pd))/2)])
+colnames(NAc_group_diffs_tmt_sal_pd) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;time&quot;, &quot;PD_diff&quot;)
+
+# CNO
+NAc_group_projection_tmt_cno_pd &lt;- pd_group_projection_tmt_cno[pd_group_projection_tmt_cno$group 
+                                     %in% c(&quot;NAc Gi&quot;, &quot;NAc mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PD&quot;, baseline_pd, treatment_pd) %&gt;%
+  convert_as_factor(group, time)
+levels(NAc_group_projection_tmt_cno_pd$time) &lt;- c(&quot;Air&quot;, &quot;TMT&quot;)
+
+NAc_group_projection_tmt_cno_pd$group &lt;- factor(NAc_group_projection_tmt_cno_pd$group, 
+                                   levels = c(&quot;NAc mCh&quot;, &quot;NAc Gi&quot;))
+levels(NAc_group_projection_tmt_cno_pd$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+NAc_group_diffs_tmt_cno_pd &lt;- cbind.data.frame(NAc_group_projection_tmt_cno_pd$id[1:                                                                             (length(rownames(NAc_group_projection_tmt_cno_pd))/2)],
+                                        NAc_group_projection_tmt_cno_pd$group[1:                                                                          (length(rownames(NAc_group_projection_tmt_cno_pd))/2)],
+                                    rep(&quot;CNO&quot;, times = length(rownames(NAc_group_projection_tmt_cno_pd))/2),
+                               NAc_group_projection_tmt_cno_pd$PD[(length(rownames(NAc_group_projection_tmt_cno_pd))/2)+1:
+                                                               (length(rownames(NAc_group_projection_tmt_cno_pd))/2)] -
+                                          NAc_group_projection_tmt_cno_pd$PD[1:                                                                         (length(rownames(NAc_group_projection_tmt_cno_pd))/2)])
+colnames(NAc_group_diffs_tmt_cno_pd) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;time&quot;, &quot;PD_diff&quot;)
+
+NAc_group_diffs_tmt_pd &lt;- rbind.data.frame(NAc_group_diffs_tmt_sal_pd, NAc_group_diffs_tmt_cno_pd)
+
+NAc_group_diffs_tmt_pd$time &lt;- factor(NAc_group_diffs_tmt_pd$time, 
+                                        levels = c(&quot;SAL&quot;, &quot;CNO&quot;))
+
+NAc_group_diffs_tmt_pd %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PD_diff, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"PD_diff","4":"10","5":"7.867","6":"1.092"},{"1":"mCh","2":"CNO","3":"PD_diff","4":"10","5":"7.391","6":"0.783"},{"1":"Gi","2":"SAL","3":"PD_diff","4":"10","5":"8.045","6":"0.667"},{"1":"Gi","2":"CNO","3":"PD_diff","4":"10","5":"8.030","6":"0.680"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-7" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code># saline
+MeA_group_projection_tmt_sal_pd &lt;- pd_group_projection_tmt_sal[pd_group_projection_tmt_sal$group 
+                                     %in% c(&quot;MeA Gi&quot;, &quot;MeA mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PD&quot;, baseline_pd, treatment_pd) %&gt;%
+  convert_as_factor(group, time)
+levels(MeA_group_projection_tmt_sal_pd$time) &lt;- c(&quot;Air&quot;, &quot;TMT&quot;)
+
+MeA_group_projection_tmt_sal_pd$group &lt;- factor(MeA_group_projection_tmt_sal_pd$group, 
+                                   levels = c(&quot;MeA mCh&quot;, &quot;MeA Gi&quot;))
+levels(MeA_group_projection_tmt_sal_pd$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+MeA_group_diffs_tmt_sal_pd &lt;- cbind.data.frame(MeA_group_projection_tmt_sal_pd$id[1:                                                                             (length(rownames(MeA_group_projection_tmt_sal_pd))/2)],
+                                        MeA_group_projection_tmt_sal_pd$group[1:                                                                          (length(rownames(MeA_group_projection_tmt_sal_pd))/2)],
+                                    rep(&quot;SAL&quot;, times = length(rownames(MeA_group_projection_tmt_sal_pd))/2),
+                               MeA_group_projection_tmt_sal_pd$PD[(length(rownames(MeA_group_projection_tmt_sal_pd))/2)+1:
+                                                               (length(rownames(MeA_group_projection_tmt_sal_pd))/2)] -
+                                          MeA_group_projection_tmt_sal_pd$PD[1:                                                                         (length(rownames(MeA_group_projection_tmt_sal_pd))/2)])
+colnames(MeA_group_diffs_tmt_sal_pd) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;time&quot;, &quot;PD_diff&quot;)
+
+# CNO
+MeA_group_projection_tmt_cno_pd &lt;- pd_group_projection_tmt_cno[pd_group_projection_tmt_cno$group 
+                                     %in% c(&quot;MeA Gi&quot;, &quot;MeA mCh&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;PD&quot;, baseline_pd, treatment_pd) %&gt;%
+  convert_as_factor(group, time)
+levels(MeA_group_projection_tmt_cno_pd$time) &lt;- c(&quot;Air&quot;, &quot;TMT&quot;)
+
+MeA_group_projection_tmt_cno_pd$group &lt;- factor(MeA_group_projection_tmt_cno_pd$group, 
+                                   levels = c(&quot;MeA mCh&quot;, &quot;MeA Gi&quot;))
+levels(MeA_group_projection_tmt_cno_pd$group) &lt;- c(&quot;mCh&quot;, &quot;Gi&quot;)
+
+MeA_group_diffs_tmt_cno_pd &lt;- cbind.data.frame(MeA_group_projection_tmt_cno_pd$id[1:                                                                             (length(rownames(MeA_group_projection_tmt_cno_pd))/2)],
+                                        MeA_group_projection_tmt_cno_pd$group[1:                                                                          (length(rownames(MeA_group_projection_tmt_cno_pd))/2)],
+                                    rep(&quot;CNO&quot;, times = length(rownames(MeA_group_projection_tmt_cno_pd))/2),
+                               MeA_group_projection_tmt_cno_pd$PD[(length(rownames(MeA_group_projection_tmt_cno_pd))/2)+1:
+                                                               (length(rownames(MeA_group_projection_tmt_cno_pd))/2)] -
+                                          MeA_group_projection_tmt_cno_pd$PD[1:                                                                         (length(rownames(MeA_group_projection_tmt_cno_pd))/2)])
+colnames(MeA_group_diffs_tmt_cno_pd) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;time&quot;, &quot;PD_diff&quot;)
+
+MeA_group_diffs_tmt_pd &lt;- rbind.data.frame(MeA_group_diffs_tmt_sal_pd, MeA_group_diffs_tmt_cno_pd)
+
+MeA_group_diffs_tmt_pd$time &lt;- factor(MeA_group_diffs_tmt_pd$time, 
+                                        levels = c(&quot;SAL&quot;, &quot;CNO&quot;))
+
+MeA_group_diffs_tmt_pd %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(PD_diff, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"SAL","3":"PD_diff","4":"11","5":"6.863","6":"0.932"},{"1":"mCh","2":"CNO","3":"PD_diff","4":"11","5":"6.869","6":"0.807"},{"1":"Gi","2":"SAL","3":"PD_diff","4":"9","5":"8.387","6":"1.007"},{"1":"Gi","2":"CNO","3":"PD_diff","4":"9","5":"3.502","6":"0.737"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="two-way-repeated-measures-anova-1"
+class="section level3 tabset">
+<h3 class="tabset">Two-way repeated-measures ANOVA</h3>
+<div id="nac-8" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-2" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_diffs_tmt_pd, &quot;PD_diff&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"0.240","5":"0.630","6":"","7":"0.007","_rn_":"1"},{"1":"time","2":"1","3":"18","4":"0.091","5":"0.767","6":"","7":"0.002","_rn_":"2"},{"1":"group:time","2":"1","3":"18","4":"0.080","5":"0.780","6":"","7":"0.002","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-2" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_diffs_tmt_pd, &quot;PD_diff&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.47574145","7":"-3.299310","8":"2.347827","9":"0.727","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"-0.01487157","7":"-2.015513","8":"1.985770","9":"0.988","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="mea-8" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-3" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_diffs_tmt_pd, &quot;PD_diff&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"0.698","5":"0.414000","6":"","7":"0.029","_rn_":"1"},{"1":"time","2":"1","3":"18","4":"16.930","5":"0.000651","6":"*","7":"0.174","_rn_":"2"},{"1":"group:time","2":"1","3":"18","4":"17.013","5":"0.000636","6":"*","7":"0.175","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-3" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_diffs_tmt_pd, &quot;PD_diff&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"mCh","2":"time","3":"SAL","4":"CNO","5":"0","6":"0.006000228","7":"-2.565486","8":"2.577487","9":"0.99600","10":"ns","_rn_":"1"},{"1":"Gi","2":"time","3":"SAL","4":"CNO","5":"0","6":"-4.884245535","7":"-7.529153","8":"-2.239338","9":"0.00123","10":"**","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+<div id="plots-1" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="nac-9" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_twogroup_nobar(NAc_group_diffs_tmt_pd, diff_pd_label_silence, 
+                   c(control_color, nac_color), pd_axes_tmt, &quot;white&quot;, 0)</code></pre>
+<embed src="figure/behavior_10-projections_silencing_TMT.Rmd/28-NAc_pd_diff_tmt-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mea-9" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_twogroup_nobar(MeA_group_diffs_tmt_pd, diff_pd_label_silence,  
+                   c(control_color, mea_color), pd_axes_tmt, &quot;white&quot;, 0)</code></pre>
+<embed src="figure/behavior_10-projections_silencing_TMT.Rmd/29-MeA_pd_diff_tmt-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="difference-in-differences-1" class="section level2 tabset">
+<h2 class="tabset">Difference in Differences</h2>
+<div id="nac-10" class="section level3 tabset">
+<h3 class="tabset">NAc</h3>
+<pre class="r"><code>NAc_group_diffs2x_tmt_pd &lt;- cbind.data.frame(NAc_group_diffs_tmt_pd$id[1:                                                                             (length(rownames(NAc_group_diffs_tmt_pd))/2)],
+                                        NAc_group_diffs_tmt_pd$group[1:                                                                          (length(rownames(NAc_group_diffs_tmt_pd))/2)],
+                              NAc_group_diffs_tmt_pd$PD_diff[(length(rownames(NAc_group_diffs_tmt_pd))/2)+1:
+                                                               (length(rownames(NAc_group_diffs_tmt_pd))/2)] -
+                                          NAc_group_diffs_tmt_pd$PD_diff[1:                                                                         (length(rownames(NAc_group_diffs_tmt_pd))/2)])
+
+colnames(NAc_group_diffs2x_tmt_pd) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;PD_diff&quot;)
+
+NAc_group_diffs2x_tmt_pd %&gt;%
+  group_by(group) %&gt;%
+  get_summary_stats(PD_diff, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"PD_diff","3":"10","4":"-0.476","5":"1.188"},{"1":"Gi","2":"PD_diff","3":"10","4":"-0.015","5":"1.114"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-10" class="section level3">
+<h3>MeA</h3>
+<pre class="r"><code>MeA_group_diffs2x_tmt_pd &lt;- cbind.data.frame(MeA_group_diffs_tmt_pd$id[1:                                                                             (length(rownames(MeA_group_diffs_tmt_pd))/2)],
+                                        MeA_group_diffs_tmt_pd$group[1:                                                                          (length(rownames(MeA_group_diffs_tmt_pd))/2)],
+                              MeA_group_diffs_tmt_pd$PD_diff[(length(rownames(MeA_group_diffs_tmt_pd))/2)+1:
+                                                               (length(rownames(MeA_group_diffs_tmt_pd))/2)] -
+                                          MeA_group_diffs_tmt_pd$PD_diff[1:                                                                         (length(rownames(MeA_group_diffs_tmt_pd))/2)])
+
+colnames(MeA_group_diffs2x_tmt_pd) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;PD_diff&quot;)
+
+MeA_group_diffs2x_tmt_pd %&gt;%
+  group_by(group) %&gt;%
+  get_summary_stats(PD_diff, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"mCh","2":"PD_diff","3":"11","4":"0.006","5":"0.691"},{"1":"Gi","2":"PD_diff","3":"9","4":"-4.884","5":"1.005"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-tests-1" class="section level3 tabset">
+<h3 class="tabset">T-tests</h3>
+<div id="nac-11" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>t.test(x = NAc_group_diffs2x_tmt_pd$PD_diff[NAc_group_diffs2x_tmt_pd$group %in% &quot;Gi&quot;], 
+       y = NAc_group_diffs2x_tmt_pd$PD_diff[NAc_group_diffs2x_tmt_pd$group %in% &quot;mCh&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_diffs2x_tmt_pd$PD_diff[NAc_group_diffs2x_tmt_pd$group %in% &quot;Gi&quot;] and NAc_group_diffs2x_tmt_pd$PD_diff[NAc_group_diffs2x_tmt_pd$group %in% &quot;mCh&quot;]
+t = 0.28305, df = 17.925, p-value = 0.7804
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -2.960892  3.882632
+sample estimates:
+  mean of x   mean of y 
+-0.01487157 -0.47574145 </code></pre>
+</div>
+<div id="mea-11" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>t.test(x = MeA_group_diffs2x_tmt_pd$PD_diff[MeA_group_diffs2x_tmt_pd$group %in% &quot;Gi&quot;], 
+       y = MeA_group_diffs2x_tmt_pd$PD_diff[MeA_group_diffs2x_tmt_pd$group %in% &quot;mCh&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_diffs2x_tmt_pd$PD_diff[MeA_group_diffs2x_tmt_pd$group %in% &quot;Gi&quot;] and MeA_group_diffs2x_tmt_pd$PD_diff[MeA_group_diffs2x_tmt_pd$group %in% &quot;mCh&quot;]
+t = -4.0097, df = 14.723, p-value = 0.001176
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -7.494003 -2.286488
+sample estimates:
+   mean of x    mean of y 
+-4.884245535  0.006000228 </code></pre>
+</div>
+</div>
+<div id="graphs-1" class="section level3 tabset">
+<h3 class="tabset">Graphs</h3>
+<div id="nac-12" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_diff(NAc_group_diffs2x_tmt_pd, &quot;∆ CNO - SAL&quot;, nac_color, pd_axes_tmt_diff, tmt_colors)</code></pre>
+<embed src="figure/behavior_10-projections_silencing_TMT.Rmd/34-nac_diff_graph_tmt_pd-1.pdf" width="115.2" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mea-12" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_diff(MeA_group_diffs2x_tmt_pd, &quot;∆ CNO - SAL&quot;, mea_color, pd_axes_tmt_diff, tmt_colors)</code></pre>
+<embed src="figure/behavior_10-projections_silencing_TMT.Rmd/35-mea_diff_graph_tmt_pd-1.pdf" width="115.2" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="heatmap" class="section level1 tabset">
+<h1 class="tabset">Heatmap</h1>
+<p>Generates a heatmap for each group. Sums all groups together at
+baseline and at treatment, and applies a gaussian smooth filter to both.
+It then subtracts the baseline from the treatment to identify the
+difference between treatment and baseline for all groups.</p>
+<div id="sal-2" class="section level2 tabset">
+<h2 class="tabset">SAL</h2>
+<pre class="r"><code>heatmap_list_sal &lt;- get_heatmap(data_projection_tmt_sal)</code></pre>
+</div>
+<div id="mea-mch" class="section level2">
+<h2>MeA mCh</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list_sal$`MeA-control`)</code></pre>
+<p><img src="figure/behavior_10-projections_silencing_TMT.Rmd/37-heatmap_mea_mch_sal-1.svg" width="384" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mea-gi" class="section level2">
+<h2>MeA Gi</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list_sal$`MeA-Gi`)</code></pre>
+<p><img src="figure/behavior_10-projections_silencing_TMT.Rmd/38-heatmap_mea_gi_sal-1.svg" width="384" style="display: block; margin: auto;" /></p>
+</div>
+<div id="nac-mch" class="section level2">
+<h2>NAc mCh</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list_sal$`NAc-control`)</code></pre>
+<p><img src="figure/behavior_10-projections_silencing_TMT.Rmd/39-heatmap_nac_mch_sal-1.svg" width="384" style="display: block; margin: auto;" /></p>
+</div>
+<div id="nac-gi" class="section level2">
+<h2>NAc Gi</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list_sal$`NAc-Gi`)</code></pre>
+<p><img src="figure/behavior_10-projections_silencing_TMT.Rmd/40-heatmap_nac_gi_sal-1.svg" width="384" style="display: block; margin: auto;" /></p>
+</div>
+<div id="cno-2" class="section level2 tabset">
+<h2 class="tabset">CNO</h2>
+<pre class="r"><code>heatmap_list_cno &lt;- get_heatmap(data_projection_tmt_cno)</code></pre>
+</div>
+<div id="mea-mch-1" class="section level2">
+<h2>MeA mCh</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list_cno$`MeA-control`)</code></pre>
+<p><img src="figure/behavior_10-projections_silencing_TMT.Rmd/42-heatmap_mea_mch_cno-1.svg" width="384" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mea-gi-1" class="section level2">
+<h2>MeA Gi</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list_cno$`MeA-Gi`)</code></pre>
+<p><img src="figure/behavior_10-projections_silencing_TMT.Rmd/43-heatmap_mea_gi_cno-1.svg" width="384" style="display: block; margin: auto;" /></p>
+</div>
+<div id="nac-mch-1" class="section level2">
+<h2>NAc mCh</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list_cno$`NAc-control`)</code></pre>
+<p><img src="figure/behavior_10-projections_silencing_TMT.Rmd/44-heatmap_nac_mch_cno-1.svg" width="384" style="display: block; margin: auto;" /></p>
+</div>
+<div id="nac-gi-1" class="section level2">
+<h2>NAc Gi</h2>
+<pre class="r"><code>plot_heatmap(heatmap_array = heatmap_list_cno$`NAc-Gi`)</code></pre>
+<p><img src="figure/behavior_10-projections_silencing_TMT.Rmd/45-heatmap_nac_gi_cno-1.svg" width="384" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.1.2
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: Asia/Ho_Chi_Minh
+tzcode source: internal
+
+attached base packages:
+[1] grid      stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+ [1] knitr_1.45             ggpubr_0.6.0           emmeans_1.10.0        
+ [4] rstatix_0.7.2          multcomp_1.4-25        TH.data_1.1-2         
+ [7] survival_3.5-7         mvtnorm_1.2-4          car_3.1-2             
+[10] carData_3.0-5          gmodels_2.18.1.1       zoo_1.8-12            
+[13] scales_1.3.0           colorspace_2.1-0       gridExtra_2.3         
+[16] cowplot_1.1.3          viridis_0.6.5          viridisLite_0.4.2     
+[19] spatstat_3.0-7         spatstat.linnet_3.1-4  spatstat.model_3.2-10 
+[22] rpart_4.1.23           spatstat.explore_3.2-6 nlme_3.1-164          
+[25] spatstat.random_3.2-2  spatstat.geom_3.2-8    spatstat.data_3.0-4   
+[28] RColorBrewer_1.1-3     colorRamps_2.3.1       lubridate_1.9.3       
+[31] forcats_1.0.0          stringr_1.5.1          dplyr_1.1.4           
+[34] purrr_1.0.2            readr_2.1.5            tidyr_1.3.1           
+[37] tibble_3.2.1           ggplot2_3.4.4          tidyverse_2.0.0       
+[40] MASS_7.3-60.0.1        workflowr_1.7.1       
+
+loaded via a namespace (and not attached):
+ [1] deldir_2.0-2          sandwich_3.1-0        rlang_1.1.3          
+ [4] magrittr_2.0.3        git2r_0.33.0          compiler_4.3.1       
+ [7] getPass_0.2-4         mgcv_1.9-1            gdata_3.0.0          
+[10] reshape2_1.4.4        callr_3.7.3           vctrs_0.6.5          
+[13] pkgconfig_2.0.3       fastmap_1.1.1         backports_1.4.1      
+[16] labeling_0.4.3        utf8_1.2.4            promises_1.2.1       
+[19] rmarkdown_2.25        tzdb_0.4.0            ps_1.7.6             
+[22] xfun_0.41             cachem_1.0.8          jsonlite_1.8.8       
+[25] goftest_1.2-3         highr_0.10            later_1.3.2          
+[28] spatstat.utils_3.0-4  broom_1.0.5           R6_2.5.1             
+[31] bslib_0.6.1           stringi_1.8.3         estimability_1.4.1   
+[34] jquerylib_0.1.4       Rcpp_1.0.12           tensor_1.5           
+[37] httpuv_1.6.14         Matrix_1.6-5          splines_4.3.1        
+[40] timechange_0.3.0      tidyselect_1.2.0      rstudioapi_0.15.0    
+[43] abind_1.4-5           yaml_2.3.8            codetools_0.2-19     
+[46] processx_3.8.3        plyr_1.8.9            lattice_0.22-5       
+[49] withr_3.0.0           evaluate_0.23         polyclip_1.10-6      
+[52] pillar_1.9.0          BiocManager_1.30.22   whisker_0.4.1        
+[55] renv_1.0.3            generics_0.1.3        rprojroot_2.0.4      
+[58] hms_1.1.3             munsell_0.5.0         xtable_1.8-4         
+[61] gtools_3.9.5          glue_1.7.0            tools_4.3.1          
+[64] ggsignif_0.6.4        fs_1.6.3              cli_3.6.2            
+[67] spatstat.sparse_3.0-3 fansi_1.0.6           gtable_0.3.4         
+[70] sass_0.4.8            digest_0.6.34         farver_2.1.1         
+[73] htmltools_0.5.7       lifecycle_1.0.4       httr_1.4.7           </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

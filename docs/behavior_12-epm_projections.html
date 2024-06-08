@@ -1,0 +1,2554 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Behavioral analysis: Projections (EPM)</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Behavioral analysis: Projections (EPM)</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">21 February, 2024</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-02-21
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree576b196d4ec263a1f2896b578054061d1ce4b0ebtargetblank576b196a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/576b196d4ec263a1f2896b578054061d1ce4b0eb" target="_blank">576b196</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree576b196d4ec263a1f2896b578054061d1ce4b0ebtargetblank576b196a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/576b196d4ec263a1f2896b578054061d1ce4b0eb" target="_blank">576b196</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/rnascope/
+    Ignored:    data/sequencing/
+    Ignored:    output/.DS_Store
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/08A-merge_rd1_ATAC.Rmd
+    Untracked:  analysis/behavior_10-projections_silencing_TMT.Rmd
+    Untracked:  analysis/behavior_11-projections_silencing_2PE.Rmd
+    Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02D-Neuron_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02E-reprocess_Glut_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02F-reprocess_GABA_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02G-Glut_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-03A-merge_filtered_RNA.Rmd
+    Untracked:  analysis/sequencing-03B-initial_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04-initial_deg.Rmd
+    Untracked:  analysis/sequencing-04A-reprocess_Neuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04B-reprocess_Nonneuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04C-Neuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04D-Nonneuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05C-reprocess_Astro_RNA.Rmd
+    Untracked:  analysis/sequencing-05L-Glut_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05M-GABA_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05N-Astro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05O-Macro_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05P-NFOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05Q-MOL_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05R-ABC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05S-VLMC_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05T-Immune_classification+labeling_RNA.Rmd
+    Untracked:  analysis/sequencing-06A-merged_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
+    Untracked:  analysis/sequencing-06B-merged_deg_discovery_RNA.Rmd
+    Untracked:  analysis/sequencing-07A-preprocess_aplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07B-preprocess_aplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07C-preprocess_aplCoA-2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07D-preprocess_pplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07E-preprocess_pplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07F-preprocess_pplCoA-2_ATAC.Rmd
+    Untracked:  output/sequencing/
+    Untracked:  output/spatial/
+
+Unstaged changes:
+    Modified:   analysis/sequencing-02A-merge_rd1_RNA.Rmd
+    Modified:   analysis/sequencing-03-initial_classification.Rmd
+    Modified:   analysis/sequencing-05A-reprocess_Glut_RNA.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/behavior_12-epm_projections.Rmd</code>) and HTML
+(<code>docs/behavior_12-epm_projections.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/86c4464b24e834d51f55909bbe7c5b2945c83dcd/analysis/behavior_12-epm_projections.Rmd" target="_blank">86c4464</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-01-22
+</td>
+<td>
+Added additional projection behavior notebooks.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is a notebook that processes 4-quad data and outputs analyses
+and figures for publication.</p>
+<pre class="r"><code># set up paths
+projection_id &lt;- params$dataset
+projection_path &lt;- params$path
+start_min &lt;- params$start_min
+end_min &lt;- params$end_min
+
+source(&quot;code/behavior-refs.R&quot;)</code></pre>
+<pre><code>Loading required package: MASS</code></pre>
+<pre><code>Loading required package: tidyverse</code></pre>
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+✖ dplyr::select() masks MASS::select()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+Loading required package: colorRamps
+
+Loading required package: RColorBrewer
+
+Loading required package: spatstat
+
+Loading required package: spatstat.data
+
+Loading required package: spatstat.geom
+
+spatstat.geom 3.2-8
+
+
+Attaching package: &#39;spatstat.geom&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    area
+
+
+Loading required package: spatstat.random
+
+spatstat.random 3.2-2
+
+Loading required package: spatstat.explore
+
+Loading required package: nlme
+
+
+Attaching package: &#39;nlme&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    collapse
+
+
+spatstat.explore 3.2-6
+
+Loading required package: spatstat.model
+
+Loading required package: rpart
+
+spatstat.model 3.2-10
+
+Loading required package: spatstat.linnet
+
+spatstat.linnet 3.1-4
+
+
+spatstat 3.0-7 
+For an introduction to spatstat, type &#39;beginner&#39; 
+
+
+Loading required package: viridis
+
+Loading required package: viridisLite
+
+Loading required package: cowplot
+
+
+Attaching package: &#39;cowplot&#39;
+
+
+The following object is masked from &#39;package:lubridate&#39;:
+
+    stamp
+
+
+Loading required package: grid
+
+
+Attaching package: &#39;grid&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    as.mask
+
+
+Loading required package: gridExtra
+
+
+Attaching package: &#39;gridExtra&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    combine
+
+
+Loading required package: colorspace
+
+
+Attaching package: &#39;colorspace&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    coords
+
+
+Loading required package: scales
+
+
+Attaching package: &#39;scales&#39;
+
+
+The following object is masked from &#39;package:viridis&#39;:
+
+    viridis_pal
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    rescale
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    discard
+
+
+The following object is masked from &#39;package:readr&#39;:
+
+    col_factor
+
+
+
+Attaching package: &#39;zoo&#39;
+
+
+The following objects are masked from &#39;package:base&#39;:
+
+    as.Date, as.Date.numeric
+
+
+Loading required package: carData
+
+
+Attaching package: &#39;car&#39;
+
+
+The following object is masked from &#39;package:spatstat.model&#39;:
+
+    bc
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    ellipse
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    recode
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    some
+
+
+Loading required package: mvtnorm
+
+Loading required package: survival
+
+Loading required package: TH.data
+
+
+Attaching package: &#39;TH.data&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    geyser
+
+
+
+Attaching package: &#39;rstatix&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    select
+
+
+The following object is masked from &#39;package:stats&#39;:
+
+    filter
+
+
+
+Attaching package: &#39;ggpubr&#39;
+
+
+The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend
+
+
+The following objects are masked from &#39;package:spatstat.geom&#39;:
+
+    border, rotate</code></pre>
+<pre class="r"><code>source(&quot;code/behavior-misc_processes.R&quot;)
+source(&quot;code/behavior-plot_functions.R&quot;)
+
+projection_groups &lt;- unlist(strsplit(Sys.glob(paste0(projection_path, &quot;*&quot;)), projection_path))[c(FALSE, TRUE)]</code></pre>
+</div>
+<div id="load-the-data" class="section level1">
+<h1>Load the data</h1>
+<p>Names have to be given manually in most cases. Also for now copy into
+console because it does not load due to odd workspace issues. This loads
+all files in a directory and puts it into the correct format
+automatically.</p>
+<pre class="r"><code>data_projection &lt;- read_stim_data(&quot;epm&quot;, projection_groups, projection_path, projection_stim_labels)
+
+data_projection &lt;- list(data_projection$`MeA-control`, data_projection$`MeA-stim`, 
+                           data_projection$`NAc-control`, data_projection$`NAc-stim`)
+names(data_projection) &lt;- c(&quot;MeA-control&quot;, &quot;MeA-stim&quot;, &quot;NAc-control&quot;, &quot;NAc-stim&quot;)</code></pre>
+</div>
+<div id="time-based-metrics" class="section level1 tabset">
+<h1 class="tabset">Time-based metrics</h1>
+<div id="all-3" class="section level2 tabset">
+<h2 class="tabset">All 3</h2>
+<div id="summary-statistics" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<pre class="r"><code>baseline_pre_array_projection &lt;- transform_epm_opentime(data_projection, 
+                                                        &quot;baseline_pre&quot;, &quot;Region&quot;, 1, 1200)
+treatment_array_projection &lt;- transform_epm_opentime(data_projection, 
+                                                     &quot;treatment&quot;, &quot;Region&quot;, 1, 1200)
+baseline_post_array_projection &lt;- transform_epm_opentime(data_projection, 
+                                                         &quot;baseline_post&quot;, &quot;Region&quot;, 1, 1200)
+
+opentime_group_projection &lt;- group_array_epm(data_projection, 
+                                             baseline_pre_array_projection, 
+                                             treatment_array_projection, 
+                                             baseline_post_array_projection,
+                                             &quot;opentime&quot;)
+
+opentime_mins &lt;- transform_epm_opentime_bymin(data_projection, &quot;Region&quot;)</code></pre>
+<div id="nac" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- opentime_group_projection[opentime_group_projection$group 
+                                     %in% c(&quot;NAc ChR2&quot;, &quot;NAc eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, 
+         baseline_pre_opentime, treatment_opentime, baseline_post_opentime) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+NAc_group_projection$time &lt;- factor(NAc_group_projection$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                   levels = c(&quot;NAc eYFP&quot;, &quot;NAc ChR2&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"OpenTime","4":"10","5":"0.167","6":"0.057"},{"1":"eYFP","2":"STIM","3":"OpenTime","4":"10","5":"0.111","6":"0.020"},{"1":"eYFP","2":"POST","3":"OpenTime","4":"10","5":"0.131","6":"0.028"},{"1":"ChR2","2":"PRE","3":"OpenTime","4":"10","5":"0.202","6":"0.039"},{"1":"ChR2","2":"STIM","3":"OpenTime","4":"10","5":"0.156","6":"0.035"},{"1":"ChR2","2":"POST","3":"OpenTime","4":"10","5":"0.149","6":"0.031"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- opentime_group_projection[opentime_group_projection$group 
+                                     %in% c(&quot;MeA ChR2&quot;, &quot;MeA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, 
+         baseline_pre_opentime, treatment_opentime, baseline_post_opentime) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+MeA_group_projection$time &lt;- factor(MeA_group_projection$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                   levels = c(&quot;MeA eYFP&quot;, &quot;MeA ChR2&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"OpenTime","4":"7","5":"0.080","6":"0.021"},{"1":"eYFP","2":"STIM","3":"OpenTime","4":"7","5":"0.261","6":"0.078"},{"1":"eYFP","2":"POST","3":"OpenTime","4":"7","5":"0.174","6":"0.053"},{"1":"ChR2","2":"PRE","3":"OpenTime","4":"10","5":"0.079","6":"0.019"},{"1":"ChR2","2":"STIM","3":"OpenTime","4":"10","5":"0.141","6":"0.037"},{"1":"ChR2","2":"POST","3":"OpenTime","4":"10","5":"0.170","6":"0.041"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="nac-1" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1.00","3":"18","4":"0.629","5":"0.438","6":"","7":"0.022","_rn_":"1"},{"1":"time","2":"1.22","3":"22","4":"2.072","5":"0.162","6":"","7":"0.041","_rn_":"2"},{"1":"group:time","2":"1.22","3":"22","4":"0.130","5":"0.772","6":"","7":"0.003","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"-0.056083333","7":"-0.1906240","8":"0.07845737","9":"0.563","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"-0.035833333","7":"-0.1703740","8":"0.09870737","9":"0.788","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"0.020250000","7":"-0.1142907","8":"0.15479070","9":"0.926","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"-0.046166667","7":"-0.1695465","8":"0.07721314","9":"0.628","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"-0.053500000","7":"-0.1768798","8":"0.06987981","9":"0.537","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.007333333","7":"-0.1307131","8":"0.11604648","9":"0.988","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;PRE&quot;], 
+       y = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;PRE&quot;] and NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;PRE&quot;]
+t = -0.51534, df = 15.871, p-value = 0.6134
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.1812019  0.1103686
+sample estimates:
+mean of x mean of y 
+0.1668333 0.2022500 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;STIM&quot;], 
+       y = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;STIM&quot;] and NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;STIM&quot;]
+t = -1.1198, df = 14.284, p-value = 0.2813
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.13199904  0.04133237
+sample estimates:
+mean of x mean of y 
+0.1107500 0.1560833 </code></pre>
+<pre class="r"><code># POST
+t.test(x = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;POST&quot;], 
+       y = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;POST&quot;] and NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;POST&quot;]
+t = -0.422, df = 17.791, p-value = 0.6781
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.10619179  0.07069179
+sample estimates:
+mean of x mean of y 
+  0.13100   0.14875 </code></pre>
+</div>
+</div>
+<div id="mea-1" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-1" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"15","4":"0.842","5":"0.373","6":"","7":"0.030","_rn_":"1"},{"1":"time","2":"2","3":"30","4":"6.340","5":"0.005","6":"*","7":"0.158","_rn_":"2"},{"1":"group:time","2":"2","3":"30","4":"1.790","5":"0.184","6":"","7":"0.050","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-1" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"0.18083333","7":"-0.02147583","8":"0.3831425","9":"0.0845","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"0.09404762","7":"-0.10826155","8":"0.2963568","9":"0.4760","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.08678571","7":"-0.28909488","8":"0.1155235","9":"0.5290","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"0.06241667","7":"-0.05631905","8":"0.1811524","9":"0.4060","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"0.09091667","7":"-0.02781905","8":"0.2096524","9":"0.1580","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"0.02850000","7":"-0.09023572","8":"0.1472357","9":"0.8240","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-1" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;PRE&quot;], 
+       y = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;PRE&quot;] and MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;PRE&quot;]
+t = 0.058746, df = 13.553, p-value = 0.954
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.05894718  0.06225670
+sample estimates:
+ mean of x  mean of y 
+0.08023810 0.07858333 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;STIM&quot;], 
+       y = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;STIM&quot;] and MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;STIM&quot;]
+t = 1.3824, df = 8.7272, p-value = 0.2012
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.07734695  0.31748980
+sample estimates:
+mean of x mean of y 
+0.2610714 0.1410000 </code></pre>
+<pre class="r"><code># POST
+t.test(x = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;POST&quot;], 
+       y = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;POST&quot;] and MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;POST&quot;]
+t = 0.071117, df = 12.386, p-value = 0.9444
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.1413285  0.1508999
+sample estimates:
+mean of x mean of y 
+0.1742857 0.1695000 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-2" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>#bg_epm_prepost(MeA_group_projection, epm_opentime_label, mea_color, proj_ot_axes, chr2_blue)
+bg_epm_mins(opentime_mins[1:2], epm_opentime_label, mea_color, proj_ot_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/11-MeA_open_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-2" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>#bg_epm_prepost(NAc_group_projection, epm_opentime_label, nac_color, proj_ot_axes, chr2_blue)
+bg_epm_mins(opentime_mins[3:4], epm_opentime_label, nac_color, proj_ot_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/12-NAc_open_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="pre-post-combined" class="section level2 tabset">
+<h2 class="tabset">Pre-Post Combined</h2>
+<pre class="r"><code>opentime_group_projection[,3] &lt;- (opentime_group_projection[,3] + opentime_group_projection[,5])/2 
+opentime_group_projection &lt;- opentime_group_projection[,1:4]
+
+colnames(opentime_group_projection)[3] &lt;- &quot;baseline_opentime&quot; </code></pre>
+<div id="summary-statistics-1" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="nac-3" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- opentime_group_projection[opentime_group_projection$group 
+                                     %in% c(&quot;NAc ChR2&quot;, &quot;NAc eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, 
+         baseline_opentime, treatment_opentime) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                   levels = c(&quot;NAc eYFP&quot;, &quot;NAc ChR2&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"OpenTime","4":"10","5":"0.149","6":"0.041"},{"1":"eYFP","2":"ON","3":"OpenTime","4":"10","5":"0.111","6":"0.020"},{"1":"ChR2","2":"OFF","3":"OpenTime","4":"10","5":"0.176","6":"0.022"},{"1":"ChR2","2":"ON","3":"OpenTime","4":"10","5":"0.156","6":"0.035"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-3" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- opentime_group_projection[opentime_group_projection$group 
+                                     %in% c(&quot;MeA ChR2&quot;, &quot;MeA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;OpenTime&quot;, 
+         baseline_opentime, treatment_opentime) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                   levels = c(&quot;MeA eYFP&quot;, &quot;MeA ChR2&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(OpenTime, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"OpenTime","4":"7","5":"0.127","6":"0.035"},{"1":"eYFP","2":"ON","3":"OpenTime","4":"7","5":"0.261","6":"0.078"},{"1":"ChR2","2":"OFF","3":"OpenTime","4":"10","5":"0.124","6":"0.026"},{"1":"ChR2","2":"ON","3":"OpenTime","4":"10","5":"0.141","6":"0.037"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-1" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="nac-4" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-2" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"0.812","5":"0.379","6":"","7":"0.036","_rn_":"1"},{"1":"time","2":"1","3":"18","4":"2.699","5":"0.118","6":"","7":"0.024","_rn_":"2"},{"1":"group:time","2":"1","3":"18","4":"0.286","5":"0.599","6":"","7":"0.003","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-2" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.03816667","7":"-0.1337025","8":"0.05736917","9":"0.412","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.01941667","7":"-0.1068036","8":"0.06797027","9":"0.646","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-2" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;OFF&quot;], 
+       y = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;OFF&quot;] and NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;OFF&quot;]
+t = -0.57211, df = 13.894, p-value = 0.5764
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.12631358  0.07314691
+sample estimates:
+mean of x mean of y 
+0.1489167 0.1755000 </code></pre>
+<pre class="r"><code># ON
+t.test(x = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;ON&quot;], 
+       y = NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;ON&quot;] and NAc_group_projection$OpenTime[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;ON&quot;]
+t = -1.1198, df = 14.284, p-value = 0.2813
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.13199904  0.04133237
+sample estimates:
+mean of x mean of y 
+0.1107500 0.1560833 </code></pre>
+</div>
+</div>
+<div id="mea-4" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-3" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"15","4":"1.414","5":"0.253","6":"","7":"0.059","_rn_":"1"},{"1":"time","2":"1","3":"15","4":"4.216","5":"0.058","6":"","7":"0.086","_rn_":"2"},{"1":"group:time","2":"1","3":"15","4":"2.532","5":"0.132","6":"","7":"0.053","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-3" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;OpenTime&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"0.13380952","7":"-0.05340489","8":"0.3210239","9":"0.145","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"0.01695833","7":"-0.07915490","8":"0.1130716","9":"0.715","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-3" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;OFF&quot;], 
+       y = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;OFF&quot;] and MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;OFF&quot;]
+t = 0.073257, df = 12.139, p-value = 0.9428
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.09243440  0.09887488
+sample estimates:
+mean of x mean of y 
+0.1272619 0.1240417 </code></pre>
+<pre class="r"><code># ON
+t.test(x = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;ON&quot;], 
+       y = MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;ON&quot;] and MeA_group_projection$OpenTime[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;ON&quot;]
+t = 1.3824, df = 8.7272, p-value = 0.2012
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.07734695  0.31748980
+sample estimates:
+mean of x mean of y 
+0.2610714 0.1410000 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-1" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-5" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_twogroup(MeA_group_projection, epm_opentime_label, mea_color, proj_ot_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/22-MeA_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-5" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_twogroup(NAc_group_projection, epm_opentime_label, nac_color, proj_ot_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/23-NAc_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="entry-based-metrics" class="section level1 tabset">
+<h1 class="tabset">Entry-based metrics</h1>
+<div id="all-3-1" class="section level2 tabset">
+<h2 class="tabset">All 3</h2>
+<div id="summary-statistics-2" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<pre class="r"><code>baseline_pre_array_projection &lt;- transform_epm_openentry(data_projection, 
+                                                        &quot;baseline_pre&quot;, &quot;OpenEntry&quot;, 1, 1200)
+treatment_array_projection &lt;- transform_epm_openentry(data_projection, 
+                                                     &quot;treatment&quot;, &quot;OpenEntry&quot;, 1, 1200)
+baseline_post_array_projection &lt;- transform_epm_openentry(data_projection, 
+                                                         &quot;baseline_post&quot;, &quot;OpenEntry&quot;, 1, 1200)
+
+openentry_group_projection &lt;- group_array_epm(data_projection, 
+                                             baseline_pre_array_projection, 
+                                             treatment_array_projection, 
+                                             baseline_post_array_projection,
+                                             &quot;openentry&quot;)
+
+openentry_mins &lt;- transform_epm_openentry_bymin(data_projection, &quot;OpenEntry&quot;)</code></pre>
+<div id="nac-6" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- openentry_group_projection[openentry_group_projection$group 
+                                     %in% c(&quot;NAc ChR2&quot;, &quot;NAc eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;openentry&quot;, 
+         baseline_pre_openentry, treatment_openentry, baseline_post_openentry) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+NAc_group_projection$time &lt;- factor(NAc_group_projection$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                   levels = c(&quot;NAc eYFP&quot;, &quot;NAc ChR2&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(openentry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"openentry","4":"10","5":"8.2","6":"0.929"},{"1":"eYFP","2":"STIM","3":"openentry","4":"10","5":"7.7","6":"0.761"},{"1":"eYFP","2":"POST","3":"openentry","4":"10","5":"7.0","6":"1.011"},{"1":"ChR2","2":"PRE","3":"openentry","4":"10","5":"10.6","6":"1.231"},{"1":"ChR2","2":"STIM","3":"openentry","4":"10","5":"9.5","6":"1.827"},{"1":"ChR2","2":"POST","3":"openentry","4":"10","5":"9.6","6":"2.217"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-6" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- openentry_group_projection[openentry_group_projection$group 
+                                     %in% c(&quot;MeA ChR2&quot;, &quot;MeA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;openentry&quot;, 
+         baseline_pre_openentry, treatment_openentry, baseline_post_openentry) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+MeA_group_projection$time &lt;- factor(MeA_group_projection$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                   levels = c(&quot;MeA eYFP&quot;, &quot;MeA ChR2&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(openentry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"openentry","4":"7","5":"7.286","6":"1.728"},{"1":"eYFP","2":"STIM","3":"openentry","4":"7","5":"8.857","6":"1.534"},{"1":"eYFP","2":"POST","3":"openentry","4":"7","5":"10.429","6":"2.733"},{"1":"ChR2","2":"PRE","3":"openentry","4":"10","5":"8.800","6":"1.348"},{"1":"ChR2","2":"STIM","3":"openentry","4":"10","5":"8.600","6":"1.522"},{"1":"ChR2","2":"POST","3":"openentry","4":"10","5":"8.800","6":"1.806"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-2" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="nac-7" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-4" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"1.703","5":"0.208","6":"","7":"0.065","_rn_":"1"},{"1":"time","2":"2","3":"36","4":"0.812","5":"0.452","6":"","7":"0.012","_rn_":"2"},{"1":"group:time","2":"2","3":"36","4":"0.109","5":"0.897","6":"","7":"0.002","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-4" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"-0.5","7":"-3.677354","8":"2.677354","9":"0.920","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"-1.2","7":"-4.377354","8":"1.977354","9":"0.622","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.7","7":"-3.877354","8":"2.477354","9":"0.849","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"-1.1","7":"-7.427780","8":"5.227780","9":"0.903","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"-1.0","7":"-7.327780","8":"5.327780","9":"0.919","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"0.1","7":"-6.227780","8":"6.427780","9":"0.999","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-4" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;PRE&quot;], 
+       y = NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;PRE&quot;] and NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;PRE&quot;]
+t = -1.5564, df = 16.736, p-value = 0.1383
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.6572519  0.8572519
+sample estimates:
+mean of x mean of y 
+      8.2      10.6 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;STIM&quot;], 
+       y = NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;STIM&quot;] and NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;STIM&quot;]
+t = -0.9094, df = 12.03, p-value = 0.381
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.111425  2.511425
+sample estimates:
+mean of x mean of y 
+      7.7       9.5 </code></pre>
+<pre class="r"><code># POST
+t.test(x = NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;POST&quot;], 
+       y = NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;POST&quot;] and NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;POST&quot;]
+t = -1.067, df = 12.588, p-value = 0.306
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -7.881857  2.681857
+sample estimates:
+mean of x mean of y 
+      7.0       9.6 </code></pre>
+</div>
+</div>
+<div id="mea-7" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-5" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"15","4":"0.003","5":"0.956","6":"","7":"0.000157","_rn_":"1"},{"1":"time","2":"2","3":"30","4":"1.021","5":"0.373","6":"","7":"0.017000","_rn_":"2"},{"1":"group:time","2":"2","3":"30","4":"1.021","5":"0.373","6":"","7":"0.017000","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-5" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"1.571429","7":"-5.886690","8":"9.029547","9":"0.854","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"3.142857","7":"-4.315262","8":"10.600976","9":"0.541","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"1.571429","7":"-5.886690","8":"9.029547","9":"0.854","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"-0.200000","7":"-5.705407","8":"5.305407","9":"0.996","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"0.000000","7":"-5.505407","8":"5.505407","9":"1.000","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"0.200000","7":"-5.305407","8":"5.705407","9":"0.996","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-5" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;PRE&quot;], 
+       y = MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;PRE&quot;] and MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;PRE&quot;]
+t = -0.69087, df = 12.452, p-value = 0.5023
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.270757  3.242186
+sample estimates:
+mean of x mean of y 
+ 7.285714  8.800000 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;STIM&quot;], 
+       y = MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;STIM&quot;] and MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;STIM&quot;]
+t = 0.119, df = 14.352, p-value = 0.9069
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.366788  4.881073
+sample estimates:
+mean of x mean of y 
+ 8.857143  8.600000 </code></pre>
+<pre class="r"><code># POST
+t.test(x = MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;POST&quot;], 
+       y = MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;POST&quot;] and MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;POST&quot;]
+t = 0.49714, df = 10.988, p-value = 0.6289
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.582616  8.839759
+sample estimates:
+mean of x mean of y 
+ 10.42857   8.80000 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-2" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-8" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_epm_mins(openentry_mins[1:2], epm_entry_label, mea_color, proj_entry_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/33-MeA_entry_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-8" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_epm_mins(openentry_mins[3:4], epm_entry_label, nac_color, proj_entry_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/34-NAc_entry_time-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="pre-post-combined-1" class="section level2 tabset">
+<h2 class="tabset">Pre-Post Combined</h2>
+<pre class="r"><code>openentry_group_projection[,3] &lt;- (openentry_group_projection[,3] + openentry_group_projection[,5])/2 
+openentry_group_projection &lt;- openentry_group_projection[,1:4]
+
+colnames(openentry_group_projection)[3] &lt;- &quot;baseline_openentry&quot; </code></pre>
+<div id="summary-statistics-3" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="nac-9" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- openentry_group_projection[openentry_group_projection$group 
+                                     %in% c(&quot;NAc ChR2&quot;, &quot;NAc eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;openentry&quot;, 
+         baseline_openentry, treatment_openentry) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                   levels = c(&quot;NAc eYFP&quot;, &quot;NAc ChR2&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(openentry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"openentry","4":"10","5":"7.6","6":"0.829"},{"1":"eYFP","2":"ON","3":"openentry","4":"10","5":"7.7","6":"0.761"},{"1":"ChR2","2":"OFF","3":"openentry","4":"10","5":"10.1","6":"1.614"},{"1":"ChR2","2":"ON","3":"openentry","4":"10","5":"9.5","6":"1.827"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-9" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- openentry_group_projection[openentry_group_projection$group 
+                                     %in% c(&quot;MeA ChR2&quot;, &quot;MeA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;openentry&quot;, 
+         baseline_openentry, treatment_openentry) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                   levels = c(&quot;MeA eYFP&quot;, &quot;MeA ChR2&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(openentry, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"openentry","4":"7","5":"8.857","6":"2.157"},{"1":"eYFP","2":"ON","3":"openentry","4":"7","5":"8.857","6":"1.534"},{"1":"ChR2","2":"OFF","3":"openentry","4":"10","5":"8.800","6":"1.434"},{"1":"ChR2","2":"ON","3":"openentry","4":"10","5":"8.600","6":"1.522"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-3" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="nac-10" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-6" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"1.511","5":"0.235","6":"","7":"0.066000","_rn_":"1"},{"1":"time","2":"1","3":"18","4":"0.115","5":"0.739","6":"","7":"0.000962","_rn_":"2"},{"1":"group:time","2":"1","3":"18","4":"0.225","5":"0.641","6":"","7":"0.002000","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-6" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"0.1","7":"-2.264510","8":"2.464510","9":"0.930","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.6","7":"-5.721828","8":"4.521828","9":"0.808","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-6" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;OFF&quot;], 
+       y = NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;OFF&quot;] and NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;OFF&quot;]
+t = -1.3778, df = 13.444, p-value = 0.1908
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.406771  1.406771
+sample estimates:
+mean of x mean of y 
+      7.6      10.1 </code></pre>
+<pre class="r"><code># ON
+t.test(x = NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;ON&quot;], 
+       y = NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$openentry[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;ON&quot;] and NAc_group_projection$openentry[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;ON&quot;]
+t = -0.9094, df = 12.03, p-value = 0.381
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.111425  2.511425
+sample estimates:
+mean of x mean of y 
+      7.7       9.5 </code></pre>
+</div>
+</div>
+<div id="mea-10" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-7" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"15","4":"0.005","5":"0.942","6":"","7":"0.000296","_rn_":"1"},{"1":"time","2":"1","3":"15","4":"0.010","5":"0.922","6":"","7":"0.000120","_rn_":"2"},{"1":"group:time","2":"1","3":"15","4":"0.010","5":"0.922","6":"","7":"0.000120","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-7" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;openentry&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"0.0","7":"-5.766697","8":"5.766697","9":"1.000","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-0.2","7":"-4.592998","8":"4.192998","9":"0.925","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-7" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;OFF&quot;], 
+       y = MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;OFF&quot;] and MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;OFF&quot;]
+t = 0.022063, df = 11.04, p-value = 0.9828
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.640854  5.755140
+sample estimates:
+mean of x mean of y 
+ 8.857143  8.800000 </code></pre>
+<pre class="r"><code># ON
+t.test(x = MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;ON&quot;], 
+       y = MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$openentry[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;ON&quot;] and MeA_group_projection$openentry[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;ON&quot;]
+t = 0.119, df = 14.352, p-value = 0.9069
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.366788  4.881073
+sample estimates:
+mean of x mean of y 
+ 8.857143  8.600000 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-3" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-11" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_twogroup(MeA_group_projection, epm_entry_label, mea_color, proj_entry_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/41-MeA_entry_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-11" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_twogroup(NAc_group_projection, epm_entry_label, nac_color, proj_entry_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/42-NAc_entry_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="distance-based-metrics" class="section level1 tabset">
+<h1 class="tabset">Distance-based metrics</h1>
+<div id="all-3-2" class="section level2 tabset">
+<h2 class="tabset">All 3</h2>
+<div id="summary-statistics-4" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<pre class="r"><code># open entry function also works for distance
+baseline_pre_array_projection &lt;- transform_epm_openentry(data_projection, 
+                                                        &quot;baseline_pre&quot;, &quot;Distance&quot;, 1, 1200)
+treatment_array_projection &lt;- transform_epm_openentry(data_projection, 
+                                                     &quot;treatment&quot;, &quot;Distance&quot;, 1, 1200)
+baseline_post_array_projection &lt;- transform_epm_openentry(data_projection, 
+                                                         &quot;baseline_post&quot;, &quot;Distance&quot;, 1, 1200)
+
+distance_group_projection &lt;- group_array_epm(data_projection, 
+                                             baseline_pre_array_projection, 
+                                             treatment_array_projection, 
+                                             baseline_post_array_projection,
+                                             &quot;distance&quot;)
+
+distance_mins &lt;- transform_epm_openentry_bymin(data_projection, &quot;Distance&quot;)
+distance_mins &lt;- lapply(distance_mins, function(x) cbind.data.frame(x[, 1:2], x$OpenEntry / 100))</code></pre>
+<div id="nac-12" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- distance_group_projection[distance_group_projection$group 
+                                     %in% c(&quot;NAc ChR2&quot;, &quot;NAc eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;distance&quot;, 
+         baseline_pre_distance, treatment_distance, baseline_post_distance) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+NAc_group_projection$time &lt;- factor(NAc_group_projection$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                   levels = c(&quot;NAc eYFP&quot;, &quot;NAc ChR2&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+# convert to meters
+NAc_group_projection$distance &lt;- NAc_group_projection$distance / 100
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"distance","4":"10","5":"11.080","6":"0.743"},{"1":"eYFP","2":"STIM","3":"distance","4":"10","5":"11.127","6":"0.297"},{"1":"eYFP","2":"POST","3":"distance","4":"10","5":"11.101","6":"0.666"},{"1":"ChR2","2":"PRE","3":"distance","4":"10","5":"12.900","6":"1.217"},{"1":"ChR2","2":"STIM","3":"distance","4":"10","5":"10.084","6":"1.070"},{"1":"ChR2","2":"POST","3":"distance","4":"10","5":"9.650","6":"1.322"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-12" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- distance_group_projection[distance_group_projection$group 
+                                     %in% c(&quot;MeA ChR2&quot;, &quot;MeA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;distance&quot;, 
+         baseline_pre_distance, treatment_distance, baseline_post_distance) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) &lt;- c(&quot;POST&quot;, &quot;PRE&quot;, &quot;STIM&quot;)
+MeA_group_projection$time &lt;- factor(MeA_group_projection$time, levels = c(&quot;PRE&quot;, &quot;STIM&quot;, &quot;POST&quot;))
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                   levels = c(&quot;MeA eYFP&quot;, &quot;MeA ChR2&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+# convert to meters
+MeA_group_projection$distance &lt;- MeA_group_projection$distance / 100
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"PRE","3":"distance","4":"7","5":"13.881","6":"1.033"},{"1":"eYFP","2":"STIM","3":"distance","4":"7","5":"10.371","6":"1.295"},{"1":"eYFP","2":"POST","3":"distance","4":"7","5":"10.778","6":"1.866"},{"1":"ChR2","2":"PRE","3":"distance","4":"10","5":"12.917","6":"0.832"},{"1":"ChR2","2":"STIM","3":"distance","4":"10","5":"10.634","6":"1.383"},{"1":"ChR2","2":"POST","3":"distance","4":"10","5":"11.934","6":"1.630"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-4" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="nac-13" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-8" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"0.035","5":"0.854","6":"","7":"0.002","_rn_":"1"},{"1":"time","2":"2","3":"36","4":"5.534","5":"0.008","6":"*","7":"0.058","_rn_":"2"},{"1":"group:time","2":"2","3":"36","4":"5.762","5":"0.007","6":"*","7":"0.061","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-8" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"0.04740018","7":"-2.060826","8":"2.1556265","9":"0.998","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"0.02073352","7":"-2.087493","8":"2.1289598","9":"1.000","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.02666666","7":"-2.134893","8":"2.0815597","9":"0.999","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"-2.81681974","7":"-7.051640","8":"1.4180001","9":"0.243","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"-3.25043241","7":"-7.485252","8":"0.9843875","9":"0.157","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"-0.43361267","7":"-4.668433","8":"3.8012072","9":"0.965","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-8" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;PRE&quot;], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;PRE&quot;] and NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;PRE&quot;]
+t = -1.2763, df = 14.888, p-value = 0.2214
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.86254  1.22166
+sample estimates:
+mean of x mean of y 
+ 11.07997  12.90041 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;STIM&quot;], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;STIM&quot;] and NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;STIM&quot;]
+t = 0.93954, df = 10.38, p-value = 0.3688
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -1.419323  3.506882
+sample estimates:
+mean of x mean of y 
+ 11.12737  10.08359 </code></pre>
+<pre class="r"><code># POST
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;POST&quot;], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;POST&quot;] and NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;POST&quot;]
+t = 0.97991, df = 13.295, p-value = 0.3446
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -1.740420  4.641871
+sample estimates:
+mean of x mean of y 
+11.100705  9.649979 </code></pre>
+</div>
+</div>
+<div id="mea-13" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-9" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"15","4":"0.007","5":"0.933","6":"","7":"0.000386","_rn_":"1"},{"1":"time","2":"2","3":"30","4":"7.032","5":"0.003","6":"*","7":"0.090000","_rn_":"2"},{"1":"group:time","2":"2","3":"30","4":"0.899","5":"0.418","6":"","7":"0.013000","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-9" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"PRE","4":"STIM","5":"0","6":"-3.5103133","7":"-8.710638","8":"1.690012","9":"0.224","10":"ns","_rn_":"1"},{"1":"eYFP","2":"time","3":"PRE","4":"POST","5":"0","6":"-3.1028889","7":"-8.303214","8":"2.097436","9":"0.304","10":"ns","_rn_":"2"},{"1":"eYFP","2":"time","3":"STIM","4":"POST","5":"0","6":"0.4074244","7":"-4.792901","8":"5.607749","9":"0.978","10":"ns","_rn_":"3"},{"1":"ChR2","2":"time","3":"PRE","4":"STIM","5":"0","6":"-2.2829709","7":"-6.926755","8":"2.360813","9":"0.453","10":"ns","_rn_":"4"},{"1":"ChR2","2":"time","3":"PRE","4":"POST","5":"0","6":"-0.9829089","7":"-5.626693","8":"3.660875","9":"0.860","10":"ns","_rn_":"5"},{"1":"ChR2","2":"time","3":"STIM","4":"POST","5":"0","6":"1.3000619","7":"-3.343722","8":"5.943846","9":"0.769","10":"ns","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-9" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># PRE
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;PRE&quot;], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;PRE&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;PRE&quot;] and MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;PRE&quot;]
+t = 0.72706, df = 12.731, p-value = 0.4803
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -1.906985  3.835403
+sample estimates:
+mean of x mean of y 
+ 13.88135  12.91714 </code></pre>
+<pre class="r"><code># STIM
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;STIM&quot;], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;STIM&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;STIM&quot;] and MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;STIM&quot;]
+t = -0.13888, df = 14.721, p-value = 0.8914
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.308213  3.781946
+sample estimates:
+mean of x mean of y 
+ 10.37104  10.63417 </code></pre>
+<pre class="r"><code># POST
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;POST&quot;], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;POST&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;POST&quot;] and MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;POST&quot;]
+t = -0.46639, df = 13.437, p-value = 0.6484
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -6.491795  4.180253
+sample estimates:
+mean of x mean of y 
+ 10.77846  11.93423 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-4" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-14" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_epm_mins(distance_mins[1:2], epm_dist_label, mea_color, proj_epm_dist_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/52-MeA_distance_open-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-14" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_epm_mins(distance_mins[3:4], epm_dist_label, nac_color, proj_epm_dist_axes_min, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/53-NAc_distance_open-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="pre-post-combined-2" class="section level2 tabset">
+<h2 class="tabset">Pre-Post Combined</h2>
+<pre class="r"><code>distance_group_projection[,3] &lt;- (distance_group_projection[,3] + distance_group_projection[,5])/2 
+distance_group_projection &lt;- distance_group_projection[,1:4]
+
+colnames(distance_group_projection)[3] &lt;- &quot;baseline_distance&quot; </code></pre>
+<div id="summary-statistics-5" class="section level3 tabset">
+<h3 class="tabset">Summary statistics</h3>
+<div id="nac-15" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>NAc_group_projection &lt;- distance_group_projection[distance_group_projection$group 
+                                     %in% c(&quot;NAc ChR2&quot;, &quot;NAc eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;distance&quot;, 
+         baseline_distance, treatment_distance) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(NAc_group_projection$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+NAc_group_projection$group &lt;- factor(NAc_group_projection$group, 
+                                   levels = c(&quot;NAc eYFP&quot;, &quot;NAc ChR2&quot;))
+levels(NAc_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+NAc_group_projection$distance &lt;- NAc_group_projection$distance / 100
+
+NAc_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"distance","4":"10","5":"11.090","6":"0.636"},{"1":"eYFP","2":"ON","3":"distance","4":"10","5":"11.127","6":"0.297"},{"1":"ChR2","2":"OFF","3":"distance","4":"10","5":"11.275","6":"1.140"},{"1":"ChR2","2":"ON","3":"distance","4":"10","5":"10.084","6":"1.070"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mea-15" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>MeA_group_projection &lt;- distance_group_projection[distance_group_projection$group 
+                                     %in% c(&quot;MeA ChR2&quot;, &quot;MeA eYFP&quot;),] %&gt;%
+  gather(key = &quot;time&quot;, value = &quot;distance&quot;, 
+         baseline_distance, treatment_distance) %&gt;%
+  convert_as_factor(group, time)
+# out of order due to alphabetization, then put in order
+levels(MeA_group_projection$time) &lt;- c(&quot;OFF&quot;, &quot;ON&quot;)
+
+MeA_group_projection$group &lt;- factor(MeA_group_projection$group, 
+                                   levels = c(&quot;MeA eYFP&quot;, &quot;MeA ChR2&quot;))
+levels(MeA_group_projection$group) &lt;- c(&quot;eYFP&quot;, &quot;ChR2&quot;)
+
+MeA_group_projection$distance &lt;- MeA_group_projection$distance / 100
+
+MeA_group_projection %&gt;%
+  group_by(group, time) %&gt;%
+  get_summary_stats(distance, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["time"],"name":[2],"type":["fct"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"eYFP","2":"OFF","3":"distance","4":"7","5":"12.330","6":"1.427"},{"1":"eYFP","2":"ON","3":"distance","4":"7","5":"10.371","6":"1.295"},{"1":"ChR2","2":"OFF","3":"distance","4":"10","5":"12.426","6":"1.126"},{"1":"ChR2","2":"ON","3":"distance","4":"10","5":"10.634","6":"1.383"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="stats-5" class="section level3 tabset">
+<h3 class="tabset">Stats</h3>
+<div id="nac-16" class="section level4 tabset">
+<h4 class="tabset">NAc</h4>
+<div id="anova-10" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(NAc_group_projection, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"18","4":"0.135","5":"0.717","6":"","7":"0.007","_rn_":"1"},{"1":"time","2":"1","3":"18","4":"3.148","5":"0.093","6":"","7":"0.012","_rn_":"2"},{"1":"group:time","2":"1","3":"18","4":"3.565","5":"0.075","6":"","7":"0.014","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-10" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(NAc_group_projection, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"0.03703342","7":"-1.437208","8":"1.511275","9":"0.958","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-1.19160353","7":"-4.476339","8":"2.093132","9":"0.456","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="t-test-each-10" class="section level5">
+<h5>T-test each</h5>
+<pre class="r"><code># OFF
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;OFF&quot;], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;OFF&quot;] and NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;OFF&quot;]
+t = -0.14167, df = 14.106, p-value = 0.8893
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -2.981527  2.611812
+sample estimates:
+mean of x mean of y 
+ 11.09034  11.27520 </code></pre>
+<pre class="r"><code># ON
+t.test(x = NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         NAc_group_projection$time == &quot;ON&quot;], 
+       y = NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         NAc_group_projection$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  NAc_group_projection$distance[NAc_group_projection$group == &quot;eYFP&quot; &amp; NAc_group_projection$time == &quot;ON&quot;] and NAc_group_projection$distance[NAc_group_projection$group == &quot;ChR2&quot; &amp; NAc_group_projection$time == &quot;ON&quot;]
+t = 0.93954, df = 10.38, p-value = 0.3688
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -1.419323  3.506882
+sample estimates:
+mean of x mean of y 
+ 11.12737  10.08359 </code></pre>
+</div>
+</div>
+<div id="mea-16" class="section level4 tabset">
+<h4 class="tabset">MeA</h4>
+<div id="anova-11" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>display_anova(MeA_group_projection, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"15","4":"0.010","5":"0.921","6":"","7":"0.00060","_rn_":"1"},{"1":"time","2":"1","3":"15","4":"9.308","5":"0.008","6":"*","7":"0.06100","_rn_":"2"},{"1":"group:time","2":"1","3":"15","4":"0.019","5":"0.894","6":"","7":"0.00013","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-11" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_comp_anova(MeA_group_projection, &quot;distance&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["group"],"name":[1],"type":["fct"],"align":["left"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[3],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[4],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[10],"type":["chr"],"align":["left"]}],"data":[{"1":"eYFP","2":"time","3":"OFF","4":"ON","5":"0","6":"-1.958869","7":"-6.157321","8":"2.239583","9":"0.329","10":"ns","_rn_":"1"},{"1":"ChR2","2":"time","3":"OFF","4":"ON","5":"0","6":"-1.791516","7":"-5.537743","8":"1.954710","9":"0.328","10":"ns","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code># OFF
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;OFF&quot;], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;OFF&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;OFF&quot;] and MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;OFF&quot;]
+t = -0.052703, df = 12.555, p-value = 0.9588
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.036188  3.844626
+sample estimates:
+mean of x mean of y 
+ 12.32991  12.42569 </code></pre>
+<pre class="r"><code># ON
+t.test(x = MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; 
+                                         MeA_group_projection$time == &quot;ON&quot;], 
+       y = MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; 
+                                         MeA_group_projection$time == &quot;ON&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  MeA_group_projection$distance[MeA_group_projection$group == &quot;eYFP&quot; &amp; MeA_group_projection$time == &quot;ON&quot;] and MeA_group_projection$distance[MeA_group_projection$group == &quot;ChR2&quot; &amp; MeA_group_projection$time == &quot;ON&quot;]
+t = -0.13888, df = 14.721, p-value = 0.8914
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -4.308213  3.781946
+sample estimates:
+mean of x mean of y 
+ 10.37104  10.63417 </code></pre>
+</div>
+</div>
+</div>
+<div id="plots-5" class="section level3 tabset">
+<h3 class="tabset">Plots</h3>
+<div id="mea-17" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>bg_twogroup(MeA_group_projection, epm_dist_label, mea_color, proj_epm_dist_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/63-MeA_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-17" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>bg_twogroup(NAc_group_projection, epm_dist_label, nac_color, proj_epm_dist_axes, chr2_blue)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/64-NAc_open_prepost-1.pdf" width="230.4" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="heatmaps" class="section level1 tabset">
+<h1 class="tabset">Heatmaps</h1>
+<pre class="r"><code>full_heatmap &lt;- get_heatmap_epm(data_projection, &quot;full&quot;)
+baseline_heatmap &lt;- get_heatmap_epm(data_projection, &quot;baseline_all&quot;)
+treatment_heatmap &lt;- get_heatmap_epm(data_projection, &quot;treatment&quot;)
+
+heatmap_diff &lt;- get_heatmap_epm_diff(data_projection)</code></pre>
+<div id="mea-18" class="section level2 tabset">
+<h2 class="tabset">MeA</h2>
+<div id="eyfp" class="section level3 tabset">
+<h3 class="tabset">eYFP</h3>
+<div id="full" class="section level4">
+<h4>Full</h4>
+<pre class="r"><code>plot_heatmap_epm(full_heatmap$`MeA-control`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/66-mea_eyfp_full_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="off" class="section level4">
+<h4>OFF</h4>
+<pre class="r"><code>plot_heatmap_epm(baseline_heatmap$`MeA-control`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/67-mea_eyfp_off_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="on" class="section level4">
+<h4>ON</h4>
+<pre class="r"><code>plot_heatmap_epm(treatment_heatmap$`MeA-control`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/68-mea_eyfp_on_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="difference" class="section level4">
+<h4>Difference</h4>
+<pre class="r"><code>plot_heatmap_epm_diff(heatmap_diff$`MeA-control`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/69-mea_eyfp_diff_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="chr2" class="section level3 tabset">
+<h3 class="tabset">ChR2</h3>
+<div id="full-1" class="section level4">
+<h4>Full</h4>
+<pre class="r"><code>plot_heatmap_epm(full_heatmap$`MeA-stim`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/70-mea_chr2_full_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="off-1" class="section level4">
+<h4>OFF</h4>
+<pre class="r"><code>plot_heatmap_epm(baseline_heatmap$`MeA-stim`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/71-mea_chr2_off_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="on-1" class="section level4">
+<h4>ON</h4>
+<pre class="r"><code>plot_heatmap_epm(treatment_heatmap$`MeA-stim`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/72-mea_chr2_on_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="difference-1" class="section level4">
+<h4>Difference</h4>
+<pre class="r"><code>plot_heatmap_epm_diff(heatmap_diff$`MeA-stim`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/73-mea_chr2_diff_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="nac-18" class="section level2 tabset">
+<h2 class="tabset">NAc</h2>
+<div id="eyfp-1" class="section level3 tabset">
+<h3 class="tabset">eYFP</h3>
+<div id="full-2" class="section level4">
+<h4>Full</h4>
+<pre class="r"><code>plot_heatmap_epm(full_heatmap$`NAc-control`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/74-nac_eyfp_full_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="off-2" class="section level4">
+<h4>OFF</h4>
+<pre class="r"><code>plot_heatmap_epm(baseline_heatmap$`NAc-control`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/75-nac_eyfp_off_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="on-2" class="section level4">
+<h4>ON</h4>
+<pre class="r"><code>plot_heatmap_epm(treatment_heatmap$`NAc-control`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/76-nac_eyfp_on_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="difference-2" class="section level4">
+<h4>Difference</h4>
+<pre class="r"><code>plot_heatmap_epm_diff(heatmap_diff$`NAc-control`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/77-nac_eyfp_diff_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="chr2-1" class="section level3 tabset">
+<h3 class="tabset">ChR2</h3>
+<div id="full-3" class="section level4">
+<h4>Full</h4>
+<pre class="r"><code>plot_heatmap_epm(full_heatmap$`NAc-stim`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/78-nac_chr2_full_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="off-3" class="section level4">
+<h4>OFF</h4>
+<pre class="r"><code>plot_heatmap_epm(baseline_heatmap$`NAc-stim`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/79-nac_chr2_off_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="on-3" class="section level4">
+<h4>ON</h4>
+<pre class="r"><code>plot_heatmap_epm(treatment_heatmap$`NAc-stim`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/80-nac_chr2_on_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+<div id="difference-3" class="section level4">
+<h4>Difference</h4>
+<pre class="r"><code>plot_heatmap_epm_diff(heatmap_diff$`NAc-stim`)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/81-nac_chr2_diff_heatmap-1.png" width="230.4" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="scale-bars" class="section level2 tabset">
+<h2 class="tabset">Scale bars</h2>
+<div id="absolute" class="section level3 tabset">
+<h3 class="tabset">Absolute</h3>
+<div id="horizontal" class="section level4">
+<h4>Horizontal</h4>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend(treatment_heatmap$`NAc-stim`, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/82-scale_bar_horizontal-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+<div id="vertical" class="section level4">
+<h4>Vertical</h4>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend(treatment_heatmap$`NAc-stim`, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/83-scale_bar_vertical-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="relative" class="section level3 tabset">
+<h3 class="tabset">Relative</h3>
+<div id="horizontal-1" class="section level4">
+<h4>Horizontal</h4>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend_diff(heatmap_diff$`NAc-stim`, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/84-scale_bar_horizontal_diff-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+<div id="vertical-1" class="section level4">
+<h4>Vertical</h4>
+<pre class="r"><code>plot_legend &lt;- plot_heatmap_epm_legend_diff(heatmap_diff$`NAc-stim`, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<p><img src="figure/behavior_12-epm_projections.Rmd/85-scale_bar_vertical_diff-1.png" width="288" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="legends" class="section level3 tabset">
+<h3 class="tabset">Legends</h3>
+<div id="vertical-2" class="section level4 tabset">
+<h4 class="tabset">Vertical</h4>
+<div id="mea-19" class="section level5 tabset">
+<h5 class="tabset">MeA</h5>
+<pre class="r"><code>plot_legend &lt;- points_legend(MeA_group_projection, epm_entry_label, mea_color, proj_entry_axes, chr2_blue, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/86-vertical_legend_MeA-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-19" class="section level5 tabset">
+<h5 class="tabset">NAc</h5>
+<pre class="r"><code>plot_legend &lt;- points_legend(NAc_group_projection, epm_entry_label, nac_color, proj_entry_axes, chr2_blue, &quot;vertical&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/87-vertical_legend_NAc-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="horizontal-2" class="section level4 tabset">
+<h4 class="tabset">Horizontal</h4>
+<div id="mea-20" class="section level5 tabset">
+<h5 class="tabset">MeA</h5>
+<pre class="r"><code>plot_legend &lt;- points_legend(MeA_group_projection, epm_entry_label, mea_color, proj_entry_axes, chr2_blue, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/88-horizontal_legend_MeA-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac-20" class="section level5 tabset">
+<h5 class="tabset">NAc</h5>
+<pre class="r"><code>plot_legend &lt;- points_legend(NAc_group_projection, epm_entry_label, nac_color, proj_entry_axes, chr2_blue, &quot;horizontal&quot;)
+
+grid.newpage()
+grid.draw(plot_legend)</code></pre>
+<embed src="figure/behavior_12-epm_projections.Rmd/89-horizontal_legend_NAc-1.pdf" width="172.8" style="display: block; margin: auto;" type="application/pdf" />
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.1.2
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: Asia/Ho_Chi_Minh
+tzcode source: internal
+
+attached base packages:
+[1] grid      stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+ [1] knitr_1.45             ggpubr_0.6.0           emmeans_1.10.0        
+ [4] rstatix_0.7.2          multcomp_1.4-25        TH.data_1.1-2         
+ [7] survival_3.5-7         mvtnorm_1.2-4          car_3.1-2             
+[10] carData_3.0-5          gmodels_2.18.1.1       zoo_1.8-12            
+[13] scales_1.3.0           colorspace_2.1-0       gridExtra_2.3         
+[16] cowplot_1.1.3          viridis_0.6.5          viridisLite_0.4.2     
+[19] spatstat_3.0-7         spatstat.linnet_3.1-4  spatstat.model_3.2-10 
+[22] rpart_4.1.23           spatstat.explore_3.2-6 nlme_3.1-164          
+[25] spatstat.random_3.2-2  spatstat.geom_3.2-8    spatstat.data_3.0-4   
+[28] RColorBrewer_1.1-3     colorRamps_2.3.1       lubridate_1.9.3       
+[31] forcats_1.0.0          stringr_1.5.1          dplyr_1.1.4           
+[34] purrr_1.0.2            readr_2.1.5            tidyr_1.3.1           
+[37] tibble_3.2.1           ggplot2_3.4.4          tidyverse_2.0.0       
+[40] MASS_7.3-60.0.1        workflowr_1.7.1       
+
+loaded via a namespace (and not attached):
+ [1] deldir_2.0-2          sandwich_3.1-0        rlang_1.1.3          
+ [4] magrittr_2.0.3        git2r_0.33.0          compiler_4.3.1       
+ [7] getPass_0.2-4         mgcv_1.9-1            gdata_3.0.0          
+[10] reshape2_1.4.4        callr_3.7.3           vctrs_0.6.5          
+[13] pkgconfig_2.0.3       fastmap_1.1.1         backports_1.4.1      
+[16] labeling_0.4.3        utf8_1.2.4            promises_1.2.1       
+[19] rmarkdown_2.25        tzdb_0.4.0            ps_1.7.6             
+[22] xfun_0.41             cachem_1.0.8          jsonlite_1.8.8       
+[25] goftest_1.2-3         highr_0.10            later_1.3.2          
+[28] spatstat.utils_3.0-4  broom_1.0.5           R6_2.5.1             
+[31] bslib_0.6.1           stringi_1.8.3         estimability_1.4.1   
+[34] jquerylib_0.1.4       Rcpp_1.0.12           tensor_1.5           
+[37] httpuv_1.6.14         Matrix_1.6-5          splines_4.3.1        
+[40] timechange_0.3.0      tidyselect_1.2.0      rstudioapi_0.15.0    
+[43] abind_1.4-5           yaml_2.3.8            codetools_0.2-19     
+[46] processx_3.8.3        plyr_1.8.9            lattice_0.22-5       
+[49] withr_3.0.0           evaluate_0.23         polyclip_1.10-6      
+[52] pillar_1.9.0          BiocManager_1.30.22   whisker_0.4.1        
+[55] renv_1.0.3            generics_0.1.3        rprojroot_2.0.4      
+[58] hms_1.1.3             munsell_0.5.0         xtable_1.8-4         
+[61] gtools_3.9.5          glue_1.7.0            tools_4.3.1          
+[64] ggsignif_0.6.4        fs_1.6.3              cli_3.6.2            
+[67] spatstat.sparse_3.0-3 fansi_1.0.6           gtable_0.3.4         
+[70] sass_0.4.8            digest_0.6.34         farver_2.1.1         
+[73] htmltools_0.5.7       lifecycle_1.0.4       httr_1.4.7           </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

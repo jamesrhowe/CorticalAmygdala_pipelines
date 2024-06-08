@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Broad tissue type classification (final): plCoA</title>
+
+<script src="site_libs/header-attrs-2.17/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Broad tissue type classification (final):
+plCoA</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">04 December, 2022</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2022-12-04
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.0). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R
+Markdown file created these results, you’ll want to first commit it to
+the Git repo. If you’re still working on the analysis, you can ignore
+this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree9a8b19a07f2ed1d3a77cafaed489d4a9414b7658targetblank9a8b19aa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/9a8b19a07f2ed1d3a77cafaed489d4a9414b7658" target="_blank">9a8b19a</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree9a8b19a07f2ed1d3a77cafaed489d4a9414b7658targetblank9a8b19aa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/9a8b19a07f2ed1d3a77cafaed489d4a9414b7658" target="_blank">9a8b19a</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/sequencing/
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/behavior_01-topography-testing.Rmd
+    Untracked:  analysis/behavior_01-topography.Rmd
+    Untracked:  analysis/behavior_02-genetics.Rmd
+    Untracked:  analysis/behavior_03-projections.Rmd
+    Untracked:  analysis/behavior_04-projections_silencing_tmt.Rmd
+    Untracked:  analysis/behavior_05-projections_silencing_2PE.Rmd
+    Untracked:  analysis/projections.Rmd
+    Untracked:  analysis/sequencing-02B-initial_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02C-reprocess_Neuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02D-Neuron_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02E-reprocess_Glut_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02F-reprocess_GABA_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02G-Glut_classification_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-02X-reprocess_Nonneuron_rd1_RNA.Rmd
+    Untracked:  analysis/sequencing-03A-merge_filtered_RNA.Rmd
+    Untracked:  analysis/sequencing-03B-initial_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04-initial_deg.Rmd
+    Untracked:  analysis/sequencing-04A-reprocess_Neuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04B-reprocess_Nonneuron_RNA.Rmd
+    Untracked:  analysis/sequencing-04C-Neuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-04D-Nonneuron_classification_RNA.Rmd
+    Untracked:  analysis/sequencing-05A-reprocess_Glut_RNA.Rmd
+    Untracked:  analysis/sequencing-05B-reprocess_GABA_RNA.Rmd
+    Untracked:  analysis/sequencing-05C-reprocess_Astro_RNA.Rmd
+    Untracked:  analysis/sequencing-05D-reprocess_Micro_RNA.Rmd
+    Untracked:  analysis/sequencing-05E-reprocess_Macro_RNA.Rmd
+    Untracked:  analysis/sequencing-05F-reprocess_OPC_RNA.Rmd
+    Untracked:  analysis/sequencing-05G-reprocess_NFOL_RNA.Rmd
+    Untracked:  analysis/sequencing-05H-reprocess_MOL_RNA.Rmd
+    Untracked:  analysis/sequencing-05I-reprocess_Mural_RNA.Rmd
+    Untracked:  analysis/sequencing-05J-reprocess_ABC_RNA.Rmd
+    Untracked:  analysis/sequencing-05K-reprocess_VLMC_RNA.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Astro.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_GABAergic.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Glutamatergic.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Microglia.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Neuron.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_Nonneuron.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_OLG.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_OPC.Rmd
+    Untracked:  analysis/sequencing-05X-reprocess_VLMC.Rmd
+    Untracked:  analysis/sequencing-06B-annotate_GABAergic.Rmd
+    Untracked:  code/behavior-color_scales.R
+    Untracked:  code/behavior_misc.R
+    Untracked:  code/sequencing-color_scales.R
+    Untracked:  code/sequencing-plot_functions.R
+    Untracked:  code/sequencing_misc.R
+    Untracked:  output/sequencing/
+
+Unstaged changes:
+    Modified:   analysis/sequencing-02A-merge_rd1_RNA.Rmd
+    Modified:   analysis/sequencing-03-initial_classification.Rmd
+    Deleted:    analysis/sequencing-05A-reprocess_Neuron.Rmd
+    Deleted:    analysis/sequencing-05B-reprocess_Nonneuron.Rmd
+    Deleted:    analysis/sequencing-05C-reprocess_Glutamatergic.Rmd
+    Deleted:    analysis/sequencing-05D-reprocess_GABAergic.Rmd
+    Deleted:    analysis/sequencing-05E-reprocess_Astro.Rmd
+    Deleted:    analysis/sequencing-05F-reprocess_Microglia.Rmd
+    Deleted:    analysis/sequencing-05G-reprocess_OPC.Rmd
+    Deleted:    analysis/sequencing-05H-reprocess_OLG.Rmd
+    Deleted:    analysis/sequencing-05I-reprocess_VLMC.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with
+<code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This notebook assigns broad identities based on well-known marker
+genes, consolidates them into legible identities, and then exports them
+for subclustering within their broad identities.</p>
+<pre class="r"><code>id &lt;- params$id
+input &lt;- paste0(params$input_path, id)
+output &lt;- params$output_path
+dimn &lt;- params$dimn
+
+source(&quot;code/sequencing_misc.R&quot;)
+source(&quot;code/sequencing-color_scales.R&quot;)
+source(&quot;code/sequencing-plot_functions.R&quot;)
+
+require(Seurat)
+require(tidyverse)
+require(knitr)
+require(scCustomize)
+require(clustree)
+require(chisq.posthoc.test)
+require(speckle)
+require(ggtree)
+require(pvclust)
+require(dendextend)
+require(heatmap3)
+require(colorRamps)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = &#39;pdf&#39;)</code></pre>
+<div id="read-in-data-from-step-02" class="section level2">
+<h2>Read in data from step 02</h2>
+<p>Imports the merged and transformed Seurat object from step 02. This
+object should contain SCT data, all relevant metadata, and it should be
+barcode- and feature-filtered already.</p>
+<pre class="r"><code>array &lt;- readRDS(paste0(input, &quot;_merged_filtered_RNA.rds&quot;))</code></pre>
+</div>
+</div>
+<div id="cluster-nuclei" class="section level1 tabset">
+<h1 class="tabset">Cluster nuclei</h1>
+<p>Clusters nuclei using Seurat’s implementation of the Leiden
+clustering algorithm (see methods for references), which improves upon
+the more traditional Louvain algorithm. Clustering is performed at a
+variety of resolutions so that the best can be chosen from among the
+different results, ensuring optimal cluster assignments prior to
+downstream segmentation.</p>
+<pre class="r"><code>array &lt;- FindNeighbors(array, dims = 1:dimn, k.param = 30, verbose = FALSE)
+
+res_index &lt;- c(0.01, seq(0.1, 1, 0.1))
+for (i in 1:length(res_index)){
+  array &lt;- FindClusters(array, method = 4, resolution = res_index[i], verbose = FALSE)
+}</code></pre>
+<div id="clustree" class="section level2 tabset">
+<h2 class="tabset">Clustree</h2>
+<div id="standard" class="section level3">
+<h3>Standard</h3>
+<pre class="r"><code>clustree(array, prefix = &quot;SCT_snn_res.&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/3-clustree_standard-1.pdf" width="1344" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="stability" class="section level3">
+<h3>Stability</h3>
+<pre class="r"><code>clustree(array, prefix = &quot;SCT_snn_res.&quot;, node_colour = &quot;sc3_stability&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/4-clustree_stability-1.pdf" width="1344" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="scatter" class="section level2 tabset">
+<h2 class="tabset">Scatter</h2>
+<div id="pca" class="section level3 tabset">
+<h3 class="tabset">PCA</h3>
+<pre class="r"><code>src_list &lt;- lapply(res_index, function(res) {
+    src &lt;- c(
+        &quot;#### Res {{res}} {.unnumbered}&quot;,
+        &quot;```{r pca-res-{{res}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;resolution_plot_formatted(array, &#39;pca&#39;, {{res}}, &#39;SCT&#39;)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="res-0.01" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.01</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.01, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.01-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.3" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.4" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.5" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.6" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.7" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.8" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.9" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 0.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-0.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;pca&#39;, 1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-res-1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="tsne" class="section level3 tabset">
+<h3 class="tabset">tSNE</h3>
+<pre class="r"><code>src_list &lt;- lapply(res_index, function(res) {
+    src &lt;- c(
+        &quot;#### Res {{res}} {.unnumbered}&quot;,
+        &quot;```{r tsne-res-{{res}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;resolution_plot_formatted(array, &#39;tsne&#39;, {{res}}, &#39;SCT&#39;)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="res-0.01-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.01</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.01, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.01-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.1-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.2-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.3-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.4-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.5-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.6-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.7-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.8-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.9-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 0.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-0.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;tsne&#39;, 1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-res-1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="umap" class="section level3 tabset">
+<h3 class="tabset">UMAP</h3>
+<pre class="r"><code>src_list &lt;- lapply(res_index, function(res) {
+    src &lt;- c(
+        &quot;#### Res {{res}} {.unnumbered}&quot;,
+        &quot;```{r umap-res-{{res}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;resolution_plot_formatted(array, &#39;umap&#39;, {{res}}, &#39;SCT&#39;)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="res-0.01-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.01</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.01, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.01-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.1-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.2-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.2</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.2, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.3-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.3</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.3, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.4-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.4</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.4, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.5-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.5</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.5, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.6-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.6</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.6, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.7-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.7</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.7, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.8-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.8</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.8, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-0.9-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 0.9</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 0.9, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-0.9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="res-1-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Res 1</h4>
+<pre class="r"><code>resolution_plot_formatted(array, &#39;umap&#39;, 1, &#39;SCT&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-res-1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="annotate-clusters" class="section level1">
+<h1>Annotate clusters</h1>
+<div id="select-optimal-resolution" class="section level2">
+<h2>Select optimal resolution</h2>
+<p>Optimal resolution can be selected by examining clustering on
+dimension-reduced data to determine if they match visual clustering.
+Further, clustree (and its packaged stability metric) can be used to
+find the highest resolution that does not lose stability, providing an
+optimal balance between over- and under-clustering. It is difficult to
+automate this without some degree of supervision or hand-curation. This
+is mostly to identify large clusters, so there is little need to get
+extremely specific so long as clusters are coherent.</p>
+<pre class="r"><code>optimal_res &lt;- 0.6
+
+clusters &lt;- array[[paste0(&quot;SCT_snn_res.&quot;, optimal_res)]]
+array[[&quot;seurat_clusters&quot;]] &lt;- NULL
+for (i in 1:11){
+  array[[paste0(&quot;SCT_snn_res.&quot;, res_index[i])]] &lt;- NULL 
+}
+array &lt;- AddMetaData(array, clusters, col.name = &quot;clusters&quot;)
+Idents(array) &lt;- &quot;clusters&quot;
+
+# helps downstrean formatting to regenerate cluster vector from the array vector
+tissue_clusters &lt;- as.character(array$clusters)
+
+paste(optimal_res, &quot;is optimal clustering resolution&quot;)</code></pre>
+<pre><code>[1] &quot;0.6 is optimal clustering resolution&quot;</code></pre>
+</div>
+<div id="dot-plot" class="section level2">
+<h2>Dot Plot</h2>
+<pre class="r"><code>array &lt;- PrepSCTFindMarkers(array)
+
+DotPlot_scCustom(array, features = marker_features, colors_use = dotplot_colors) + 
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/9-dot_plot_markers-1.pdf" width="1152" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="examine-metrics-for-candidate-clusters"
+class="section level1 tabset">
+<h1 class="tabset">Examine metrics for candidate clusters</h1>
+<div id="violin" class="section level2 tabset">
+<h2 class="tabset">Violin</h2>
+<pre class="r"><code>src_list &lt;- mapply(function(metric, label) {
+    src &lt;- c(
+        &quot;## {{label}} {.unnumbered}&quot;,
+        &quot;```{r vln-clusters-{{metric}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;violin_metrics_formatted(array, &#39;clusters&#39;, &#39;{{metric}}&#39;, &#39;{{label}}&#39;, Hue_Pal(length(unique(array$clusters))))&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, vln_metrics$id, vln_metrics$label)
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+</div>
+<div id="umis" class="section level2 unnumbered">
+<h2 class="unnumbered">UMIs</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;clusters&#39;, &#39;nCount_RNA&#39;, &#39;UMIs&#39;, Hue_Pal(length(unique(array$clusters))))</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-clusters-nCount_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="genes" class="section level2 unnumbered">
+<h2 class="unnumbered">Genes</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;clusters&#39;, &#39;nFeature_RNA&#39;, &#39;Genes&#39;, Hue_Pal(length(unique(array$clusters))))</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-clusters-nFeature_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mito" class="section level2 unnumbered">
+<h2 class="unnumbered">% Mito</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;clusters&#39;, &#39;Mito_proportion&#39;, &#39;% Mito&#39;, Hue_Pal(length(unique(array$clusters))))</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-clusters-Mito_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ribo" class="section level2 unnumbered">
+<h2 class="unnumbered">% Ribo</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;clusters&#39;, &#39;Ribo_proportion&#39;, &#39;% Ribo&#39;, Hue_Pal(length(unique(array$clusters))))</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-clusters-Ribo_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="scatter-1" class="section level2 tabset">
+<h2 class="tabset">Scatter</h2>
+<div id="pca-1" class="section level3 tabset">
+<h3 class="tabset">PCA</h3>
+<pre class="r"><code>src_list &lt;- lapply(marker_features, function(marker) {
+    src &lt;- c(
+        &quot;#### {{marker}} {.unnumbered}&quot;,
+        &quot;```{r pca-{{marker}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;feature_plot_formatted(array, &#39;pca&#39;, &#39;{{marker}}&#39;, feature_intensity_colors, NA)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="syp" class="section level4 unnumbered">
+<h4 class="unnumbered">Syp</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Syp&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Syp-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="eno2" class="section level4 unnumbered">
+<h4 class="unnumbered">Eno2</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Eno2&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Eno2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc17a7" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc17a7</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Slc17a7&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Slc17a7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc17a6" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc17a6</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Slc17a6&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Slc17a6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="gad1" class="section level4 unnumbered">
+<h4 class="unnumbered">Gad1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Gad1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Gad1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="gad2" class="section level4 unnumbered">
+<h4 class="unnumbered">Gad2</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Gad2&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Gad2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="aldh1l1" class="section level4 unnumbered">
+<h4 class="unnumbered">Aldh1l1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Aldh1l1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Aldh1l1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="aqp4" class="section level4 unnumbered">
+<h4 class="unnumbered">Aqp4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Aqp4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Aqp4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tmem119" class="section level4 unnumbered">
+<h4 class="unnumbered">Tmem119</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Tmem119&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Tmem119-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ptprc" class="section level4 unnumbered">
+<h4 class="unnumbered">Ptprc</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Ptprc&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Ptprc-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pdgfra" class="section level4 unnumbered">
+<h4 class="unnumbered">Pdgfra</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Pdgfra&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Pdgfra-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="cspg4" class="section level4 unnumbered">
+<h4 class="unnumbered">Cspg4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Cspg4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Cspg4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="bmp4" class="section level4 unnumbered">
+<h4 class="unnumbered">Bmp4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Bmp4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Bmp4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="enpp6" class="section level4 unnumbered">
+<h4 class="unnumbered">Enpp6</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Enpp6&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Enpp6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mog" class="section level4 unnumbered">
+<h4 class="unnumbered">Mog</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Mog&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Mog-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mal" class="section level4 unnumbered">
+<h4 class="unnumbered">Mal</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Mal&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Mal-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="cldn5" class="section level4 unnumbered">
+<h4 class="unnumbered">Cldn5</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Cldn5&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Cldn5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="adgrl4" class="section level4 unnumbered">
+<h4 class="unnumbered">Adgrl4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Adgrl4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Adgrl4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="kcnj8" class="section level4 unnumbered">
+<h4 class="unnumbered">Kcnj8</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Kcnj8&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Kcnj8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="abcc9" class="section level4 unnumbered">
+<h4 class="unnumbered">Abcc9</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Abcc9&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Abcc9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc47a1" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc47a1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Slc47a1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Slc47a1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="rspo3" class="section level4 unnumbered">
+<h4 class="unnumbered">Rspo3</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Rspo3&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Rspo3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc6a13" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc6a13</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Slc6a13&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Slc6a13-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc13a4" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc13a4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;pca&#39;, &#39;Slc13a4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/pca-Slc13a4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="tsne-1" class="section level3 tabset">
+<h3 class="tabset">tSNE</h3>
+<pre class="r"><code>src_list &lt;- lapply(marker_features, function(marker) {
+    src &lt;- c(
+        &quot;#### {{marker}} {.unnumbered}&quot;,
+        &quot;```{r tsne-{{marker}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;feature_plot_formatted(array, &#39;tsne&#39;, &#39;{{marker}}&#39;, feature_intensity_colors, NA)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="syp-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Syp</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Syp&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Syp-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="eno2-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Eno2</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Eno2&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Eno2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc17a7-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc17a7</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Slc17a7&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Slc17a7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc17a6-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc17a6</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Slc17a6&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Slc17a6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="gad1-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Gad1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Gad1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Gad1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="gad2-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Gad2</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Gad2&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Gad2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="aldh1l1-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Aldh1l1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Aldh1l1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Aldh1l1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="aqp4-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Aqp4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Aqp4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Aqp4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tmem119-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Tmem119</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Tmem119&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Tmem119-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ptprc-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Ptprc</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Ptprc&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Ptprc-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pdgfra-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Pdgfra</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Pdgfra&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Pdgfra-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="cspg4-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Cspg4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Cspg4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Cspg4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="bmp4-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Bmp4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Bmp4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Bmp4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="enpp6-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Enpp6</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Enpp6&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Enpp6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mog-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Mog</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Mog&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Mog-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mal-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Mal</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Mal&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Mal-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="cldn5-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Cldn5</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Cldn5&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Cldn5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="adgrl4-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Adgrl4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Adgrl4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Adgrl4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="kcnj8-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Kcnj8</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Kcnj8&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Kcnj8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="abcc9-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Abcc9</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Abcc9&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Abcc9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc47a1-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc47a1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Slc47a1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Slc47a1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="rspo3-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Rspo3</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Rspo3&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Rspo3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc6a13-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc6a13</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Slc6a13&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Slc6a13-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc13a4-1" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc13a4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;tsne&#39;, &#39;Slc13a4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tsne-Slc13a4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="umap-1" class="section level3 tabset">
+<h3 class="tabset">UMAP</h3>
+<pre class="r"><code>src_list &lt;- lapply(marker_features, function(marker) {
+    src &lt;- c(
+        &quot;#### {{marker}} {.unnumbered}&quot;,
+        &quot;```{r umap-{{marker}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;feature_plot_formatted(array, &#39;umap&#39;, &#39;{{marker}}&#39;, feature_intensity_colors, NA)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+})
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="syp-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Syp</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Syp&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Syp-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="eno2-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Eno2</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Eno2&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Eno2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc17a7-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc17a7</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Slc17a7&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Slc17a7-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc17a6-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc17a6</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Slc17a6&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Slc17a6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="gad1-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Gad1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Gad1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Gad1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="gad2-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Gad2</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Gad2&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Gad2-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="aldh1l1-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Aldh1l1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Aldh1l1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Aldh1l1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="aqp4-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Aqp4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Aqp4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Aqp4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tmem119-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Tmem119</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Tmem119&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Tmem119-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ptprc-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Ptprc</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Ptprc&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Ptprc-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="pdgfra-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Pdgfra</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Pdgfra&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Pdgfra-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="cspg4-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Cspg4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Cspg4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Cspg4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="bmp4-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Bmp4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Bmp4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Bmp4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="enpp6-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Enpp6</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Enpp6&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Enpp6-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mog-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Mog</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Mog&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Mog-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mal-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Mal</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Mal&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Mal-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="cldn5-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Cldn5</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Cldn5&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Cldn5-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="adgrl4-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Adgrl4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Adgrl4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Adgrl4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="kcnj8-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Kcnj8</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Kcnj8&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Kcnj8-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="abcc9-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Abcc9</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Abcc9&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Abcc9-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc47a1-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc47a1</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Slc47a1&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Slc47a1-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="rspo3-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Rspo3</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Rspo3&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Rspo3-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc6a13-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc6a13</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Slc6a13&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Slc6a13-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="slc13a4-2" class="section level4 unnumbered">
+<h4 class="unnumbered">Slc13a4</h4>
+<pre class="r"><code>feature_plot_formatted(array, &#39;umap&#39;, &#39;Slc13a4&#39;, feature_intensity_colors, NA)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/umap-Slc13a4-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="consolidate-clusters" class="section level1">
+<h1>Consolidate clusters</h1>
+<p>Based on known marker gene expression, assign broad cellular
+identities to clusters at the optimal resolution selected. These
+identities are hand-assigned, and multiple clusters are in many cases
+combined into broad cellular identities due to uneven differences
+between cell types.</p>
+<pre class="r"><code>neuron_clusters &lt;- c(0:2, 7, 9, 11, 13, 15, 17, 20:21, 24)
+glia_clusters &lt;- c(3:6, 8, 10, 12, 14, 16, 18:19, 22:23)
+
+tissue_clusters[tissue_clusters %in% neuron_clusters] &lt;- &quot;Neuron&quot;
+tissue_clusters[tissue_clusters %in% glia_clusters] &lt;- &quot;Nonneuron&quot;
+
+# replace clusters with curated types, reorder for plotting
+array &lt;- AddMetaData(array, as.factor(tissue_clusters), col.name = &quot;Tissue&quot;)
+array$Tissue &lt;- factor(array$Tissue, levels = c(&quot;Neuron&quot;, &quot;Nonneuron&quot;))
+Idents(array) &lt;- &quot;Tissue&quot;
+
+plot_group_array &lt;- cbind.data.frame(array$Tissue,
+                                     array$orig.ident,
+                                     array$Region)
+colnames(plot_group_array) &lt;- c(&quot;Tissue&quot;, &quot;Batch&quot;, &quot;Region&quot;)
+
+table(array$Tissue)</code></pre>
+<pre><code>
+   Neuron Nonneuron 
+    25185     21947 </code></pre>
+</div>
+<div id="visualize-consolidated-clusters" class="section level1 tabset">
+<h1 class="tabset">Visualize consolidated clusters</h1>
+<pre class="r"><code>src_list &lt;- mapply(function(tab_name, dr_type) {
+    src &lt;- c(
+        &quot;## {{tab_name}} {.unnumbered}&quot;,
+        &quot;```{r tissue-{{tab_name}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;cluster_plot_formatted(array, &#39;{{dr_type}}&#39;, &#39;Tissue&#39;, tissue_colors)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, dr_params$name, dr_params$type)
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="pca-2" class="section level2 unnumbered">
+<h2 class="unnumbered">PCA</h2>
+<pre class="r"><code>cluster_plot_formatted(array, &#39;pca&#39;, &#39;Tissue&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tissue-PCA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tsne-2" class="section level2 unnumbered">
+<h2 class="unnumbered">tSNE</h2>
+<pre class="r"><code>cluster_plot_formatted(array, &#39;tsne&#39;, &#39;Tissue&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tissue-tSNE-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="umap-2" class="section level2 unnumbered">
+<h2 class="unnumbered">UMAP</h2>
+<pre class="r"><code>cluster_plot_formatted(array, &#39;umap&#39;, &#39;Tissue&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tissue-UMAP-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="visualize-consolidated-cluster-composition"
+class="section level1">
+<h1>Visualize consolidated cluster composition</h1>
+<div id="absolute-composition" class="section level2 tabset">
+<h2 class="tabset">Absolute Composition</h2>
+<pre class="r"><code>src_list &lt;- mapply(function(br, br_colors) {
+    src &lt;- c(
+        &quot;### {{br}} {.unnumbered}&quot;,
+        &quot;```{r tissue-absolute-{{br}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;absolute_bar_plot_formatted(plot_group_array, &#39;Tissue&#39;, &#39;{{br}}&#39;, {{br_colors}})&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, batch_region, batch_color_list)
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="batch" class="section level3 unnumbered">
+<h3 class="unnumbered">Batch</h3>
+<pre class="r"><code>absolute_bar_plot_formatted(plot_group_array, &#39;Tissue&#39;, &#39;Batch&#39;, batch_colors_rna)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tissue-absolute-Batch-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="region" class="section level3 unnumbered">
+<h3 class="unnumbered">Region</h3>
+<pre class="r"><code>absolute_bar_plot_formatted(plot_group_array, &#39;Tissue&#39;, &#39;Region&#39;, region_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/tissue-absolute-Region-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="relative-composition" class="section level2 tabset">
+<h2 class="tabset">Relative Composition</h2>
+<div id="bar" class="section level3 tabset">
+<h3 class="tabset">Bar</h3>
+<div id="batch-1" class="section level4">
+<h4>Batch</h4>
+<pre class="r"><code>relative_bar_plot_formatted(plot_group_array, &#39;Tissue&#39;, &#39;Batch&#39;, batch_colors_rna)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/17-tissue_relative_batch-1.pdf" width="288" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="region-1" class="section level4">
+<h4>Region</h4>
+<pre class="r"><code>relative_bar_plot_formatted(plot_group_array, &#39;Tissue&#39;, &#39;Region&#39;, region_colors) + 
+  geom_hline(yintercept = table(array$Region)[2] / length(array$Region), linetype = &quot;dashed&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/18-tissue_relative_region-1.pdf" width="288" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="chi-square-results" class="section level4">
+<h4>Chi-square results</h4>
+<pre class="r"><code>chisq_table &lt;- table(array$Region, array$Tissue)
+
+chisq.test(chisq_table)</code></pre>
+<pre><code>
+    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+
+data:  chisq_table
+X-squared = 0.40943, df = 1, p-value = 0.5223</code></pre>
+<pre class="r"><code>chisq.posthoc.test(chisq_table, method = &quot;bonferroni&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Dimension"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Value"],"name":[2],"type":["chr"],"align":["left"]},{"label":["Neuron"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Nonneuron"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"aplCoA","2":"Residuals","3":"0.6492507","4":"-0.6492507"},{"1":"aplCoA","2":"p values","3":"1.0000000","4":"1.0000000"},{"1":"pplCoA","2":"Residuals","3":"-0.6492507","4":"0.6492507"},{"1":"pplCoA","2":"p values","3":"1.0000000","4":"1.0000000"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code># can&#39;t do propeller w/ only two groups, so skip here (if it doesn&#39;t pass chi-sq though, likely won&#39;t pass propeller)</code></pre>
+</div>
+</div>
+<div id="region-2" class="section level3 tabset">
+<h3 class="tabset">Region</h3>
+<div id="absolute" class="section level4">
+<h4>Absolute</h4>
+<pre class="r"><code>absolute_bar_plot_formatted(plot_group_array, &#39;Region&#39;, &#39;Tissue&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/20-region_relative-1.pdf" width="288" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="relative" class="section level4">
+<h4>Relative</h4>
+<pre class="r"><code>relative_bar_plot_formatted(plot_group_array, &#39;Region&#39;, &#39;Tissue&#39;, tissue_colors) +
+  geom_hline(yintercept = table(array$Tissue)[2] / length(array$Tissue), linetype = &quot;dashed&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/21-region_relative-1.pdf" width="288" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="chi-square-results-1" class="section level4">
+<h4>Chi-square results</h4>
+<pre class="r"><code>chisq_table &lt;- table(array$Tissue, array$Region)
+
+chisq.test(chisq_table)</code></pre>
+<pre><code>
+    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction
+
+data:  chisq_table
+X-squared = 0.40943, df = 1, p-value = 0.5223</code></pre>
+<pre class="r"><code>chisq.posthoc.test(chisq_table, method = &quot;bonferroni&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Dimension"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Value"],"name":[2],"type":["chr"],"align":["left"]},{"label":["aplCoA"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["pplCoA"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"Neuron","2":"Residuals","3":"0.6492507","4":"-0.6492507"},{"1":"Neuron","2":"p values","3":"1.0000000","4":"1.0000000"},{"1":"Nonneuron","2":"Residuals","3":"-0.6492507","4":"0.6492507"},{"1":"Nonneuron","2":"p values","3":"1.0000000","4":"1.0000000"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="batch-2" class="section level3 tabset">
+<h3 class="tabset">Batch</h3>
+<div id="absolute-1" class="section level4">
+<h4>Absolute</h4>
+<pre class="r"><code>absolute_bar_plot_formatted(plot_group_array, &#39;Batch&#39;, &#39;Tissue&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/23-region_relative-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="relative-1" class="section level4">
+<h4>Relative</h4>
+<pre class="r"><code>relative_bar_plot_formatted(plot_group_array, &#39;Batch&#39;, &#39;Tissue&#39;, tissue_colors) +
+  geom_hline(yintercept = table(array$Tissue)[2] / length(array$Tissue), linetype = &quot;dashed&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/24-region_relative-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="chi-square-results-2" class="section level4">
+<h4>Chi-square results</h4>
+<pre class="r"><code>chisq_table &lt;- table(array$Tissue, array$orig.ident)
+
+chisq.test(chisq_table)</code></pre>
+<pre><code>
+    Pearson&#39;s Chi-squared test
+
+data:  chisq_table
+X-squared = 284.32, df = 5, p-value &lt; 2.2e-16</code></pre>
+<pre class="r"><code>chisq.posthoc.test(chisq_table, method = &quot;bonferroni&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Dimension"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Value"],"name":[2],"type":["chr"],"align":["left"]},{"label":["aplCoA-1"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["aplCoA-2"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["aplCoA-3"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["pplCoA-1"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pplCoA-2"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["pplCoA-3"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"Neuron","2":"Residuals","3":"12.97748","4":"-8.908871","5":"-7.974258","6":"-5.530675","7":"1.567791","8":"4.337288"},{"1":"Neuron","2":"p values","3":"0.00000","4":"0.000000","5":"0.000000","6":"0.000000","7":"1.000000","8":"0.000173"},{"1":"Nonneuron","2":"Residuals","3":"-12.97748","4":"8.908871","5":"7.974258","6":"5.530675","7":"-1.567791","8":"-4.337288"},{"1":"Nonneuron","2":"p values","3":"0.00000","4":"0.000000","5":"0.000000","6":"0.000000","7":"1.000000","8":"0.000173"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="examine-metrics-for-consolidated-clusters"
+class="section level1 tabset">
+<h1 class="tabset">Examine metrics for consolidated clusters</h1>
+<pre class="r"><code>src_list &lt;- mapply(function(metric, label) {
+    src &lt;- c(
+        &quot;## {{label}} {.unnumbered}&quot;,
+        &quot;```{r vln-tissue-{{metric}}, message = FALSE, warning = FALSE}&quot;,
+        &quot;violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;{{metric}}&#39;, &#39;{{label}}&#39;, tissue_colors)&quot;,  
+        &quot;```&quot;,
+        &quot;&quot;
+    )
+    knit_expand(text = src)
+}, vln_metrics$id, vln_metrics$label)
+out &lt;- knit_child(text = unlist(src_list), options = list(cache = FALSE))</code></pre>
+<div id="umis-1" class="section level2 unnumbered">
+<h2 class="unnumbered">UMIs</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;nCount_RNA&#39;, &#39;UMIs&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-tissue-nCount_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="genes-1" class="section level2 unnumbered">
+<h2 class="unnumbered">Genes</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;nFeature_RNA&#39;, &#39;Genes&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-tissue-nFeature_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mito-1" class="section level2 unnumbered">
+<h2 class="unnumbered">% Mito</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;Mito_proportion&#39;, &#39;% Mito&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-tissue-Mito_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ribo-1" class="section level2 unnumbered">
+<h2 class="unnumbered">% Ribo</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;Ribo_proportion&#39;, &#39;% Ribo&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-tissue-Ribo_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="visualize-marker-genes-in-consolidated-clusters"
+class="section level1 tabset">
+<h1 class="tabset">Visualize marker genes in consolidated clusters</h1>
+<div id="dot-plot-1" class="section level2 tabset">
+<h2 class="tabset">Dot Plot</h2>
+<div id="all-markers" class="section level3">
+<h3>All markers</h3>
+<pre class="r"><code>array &lt;- PrepSCTFindMarkers(array)
+
+DotPlot_scCustom(array, features = marker_features, colors_use = dotplot_colors) + 
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/27-dot_tg_full-1.pdf" width="1152" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="half-markers" class="section level3">
+<h3>Half markers</h3>
+<pre class="r"><code>array &lt;- PrepSCTFindMarkers(array)
+
+DotPlot_scCustom(array, features = marker_features_half, colors_use = dotplot_colors) + 
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/28-dot_tg_half-1.pdf" width="576" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="stacked-violin" class="section level2 tabset">
+<h2 class="tabset">Stacked Violin</h2>
+<div id="all-markers-1" class="section level3">
+<h3>All markers</h3>
+<pre class="r"><code>VlnPlot(array, features = marker_features, 
+        pt.size = 0, stack = TRUE, flip = TRUE, 
+        group.by = &#39;Tissue&#39;) + 
+        theme(legend.position = &#39;none&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/28-stacked_vln_marker_all-1.pdf" width="576" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="half-markers-1" class="section level3">
+<h3>Half markers</h3>
+<pre class="r"><code>VlnPlot(array, features = marker_features_half, 
+        pt.size = 0, stack = TRUE, flip = TRUE, 
+        group.by = &#39;Tissue&#39;) + 
+        theme(legend.position = &#39;none&#39;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/29-stacked_vln_marker_half-1.pdf" width="576" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="heatmap" class="section level2">
+<h2>Heatmap</h2>
+<pre class="r"><code>DoHeatmap(array, features = marker_features, group.by = &#39;Tissue&#39;, size = 0,
+          group.colors = tissue_colors) +
+          scale_fill_gradientn(colours = heatmap_colors) +  
+          scale_colour_manual(values = tissue_colors)</code></pre>
+<p><img src="figure/sequencing-03B-initial_classification_RNA.Rmd/30-heatmap_marker-1.png" width="1536" style="display: block; margin: auto;" /></p>
+</div>
+<div id="umis-2" class="section level2 unnumbered">
+<h2 class="unnumbered">UMIs</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;nCount_RNA&#39;, &#39;UMIs&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-tissue-nCount_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="genes-2" class="section level2 unnumbered">
+<h2 class="unnumbered">Genes</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;nFeature_RNA&#39;, &#39;Genes&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-tissue-nFeature_RNA-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="mito-2" class="section level2 unnumbered">
+<h2 class="unnumbered">% Mito</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;Mito_proportion&#39;, &#39;% Mito&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-tissue-Mito_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="ribo-2" class="section level2 unnumbered">
+<h2 class="unnumbered">% Ribo</h2>
+<pre class="r"><code>violin_metrics_formatted(array, &#39;Tissue&#39;, &#39;Ribo_proportion&#39;, &#39;% Ribo&#39;, tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/vln-tissue-Ribo_proportion-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="visualize-cluster-distances" class="section level1 tabset">
+<h1 class="tabset">Visualize cluster distances</h1>
+<div id="dendrogram" class="section level2 tabset">
+<h2 class="tabset">Dendrogram</h2>
+<div id="region-3" class="section level3">
+<h3>Region</h3>
+<pre class="r"><code>region_dend &lt;- create_dendrogram(array, as.factor(array$Region), region_colors)
+
+plot(region_dend[[2]], axes = FALSE)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/31-region_dendrogram-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="batch-3" class="section level3">
+<h3>Batch</h3>
+<pre class="r"><code>batch_dend &lt;- create_dendrogram(array, as.factor(array$orig.ident), batch_colors_rna)
+
+plot(batch_dend[[2]], axes = FALSE)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/32-library_dendrogram-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="tissue-with-region-id" class="section level3">
+<h3>Tissue with Region ID</h3>
+<pre class="r"><code># create region+class convolution ID
+array &lt;- AddMetaData(array, metadata = paste(array$Region, array$Tissue), col.name = &quot;Region_Tissue&quot;)
+
+tissue_region_dend &lt;- create_dendrogram(array, as.factor(array$Region_Tissue), region_tissue_colors)
+
+plot(tissue_region_dend[[2]], axes = FALSE)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/33-tissue_dendrogram_region-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="cluster-distance-heatmap" class="section level2 tabset">
+<h2 class="tabset">Cluster distance heatmap</h2>
+<div id="region-4" class="section level3 tabset">
+<h3 class="tabset">Region</h3>
+<div id="distance" class="section level4">
+<h4>Distance</h4>
+<pre class="r"><code>dendrogram_heatmap(region_dend, method_id = &quot;distance&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/34-cluster_heatmap_region_dist-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="correlation" class="section level4">
+<h4>Correlation</h4>
+<pre class="r"><code>dendrogram_heatmap(region_dend, method_id = &quot;correlation&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/35-cluster_heatmap_region_cor-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="batch-4" class="section level3 tabset">
+<h3 class="tabset">Batch</h3>
+<div id="distance-1" class="section level4">
+<h4>Distance</h4>
+<pre class="r"><code>dendrogram_heatmap(batch_dend, method_id = &quot;distance&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/36-cluster_heatmap_batch_dist-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="correlation-1" class="section level4">
+<h4>Correlation</h4>
+<pre class="r"><code>dendrogram_heatmap(batch_dend, method_id = &quot;correlation&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/37-cluster_heatmap_batch_cor-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="tissue-with-region-id-1" class="section level3 tabset">
+<h3 class="tabset">Tissue with Region ID</h3>
+<div id="distance-2" class="section level4">
+<h4>Distance</h4>
+<pre class="r"><code>dendrogram_heatmap(tissue_region_dend, method_id = &quot;distance&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/38-cluster_heatmap_region_dist-1.pdf" width="2880" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="correlation-2" class="section level4">
+<h4>Correlation</h4>
+<pre class="r"><code>dendrogram_heatmap(tissue_region_dend, method_id = &quot;correlation&quot;)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/39-cluster_heatmap_region_cor-1.pdf" width="2880" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="pseudobulk-pca" class="section level2 tabset">
+<h2 class="tabset">Pseudobulk PCA</h2>
+<div id="batch-5" class="section level3">
+<h3>Batch</h3>
+<pre class="r"><code>pseudobulk_pca(array, &quot;orig.ident&quot;, &quot;Batch&quot;, batch_colors_rna)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/42-pseudobulk_pca_batch-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="region-tissue" class="section level3">
+<h3>Region-Tissue</h3>
+<pre class="r"><code>pseudobulk_pca(array, &quot;Region_Tissue&quot;, &quot;Region_Tissue&quot;, region_tissue_colors)</code></pre>
+<embed src="figure/sequencing-03B-initial_classification_RNA.Rmd/43-pseudobulk_pca_region-tissue-1.pdf" width="672" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+<div id="split-matrix-into-constituent-parts-and-save"
+class="section level1">
+<h1>Split matrix into constituent parts and save</h1>
+<pre class="r"><code># need to loop separately due to subsetting quirks
+# save the overgroups/tissues
+for (i in 1:length(levels(array$Tissue))){
+  subset_array &lt;- subset(array, subset = Tissue == levels(array$Tissue)[i])
+  metadata_array &lt;- cbind.data.frame(subset_array$Region,
+                                     subset_array$Mito_proportion, subset_array$Ribo_proportion,
+                                     subset_array$Tissue)
+  colnames(metadata_array) &lt;- c(&quot;Region&quot;, 
+                                &quot;Mito_proportion&quot;, &quot;Ribo_proportion&quot;, 
+                                &quot;Tissue&quot;)
+  subset_array &lt;- CreateSeuratObject(subset_array@assays$RNA@counts)
+  for (j in 1:length(colnames(metadata_array))){
+    subset_array &lt;- AddMetaData(subset_array, 
+                                metadata = metadata_array[,j], 
+                                col.name = colnames(metadata_array)[j])
+  }
+  saveRDS(subset_array, file = paste0(output, id, &quot;_&quot;, levels(array$Tissue)[i], &quot;_tissue_RNA.rds&quot;))
+  gc()
+}
+
+saveRDS(array, file = paste0(output, id, &quot;_all_RNA.rds&quot;))
+gc()
+
+# save cluster assignments, do not need whole array
+cluster_file &lt;- cbind.data.frame(array$Tissue)
+colnames(cluster_file) &lt;- c(&quot;Tissue&quot;)
+write.csv(cluster_file, file = &quot;output/sequencing/cluster_lists/03B-tissue_clusters_initial.csv&quot;, col.names = TRUE)</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.2.1 (2022-06-23)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Big Sur ... 10.16
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices datasets  utils     methods   base     
+
+other attached packages:
+ [1] colorRamps_2.3.1         heatmap3_1.1.9           dendextend_1.16.0       
+ [4] pvclust_2.2-0            ggtree_3.4.4             speckle_0.99.1          
+ [7] chisq.posthoc.test_0.1.2 clustree_0.5.0           ggraph_2.1.0            
+[10] scCustomize_0.7.0        knitr_1.40               forcats_0.5.2           
+[13] stringr_1.4.1            dplyr_1.0.10             purrr_0.3.5             
+[16] readr_2.1.3              tidyr_1.2.1              tibble_3.1.8            
+[19] ggplot2_3.3.6            tidyverse_1.3.2          sp_1.5-0                
+[22] SeuratObject_4.1.2       Seurat_4.2.0             matrixStats_0.62.0      
+[25] colorspace_2.0-3         farver_2.1.1             colorjam_0.0.23.900     
+[28] jamba_0.0.87.900         viridis_0.6.2            viridisLite_0.4.1       
+[31] workflowr_1.7.0         
+
+loaded via a namespace (and not attached):
+  [1] ggprism_1.0.3.9000          scattermore_0.8            
+  [3] irlba_2.3.5.1               DelayedArray_0.22.0        
+  [5] data.table_1.14.4           rpart_4.1.16               
+  [7] RCurl_1.98-1.9              generics_0.1.3             
+  [9] BiocGenerics_0.42.0         callr_3.7.2                
+ [11] cowplot_1.1.1               RANN_2.6.1                 
+ [13] future_1.28.0               tzdb_0.3.0                 
+ [15] spatstat.data_2.2-0         xml2_1.3.3                 
+ [17] lubridate_1.8.0             httpuv_1.6.6               
+ [19] SummarizedExperiment_1.26.1 assertthat_0.2.1           
+ [21] gargle_1.2.1                xfun_0.34                  
+ [23] hms_1.1.2                   jquerylib_0.1.4            
+ [25] evaluate_0.17               promises_1.2.0.1           
+ [27] fansi_1.0.3                 dbplyr_2.2.1               
+ [29] readxl_1.4.1                igraph_1.3.5               
+ [31] DBI_1.1.3                   htmlwidgets_1.5.4          
+ [33] spatstat.geom_2.4-0         googledrive_2.0.0          
+ [35] stats4_4.2.1                paletteer_1.4.1            
+ [37] ellipsis_0.3.2              ggpubr_0.4.0               
+ [39] backports_1.4.1             prismatic_1.1.1            
+ [41] deldir_1.0-6                MatrixGenerics_1.8.1       
+ [43] vctrs_0.5.0                 SingleCellExperiment_1.18.1
+ [45] Biobase_2.56.0              ROCR_1.0-11                
+ [47] abind_1.4-5                 cachem_1.0.6               
+ [49] withr_2.5.0                 ggforce_0.4.1              
+ [51] progressr_0.11.0            checkmate_2.1.0            
+ [53] sctransform_0.3.5           treeio_1.21.2.001          
+ [55] dittoSeq_1.9.3              goftest_1.2-3              
+ [57] cluster_2.1.4               ape_5.6-2                  
+ [59] lazyeval_0.2.2              crayon_1.5.2               
+ [61] labeling_0.4.2              edgeR_3.38.4               
+ [63] pkgconfig_2.0.3             tweenr_2.0.2               
+ [65] GenomeInfoDb_1.32.4         nlme_3.1-160               
+ [67] vipor_0.4.5                 rlang_1.0.6                
+ [69] globals_0.16.1              lifecycle_1.0.3            
+ [71] miniUI_0.1.1.1              modelr_0.1.9               
+ [73] ggrastr_1.0.1               cellranger_1.1.0           
+ [75] rprojroot_2.0.3             polyclip_1.10-0            
+ [77] lmtest_0.9-40               Matrix_1.5-1               
+ [79] aplot_0.1.8                 carData_3.0-5              
+ [81] zoo_1.8-11                  reprex_2.0.2               
+ [83] beeswarm_0.4.0              whisker_0.4                
+ [85] ggridges_0.5.4              GlobalOptions_0.1.2        
+ [87] processx_3.7.0              googlesheets4_1.0.1        
+ [89] pheatmap_1.0.12             png_0.1-7                  
+ [91] bitops_1.0-7                getPass_0.2-2              
+ [93] KernSmooth_2.23-20          shape_1.4.6                
+ [95] parallelly_1.32.1           spatstat.random_2.2-0      
+ [97] gridGraphics_0.5-1          rstatix_0.7.0              
+ [99] S4Vectors_0.34.0            ggsignif_0.6.4             
+[101] scales_1.2.1                magrittr_2.0.3             
+[103] plyr_1.8.7                  ica_1.0-3                  
+[105] zlibbioc_1.42.0             compiler_4.2.1             
+[107] RColorBrewer_1.1-3          fitdistrplus_1.1-8         
+[109] snakecase_0.11.0            cli_3.4.1                  
+[111] XVector_0.36.0              listenv_0.8.0              
+[113] patchwork_1.1.2             pbapply_1.5-0              
+[115] ps_1.7.1                    MASS_7.3-58.1              
+[117] mgcv_1.8-41                 tidyselect_1.2.0           
+[119] stringi_1.7.8               highr_0.9                  
+[121] yaml_2.3.6                  locfit_1.5-9.6             
+[123] ggrepel_0.9.1               grid_4.2.1                 
+[125] sass_0.4.2                  tools_4.2.1                
+[127] future.apply_1.9.1          parallel_4.2.1             
+[129] circlize_0.4.15             rstudioapi_0.14            
+[131] git2r_0.30.1                janitor_2.1.0              
+[133] gridExtra_2.3               Rtsne_0.16                 
+[135] digest_0.6.30               BiocManager_1.30.18        
+[137] rgeos_0.5-9                 shiny_1.7.2                
+[139] Rcpp_1.0.9                  GenomicRanges_1.48.0       
+[141] car_3.1-0                   broom_1.0.1                
+[143] later_1.3.0                 RcppAnnoy_0.0.19           
+[145] httr_1.4.4                  rvest_1.0.3                
+[147] fs_1.5.2                    tensor_1.5                 
+[149] reticulate_1.26             IRanges_2.30.1             
+[151] splines_4.2.1               yulab.utils_0.0.5          
+[153] uwot_0.1.14                 tidytree_0.4.1             
+[155] rematch2_2.1.2              spatstat.utils_2.3-1       
+[157] graphlayouts_0.8.2          ggplotify_0.1.0            
+[159] renv_0.15.4                 plotly_4.10.0              
+[161] xtable_1.8-4                jsonlite_1.8.3             
+[163] tidygraph_1.2.2             ggfun_0.0.7                
+[165] R6_2.5.1                    pillar_1.8.1               
+[167] htmltools_0.5.3             mime_0.12                  
+[169] glue_1.6.2                  fastmap_1.1.0              
+[171] codetools_0.2-18            utf8_1.2.2                 
+[173] lattice_0.20-45             bslib_0.4.0                
+[175] spatstat.sparse_2.1-1       ggbeeswarm_0.6.0           
+[177] leiden_0.4.3                colorway_0.2.0             
+[179] survival_3.4-0              limma_3.52.4               
+[181] rmarkdown_2.17              munsell_0.5.0              
+[183] fastcluster_1.2.3           GenomeInfoDbData_1.2.8     
+[185] haven_2.5.1                 reshape2_1.4.4             
+[187] gtable_0.3.1                spatstat.core_2.4-4        </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
