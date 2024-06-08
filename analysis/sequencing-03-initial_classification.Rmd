@@ -77,14 +77,12 @@ clustree(array, prefix = "SCT_snn_res.", node_colour = "sc3_stability")
 
 ## Scatter {.tabset}
 
-### Non-integrated {.tabset}
-
-#### PCA {.tabset}
+### PCA {.tabset}
 
 ```{r 5-pca_res, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(res_index, function(res) {
     src <- c(
-        "##### Res {{res}} {.unnumbered}",
+        "#### Res {{res}} {.unnumbered}",
         "```{r pca-res-{{res}}, message = FALSE, warning = FALSE}",
         "resolution_plot_formatted(array, 'pca', {{res}}, 'SCT')",  
         "```",
@@ -97,12 +95,12 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 `r out`
 
-#### tSNE {.tabset}
+### tSNE {.tabset}
 
 ```{r 6-tsne_res, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(res_index, function(res) {
     src <- c(
-        "##### Res {{res}} {.unnumbered}",
+        "#### Res {{res}} {.unnumbered}",
         "```{r tsne-res-{{res}}, message = FALSE, warning = FALSE}",
         "resolution_plot_formatted(array, 'tsne', {{res}}, 'SCT')",  
         "```",
@@ -115,12 +113,12 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 `r out`
 
-#### UMAP {.tabset}
+### UMAP {.tabset}
 
 ```{r 7-umap_res, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(res_index, function(res) {
     src <- c(
-        "##### Res {{res}} {.unnumbered}",
+        "#### Res {{res}} {.unnumbered}",
         "```{r umap-res-{{res}}, message = FALSE, warning = FALSE}",
         "resolution_plot_formatted(array, 'umap', {{res}}, 'SCT')",  
         "```",
@@ -278,14 +276,12 @@ table(array$Class)
 
 # Visualize consolidated clusters {.tabset}
 
-## Non-integrated {.tabset}
-
-### PCA {.tabset}
+## PCA {.tabset}
 
 ```{r 14-pca_consolidated, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(tg, tc) {
     src <- c(
-        "#### {{tg}} {.unnumbered}",
+        "### {{tg}} {.unnumbered}",
         "```{r pca-{{tg}}, message = FALSE, warning = FALSE}",
         "cluster_plot_formatted(array, 'pca', '{{tg}}', {{tc}})",  
         "```",
@@ -298,12 +294,12 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 `r out`
 
-### tSNE {.tabset}
+## tSNE {.tabset}
 
 ```{r 15-tsne_consolidated, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(tg, tc) {
     src <- c(
-        "##### {{tg}} {.unnumbered}",
+        "### {{tg}} {.unnumbered}",
         "```{r tsne-{{tg}}, message = FALSE, warning = FALSE}",
         "cluster_plot_formatted(array, 'tsne', '{{tg}}', {{tc}})",  
         "```",
@@ -316,12 +312,12 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 `r out`
 
-### UMAP {.tabset}
+## UMAP {.tabset}
 
 ```{r 16-umap_consolidated, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(tg, tc) {
     src <- c(
-        "#### {{tg}} {.unnumbered}",
+        "### {{tg}} {.unnumbered}",
         "```{r umap-{{tg}}, message = FALSE, warning = FALSE}",
         "cluster_plot_formatted(array, 'umap', '{{tg}}', {{tc}})",  
         "```",
@@ -338,7 +334,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ## Nested Composition
 
-```{r 17-bar_nested, message = FALSE, warning = FALSE, }
+```{r 17-bar_nested, message = FALSE, warning = FALSE}
 absolute_bar_plot_formatted(plot_group_array, "Tissue", "Class", class_colors)
 ```
 
@@ -388,13 +384,13 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ##### Batch
 
-```{r 20-tissue_relative_batch, message = FALSE, warning = FALSE, results = "hide"}
+```{r 20-tissue_relative_batch, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
 relative_bar_plot_formatted(plot_group_array, 'Tissue', 'Batch', batch_colors_rna)
 ```
 
 ##### Region
 
-```{r 21-tissue_relative_region, message = FALSE, warning = FALSE, results = "hide"}
+```{r 21-tissue_relative_region, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
 tissue_region_bar <- relative_bar_plot_formatted(plot_group_array, 'Tissue', 'Region', region_colors)
 
 tissue_region_bar + geom_hline(yintercept = table(array$Region)[2] / length(array$Region), linetype = "dashed")
@@ -417,13 +413,13 @@ chisq.posthoc.test(chisq_table, method = "bonferroni")
 
 ##### Batch
 
-```{r 23-tissue_relative_batch, message = FALSE, warning = FALSE, results = "hide"}
+```{r 23-tissue_relative_batch, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
 relative_bar_plot_formatted(plot_group_array, 'Class', 'Batch', batch_colors_rna)
 ```
 
 ##### Region
 
-```{r 24-tissue_relative_region, message = FALSE, warning = FALSE, results = "hide"}
+```{r 24-tissue_relative_region, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
 class_region_bar <- relative_bar_plot_formatted(plot_group_array, 'Class', 'Region', region_colors)
 
 class_region_bar + geom_hline(yintercept = table(array$Region)[2] / length(array$Region), linetype = "dashed")
@@ -460,11 +456,11 @@ prop_table
 
 #### Absolute {.tabset}
 
-```{r 27-region_relative, message = FALSE, warning = FALSE, results = "hide"}
+```{r 27-region_relative, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
 src_list <- mapply(function(tc, tc_colors) {
     src <- c(
         "##### {{tc}} {.unnumbered}",
-        "```{r region-absolute-{{tc}}, message = FALSE, warning = FALSE}",
+        "```{r region-absolute-{{tc}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}",
         "absolute_bar_plot_formatted(plot_group_array, 'Region', '{{tc}}', {{tc_colors}})",  
         "```",
         ""
@@ -478,11 +474,11 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 #### Relative {.tabset}
 
-```{r 28-region_relative, message = FALSE, warning = FALSE, results = "hide"}
+```{r 28-region_relative, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
 src_list <- mapply(function(tc, tc_colors) {
     src <- c(
         "##### {{tc}} {.unnumbered}",
-        "```{r region-relative-{{tc}}, message = FALSE, warning = FALSE}",
+        "```{r region-relative-{{tc}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}",
         "relative_bar_plot_formatted(plot_group_array, 'Region', '{{tc}}', {{tc_colors}})",  
         "```",
         ""
@@ -503,11 +499,58 @@ chisq.test(chisq_table)
 chisq.posthoc.test(chisq_table, method = "bonferroni")
 ```
 
+### Batch {.tabset}
+
+#### Absolute {.tabset}
+
+```{r 30-region_relative, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
+src_list <- mapply(function(tc, tc_colors) {
+    src <- c(
+        "##### {{tc}} {.unnumbered}",
+        "```{r batch-absolute-{{tc}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}",
+        "absolute_bar_plot_formatted(plot_group_array, 'Batch', '{{tc}}', {{tc_colors}})",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, tissue_class, tissue_color_list)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+#### Relative {.tabset}
+
+```{r 31-batch_relative, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
+src_list <- mapply(function(tc, tc_colors) {
+    src <- c(
+        "##### {{tc}} {.unnumbered}",
+        "```{r batch-relative-{{tc}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}",
+        "relative_bar_plot_formatted(plot_group_array, 'Batch', '{{tc}}', {{tc_colors}})",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+}, tissue_class, tissue_color_list)
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+#### Chi-square results
+
+```{r 32-chi_square_batch, message = FALSE, warning = FALSE}
+chisq_table <- table(array$Class, array$orig.ident)
+
+chisq.test(chisq_table)
+chisq.posthoc.test(chisq_table, method = "bonferroni")
+```
+
 ## Examine metrics for consolidated clusters {.tabset}
 
 ### Tissue {.tabset}
 
-```{r 30-vln_consolidated_tissue, message = FALSE, warning = FALSE, results = "hide"}
+```{r 33-vln_consolidated_tissue, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(metric, label) {
     src <- c(
         "#### {{label}} {.unnumbered}",
@@ -525,7 +568,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Group {.tabset}
 
-```{r 31-vln_consolidated_class, message = FALSE, warning = FALSE, results = "hide"}
+```{r 34-vln_consolidated_class, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(metric, label) {
     src <- c(
         "#### {{label}} {.unnumbered}",
@@ -545,7 +588,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Dot Plot {.tabset}
 
-```{r 32-dot_tg, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 20}
+```{r 35-dot_tg, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 20}
 src_list <- lapply(tissue_class, function(tg) {
     src <- c(
         "#### {{tg}} {.unnumbered}",
@@ -564,7 +607,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Stacked Violin {.tabset}
 
-```{r 33-stacked_vln_marker, message = FALSE, warning = FALSE, results = "hide", fig.height = 12, fig.width = 12}
+```{r 36-stacked_vln_marker, message = FALSE, warning = FALSE, results = "hide", fig.height = 12, fig.width = 12}
 src_list <- mapply(function(tg, tc) {
     src <- c(
         "#### {{tg}} {.unnumbered}",
@@ -585,7 +628,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Heatmap {.tabset}
 
-```{r 34-heatmap_marker, message = FALSE, warning = FALSE, results = "hide", dev = "png", fig.height = 8, fig.width = 16}
+```{r 37-heatmap_marker, message = FALSE, warning = FALSE, results = "hide", dev = "png", fig.height = 8, fig.width = 16}
 src_list <- mapply(function(tg, tc) {
     src <- c(
         "#### {{tg}} {.unnumbered}",
@@ -610,7 +653,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 #### Class
 
-```{r 35-class_dendrogram, message = FALSE, warning = FALSE, results = "hide"}
+```{r 38-class_dendrogram, message = FALSE, warning = FALSE, results = "hide"}
 class_dend <- create_dendrogram(array, array$Class, class_colors)
 
 plot(class_dend[[2]], axes = FALSE)
@@ -626,7 +669,7 @@ plot(batch_dend[[2]], axes = FALSE)
 
 #### Class with Region ID
 
-```{r 37-class_dendrogram_region, message = FALSE, warning = FALSE, results = "hide"}
+```{r 39-class_dendrogram_region, message = FALSE, warning = FALSE, results = "hide"}
 # create region+class convolution ID
 array <- AddMetaData(array, metadata = paste(array$Region, array$Class), col.name = "Region_Class")
 
@@ -641,13 +684,13 @@ plot(class_region_dend[[2]], axes = FALSE)
 
 ##### Distance
 
-```{r 38-cluster_heatmap_noregion_dist, message = FALSE, warning = FALSE, results = "hide"}
+```{r 40-cluster_heatmap_noregion_dist, message = FALSE, warning = FALSE, results = "hide"}
 dendrogram_heatmap(class_dend, method_id = "distance")
 ```
 
 ##### Correlation
 
-```{r 39-cluster_heatmap_noregion_cor, message = FALSE, warning = FALSE, results = "hide"}
+```{r 41-cluster_heatmap_noregion_cor, message = FALSE, warning = FALSE, results = "hide"}
 dendrogram_heatmap(class_dend, method_id = "correlation")
 ```
 
@@ -655,13 +698,13 @@ dendrogram_heatmap(class_dend, method_id = "correlation")
 
 ##### Distance
 
-```{r 40-cluster_heatmap_batch_dist, message = FALSE, warning = FALSE, results = "hide"}
+```{r 42-cluster_heatmap_batch_dist, message = FALSE, warning = FALSE, results = "hide"}
 dendrogram_heatmap(batch_dend, method_id = "distance")
 ```
 
 ##### Correlation
 
-```{r 41-cluster_heatmap_batch_cor, message = FALSE, warning = FALSE, results = "hide"}
+```{r 43-cluster_heatmap_batch_cor, message = FALSE, warning = FALSE, results = "hide"}
 dendrogram_heatmap(batch_dend, method_id = "correlation")
 ```
 
@@ -669,13 +712,13 @@ dendrogram_heatmap(batch_dend, method_id = "correlation")
 
 ##### Distance
 
-```{r 42-cluster_heatmap_region_dist, message = FALSE, warning = FALSE, results = "hide", fig.height = 30, fig.width = 30}
+```{r 44-cluster_heatmap_region_dist, message = FALSE, warning = FALSE, results = "hide", fig.height = 30, fig.width = 30}
 dendrogram_heatmap(class_region_dend, method_id = "distance")
 ```
 
 ##### Correlation
 
-```{r 43-cluster_heatmap_region_cor, message = FALSE, warning = FALSE, results = "hide", fig.height = 30, fig.width = 30}
+```{r 45-cluster_heatmap_region_cor, message = FALSE, warning = FALSE, results = "hide", fig.height = 30, fig.width = 30}
 dendrogram_heatmap(class_region_dend, method_id = "correlation")
 ```
 
@@ -683,25 +726,76 @@ dendrogram_heatmap(class_region_dend, method_id = "correlation")
 
 #### Class
 
-```{r 44-pseudobulk_pca_class, message = FALSE, warning = FALSE, results = "hide", fig.height = 6, fig.width = 10}
+```{r 46-pseudobulk_pca_class, message = FALSE, warning = FALSE, results = "hide"}
 pseudobulk_pca(array, "Class", "Class", class_colors)
 ```
 
 #### Batch
 
-```{r 45-pseudobulk_pca_batch, message = FALSE, warning = FALSE, results = "hide", fig.height = 6, fig.width = 10}
+```{r 47-pseudobulk_pca_batch, message = FALSE, warning = FALSE, results = "hide"}
 pseudobulk_pca(array, "orig.ident", "Batch", batch_colors_rna)
 ```
 
 #### Region-Class
 
-```{r 46-pseudobulk_pca_region-class, message = FALSE, warning = FALSE, results = "hide", fig.height = 6, fig.width = 10}
+```{r 48-pseudobulk_pca_region-class, message = FALSE, warning = FALSE, results = "hide"}
 pseudobulk_pca(array, "Region_Class", "Region_Class", region_class_colors)
 ```
 
+### Pseudobulk PCA Metrics {.tabset}
+
+```{r 49-pseudobulk_prep_batch, message = FALSE, warning = FALSE}
+  pseudobulk_array <- AggregateExpression(array, group.by = "orig.ident", assays = "RNA", slot = "counts", 
+                                          return.seurat = TRUE)
+  pseudobulk_array <- AddMetaData(pseudobulk_array, metadata = as.factor(names(pseudobulk_array$orig.ident)),
+                                  col.name = "Batch")
+  pseudobulk_array <- NormalizeData(pseudobulk_array, verbose = FALSE) # results are slightly different
+  pseudobulk_array <- FindVariableFeatures(pseudobulk_array, nfeatures = 3000)
+  pseudobulk_array <- ScaleData(pseudobulk_array, verbose = FALSE)
+  pseudobulk_array <- RunPCA(pseudobulk_array, verbose = FALSE, npcs = 2)
+```
+
+#### PC Loadings {.tabset}
+
+```{r 17-pca-dim-loadings, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(pc_list, function(pcs) {
+    src <- c(
+        "##### PC {{pcs}} Loadings {.unnumbered}",
+        "```{r pca-loadings-{{pcs}}, message = FALSE, warning = FALSE}",
+        "VizDimLoadings(pseudobulk_array, dims = {{pcs}}, reduction = 'pca', balanced = TRUE)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+#### PC Heatmaps {.tabset}
+
+```{r 18-pca-dim-heatmap, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(pc_list, function(pcs) {
+    src <- c(
+        "##### PC {{pcs}} Heatmap {.unnumbered}",
+        "```{r pca-heatmap-{{pcs}}, message = FALSE, warning = FALSE}",
+        "DimHeatmap(pseudobulk_array, dims = {{pcs}}, balanced = TRUE, fast = FALSE) +
+                    scale_fill_gradientn(colours = heatmap_colors) + 
+                    labs(fill = 'PC Score')",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
 # Split matrix into constituent parts and save
 
-```{r 48-save_matrices, message = FALSE, warning = FALSE, results = "hide"}
+```{r 49-save_matrices, message = FALSE, warning = FALSE, results = "hide"}
 # save cluster assignments, do not need whole array
 # save the subgroups/classes
 for (i in 1:length(levels(array$Class))){

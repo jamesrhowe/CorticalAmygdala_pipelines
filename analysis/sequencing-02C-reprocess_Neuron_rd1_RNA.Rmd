@@ -2,20 +2,20 @@
 author: "James Howe"
 params:
   id: "plCoA"
-  input_path: "output/sequencing/01-preprocess-RNA/"
-  output_path: "output/sequencing/02-semisupervised_rd1/"
-title: "Merge, transform, and format RNA datasets: `r params$id`"
+  class: "Neuron"
+  path: "output/sequencing/02-semisupervised_rd1/"
+title: "Transform subclustered datasets (cluster QC): `r params$id` `r params$class`"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 ---
 
 # Introduction
 
-This notebook merges the individual libraries into a single dataset, adds the appropriate metadata for each, transforms/normalizes the data using SCTransform, and then performs linear dimensionality reduction initially via principal component analysis, followed by non-linear dimensionality reduction via tSNE and UMAP (see methods for references). 
+This notebook takes the subsetted array for all neurons, transforms/normalizes the data using SCTransform, and then performs linear dimensionality reduction initially via principal component analysis, followed by non-linear dimensionality reduction via tSNE and UMAP (see methods for references). It then does clustering at resolution 1, then separates neurons into glutamatergic, GABAergic, or other. This is required because top-level clustering often misassigns one or more clusters into the wrong class, and correct assignments are necessary for classification.
 
 ```{r setup, message = FALSE, warning = FALSE}
 id <- params$id
-input <- params$input_path
-output <- params$output_path
+path <- params$path
+cell_class <- params$class
 
 source("code/sequencing_misc.R")
 source("code/sequencing-color_scales.R")
@@ -39,33 +39,7 @@ knitr::opts_chunk$set(dev = 'pdf')
 Extracts all of the paths and their dataset names from the outputs of step 1, then puts them into a list for merging.  
 
 ```{r 1-read_data, message = FALSE, warning = FALSE}
-paths <- Sys.glob(paste0(input, "*"))
-
-array <- rep(list(NULL), length(paths))
-
-for (i in 1:length(paths)){
-  array[[i]] <- readRDS(paths[i])
-  paths[i] <- gsub("output/sequencing/01-preprocess-RNA/","", paths[i])
-  paths[i] <- gsub("_RNA_preprocess.rds","", paths[i])
-  names(array)[i] <- paths[i]
-}
-
-# show datasets used
-cat(names(array), sep = "\t")
-```
-
-# Merge datasets into single array {.tabset}
-
-This step merges all elements of the list into a single unified Seurat array, with the region of origin and batch information saved. Compare metadata across regions and batches.
-
-```{r 2-merge_data, message = FALSE, warning = FALSE}
-array2 <- list()
-for (i in 2:length(array)){
-    array2[[i-1]] <- array[[i]]
-}
-array <- merge(x= array[[1]], 
-               y = array2)
-rm(array2)
+array <- readRDS(paste0(path, id, "_", cell_class, "_rd1_RNA.rds"))
 
 plot_merge_array <- cbind.data.frame(array$nCount_RNA, 
                                array$nFeature_RNA,
@@ -74,10 +48,19 @@ plot_merge_array <- cbind.data.frame(array$nCount_RNA,
 colnames(plot_merge_array) <- c("UMIs", "Genes", "Batch", "Region")
 ```
 
+## Metrics
+
+```{r 2-merge_metrics, message = FALSE, warning = FALSE}
+count_all(paste(id, cell_class, "nuclei passing filter"), array)
+
+table(array$orig.ident)
+table(array$Region)
+```
+
 ## Total Nuclei
 
-```{r 3-total_nuclei, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 3}
-total_nuclei_plot(plot_merge_array)
+```{r 3-total_nuclei, message = FALSE, warning = FALSE, dev = "svg"}
+total_nuclei_plot_atac(plot_merge_array)
 ```
 
 ## Genes/UMIs Scatter {.tabset}
@@ -102,11 +85,11 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Batch {.tabset}
 
-```{r 5-batch_violin, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
+```{r 5-batch_violin, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(metric, label){
     src <- c(
         "#### {{label}} {.unnumbered}",
-        "```{r batch_violin-{{metric}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}",
+        "```{r batch_violin-{{metric}}, message = FALSE, warning = FALSE}",
         "violin_metrics_formatted(array, 'orig.ident', '{{metric}}', '{{label}}', batch_colors_rna)",  
         "```",
         ""
@@ -120,11 +103,11 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Region {.tabset}
 
-```{r 6-region_violin, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 4}
+```{r 6-region_violin, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- mapply(function(metric, label){
     src <- c(
         "#### {{label}} {.unnumbered}",
-        "```{r region_violin-{{metric}}, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4}",
+        "```{r region_violin-{{metric}}, message = FALSE, warning = FALSE}",
         "violin_metrics_formatted(array, 'Region', '{{metric}}', '{{label}}', region_colors)",  
         "```",
         ""
@@ -260,7 +243,7 @@ variance_explained_plot(plot_var_array)
 src_list <- lapply(c(1:2, pc_info$Optimal_PCs), function(pcs) {
     src <- c(
         "#### PC {{pcs}} Loadings {.unnumbered}",
-        "```{r pca-loadings-{{pcs}}, message = FALSE, warning = FALSE, dev = 'png'}",
+        "```{r pca-loadings-{{pcs}}, message = FALSE, warning = FALSE}",
         "VizDimLoadings(array, dims = {{pcs}}, reduction = 'pca', balanced = TRUE)",  
         "```",
         ""
@@ -452,5 +435,5 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 The output can now be passed to the next step of the pipeline, broad cell type classification.
 
 ```{r 28-save_output, message = FALSE, warning = FALSE}
-saveRDS(array, file = paste0(output, id, "_merged_rd1_RNA.rds"))
+saveRDS(array, file = paste0(path, id, "_", cell_class, "_reprocessed_rd1_RNA.rds"))
 ```

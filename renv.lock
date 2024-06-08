@@ -1227,9 +1227,14 @@
     },
     "Signac": {
       "Package": "Signac",
-      "Version": "1.12.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
+      "Version": "1.13.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "stuart-lab",
+      "RemoteRepo": "signac",
+      "RemoteRef": "master",
+      "RemoteSha": "8b98f63f89fb988fcfd5e1be6af6de316353008c",
       "Requirements": [
         "BiocGenerics",
         "GenomeInfoDb",
@@ -1263,7 +1268,7 @@
         "utils",
         "vctrs"
       ],
-      "Hash": "d40d424ab7f9674170c8ef43199b33c2"
+      "Hash": "0a4a5a9771353bb81e5f34559359d3e6"
     },
     "SingleCellExperiment": {
       "Package": "SingleCellExperiment",

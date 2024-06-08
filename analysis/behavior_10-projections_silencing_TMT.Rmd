@@ -1,0 +1,642 @@
+---
+author: "James Howe"
+params:
+  start_min: 12
+  end_min: 24
+  dataset: "projections_silence"
+  path: "data/behavior/projections_silence/"
+title: "Behavioral analysis: `r params$dataset`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
+
+```{r setup}
+# set up paths
+projection_id <- params$dataset
+projection_path <- params$path
+start_min <- params$start_min
+end_min <- params$end_min
+
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+
+projection_groups_tmt <- unlist(strsplit(Sys.glob(paste0(projection_path, "TMT/SAL/*")),
+                                         paste0(projection_path, "TMT/SAL/")))[c(FALSE, TRUE)]
+```
+
+# Load the data
+
+Names have to be given manually in most cases. Also for now copy into console because it does not load due to odd workspace issues. This loads all files in a directory and puts it into the correct format automatically.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+# set up the object with pointers
+data_projection_tmt_sal <- vector(mode = "list", length = 4)
+data_projection_tmt_sal <- lapply(projection_groups_tmt, 
+                                  function(x) lapply(Sys.glob(paste0(projection_path, "TMT/SAL/", x, "/*")),
+                                                     process_series))
+
+data_projection_tmt_cno <- vector(mode = "list", length = 4)
+data_projection_tmt_cno <- lapply(projection_groups_tmt, 
+                                  function(x) lapply(Sys.glob(paste0(projection_path, "TMT/CNO/", x, "/*")),
+                                                     process_series))
+
+# add names to each
+names(data_projection_tmt_sal) <- Sys.glob(paste0(projection_path, "TMT/SAL/", "*"))
+names(data_projection_tmt_sal) <- unlist(strsplit(names(data_projection_tmt_sal), 
+                                                  paste0(projection_path, "TMT/SAL/")))[c(FALSE, TRUE)]
+
+names(data_projection_tmt_cno) <- Sys.glob(paste0(projection_path, "TMT/CNO/", "*"))
+names(data_projection_tmt_cno) <- unlist(strsplit(names(data_projection_tmt_cno), 
+                                                  paste0(projection_path, "TMT/CNO/")))[c(FALSE, TRUE)]
+
+for (i in 1:length(projection_groups_tmt)){
+  data_projection_tmt_sal <- add_custom_names(data_projection_tmt_sal, paste0(projection_path, "TMT/SAL/"), 
+                                              projection_groups_tmt[i], projection_labels_tmt[i])
+  data_projection_tmt_cno <- add_custom_names(data_projection_tmt_cno, paste0(projection_path, "TMT/CNO/"), 
+                                              projection_groups_tmt[i], projection_labels_tmt[i])
+}
+
+data_projection_tmt_sal <- list(data_projection_tmt_sal$`MeA-control`, data_projection_tmt_sal$`MeA-Gi`, 
+                                data_projection_tmt_sal$`NAc-control`, data_projection_tmt_sal$`NAc-Gi`)
+names(data_projection_tmt_sal) <- c("MeA-control", "MeA-Gi", "NAc-control", "NAc-Gi")
+
+data_projection_tmt_cno <- list(data_projection_tmt_cno$`MeA-control`, data_projection_tmt_cno$`MeA-Gi`, 
+                                data_projection_tmt_cno$`NAc-control`, data_projection_tmt_cno$`NAc-Gi`)
+names(data_projection_tmt_cno) <- c("MeA-control", "MeA-Gi", "NAc-control", "NAc-Gi")
+```
+
+# Performance Index metrics
+
+## Repeated Measures {.tabset}
+
+### Summary statistics {.tabset}
+
+```{r 2-pi_stats, message = FALSE, warning = FALSE}
+#saline
+baseline_array_projection_tmt_sal <- transform_pi(data_projection_tmt_sal, "baseline", "Quadrant", 1, 2400)
+treatment_array_projection_tmt_sal <- transform_pi(data_projection_tmt_sal, "treatment", "Quadrant", 1, 2881)
+
+pi_group_projection_tmt_sal <- group_array(data_projection_tmt_sal, 
+                                           baseline_array_projection_tmt_sal, 
+                                           treatment_array_projection_tmt_sal, "pi")
+
+# cno
+baseline_array_projection_tmt_cno <- transform_pi(data_projection_tmt_cno, "baseline", "Quadrant", 1, 2400)
+treatment_array_projection_tmt_cno <- transform_pi(data_projection_tmt_cno, "treatment", "Quadrant", 1, 2881)
+
+pi_group_projection_tmt_cno <- group_array(data_projection_tmt_cno, 
+                                           baseline_array_projection_tmt_cno, 
+                                           treatment_array_projection_tmt_cno, "pi")
+```
+
+#### NAc {.tabset}
+
+##### SAL
+
+```{r 3-NAc_pi_stats_tmt_sal, message = FALSE, warning = FALSE}
+NAc_group_projection_tmt_sal <- pi_group_projection_tmt_sal[pi_group_projection_tmt_sal$group 
+                                     %in% c("NAc Gi", "NAc mCh"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(NAc_group_projection_tmt_sal$time) <- c("Air", "TMT")
+
+NAc_group_projection_tmt_sal$group <- factor(NAc_group_projection_tmt_sal$group, 
+                                   levels = c("NAc mCh", "NAc Gi"))
+levels(NAc_group_projection_tmt_sal$group) <- c("mCh", "Gi")
+
+NAc_group_projection_tmt_sal %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+##### CNO
+
+```{r 4-NAc_pi_stats_tmt_cno, message = FALSE, warning = FALSE}
+NAc_group_projection_tmt_cno <- pi_group_projection_tmt_cno[pi_group_projection_tmt_cno$group 
+                                     %in% c("NAc Gi", "NAc mCh"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(NAc_group_projection_tmt_cno$time) <- c("Air", "TMT")
+
+NAc_group_projection_tmt_cno$group <- factor(NAc_group_projection_tmt_cno$group, 
+                                   levels = c("NAc mCh", "NAc Gi"))
+levels(NAc_group_projection_tmt_cno$group) <- c("mCh", "Gi")
+
+NAc_group_projection_tmt_cno %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+#### MeA {.tabset}
+
+##### SAL
+
+```{r 5-MeA_pi_stats_tmt_sal, message = FALSE, warning = FALSE}
+MeA_group_projection_tmt_sal <- pi_group_projection_tmt_sal[pi_group_projection_tmt_sal$group 
+                                     %in% c("MeA Gi", "MeA mCh"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(MeA_group_projection_tmt_sal$time) <- c("Air", "TMT")
+
+MeA_group_projection_tmt_sal$group <- factor(MeA_group_projection_tmt_sal$group, 
+                                             levels = c("MeA mCh", "MeA Gi"))
+levels(MeA_group_projection_tmt_sal$group) <- c("mCh", "Gi")
+
+MeA_group_projection_tmt_sal %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+##### CNO
+
+```{r 6-MeA_pi_stats_tmt_cno, message = FALSE, warning = FALSE}
+MeA_group_projection_tmt_cno <- pi_group_projection_tmt_cno[pi_group_projection_tmt_cno$group 
+                                     %in% c("MeA Gi", "MeA mCh"),] %>%
+  gather(key = "time", value = "PI", baseline_pi, treatment_pi) %>%
+  convert_as_factor(group, time)
+levels(MeA_group_projection_tmt_cno$time) <- c("Air", "TMT")
+
+MeA_group_projection_tmt_cno$group <- factor(MeA_group_projection_tmt_cno$group, 
+                                             levels = c("MeA mCh", "MeA Gi"))
+levels(MeA_group_projection_tmt_cno$group) <- c("mCh", "Gi")
+
+MeA_group_projection_tmt_cno %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI, type = "mean_se")
+```
+
+## Difference {.tabset}
+
+### Summary statistics
+
+#### NAc
+
+```{r 7-NAc_pi_diff_stats, message = FALSE, warning = FALSE}
+NAc_group_diffs_tmt_sal <- cbind.data.frame(NAc_group_projection_tmt_sal$id[1:                                                                             (length(rownames(NAc_group_projection_tmt_sal))/2)],
+                                        NAc_group_projection_tmt_sal$group[1:                                                                          (length(rownames(NAc_group_projection_tmt_sal))/2)],
+                                    rep("SAL", times = length(rownames(NAc_group_projection_tmt_sal))/2),
+                               NAc_group_projection_tmt_sal$PI[(length(rownames(NAc_group_projection_tmt_sal))/2)+1:
+                                                               (length(rownames(NAc_group_projection_tmt_sal))/2)] -
+                                          NAc_group_projection_tmt_sal$PI[1:                                                                         (length(rownames(NAc_group_projection_tmt_sal))/2)])
+colnames(NAc_group_diffs_tmt_sal) <- c("id", "group", "time", "PI_diff")
+
+NAc_group_diffs_tmt_cno <- cbind.data.frame(NAc_group_projection_tmt_cno$id[1:                                                                             (length(rownames(NAc_group_projection_tmt_cno))/2)],
+                                        NAc_group_projection_tmt_cno$group[1:                                                                          (length(rownames(NAc_group_projection_tmt_cno))/2)],
+                                        rep("CNO", times = length(rownames(NAc_group_projection_tmt_cno))/2),
+                               NAc_group_projection_tmt_cno$PI[(length(rownames(NAc_group_projection_tmt_cno))/2)+1:
+                                                               (length(rownames(NAc_group_projection_tmt_cno))/2)] -
+                                          NAc_group_projection_tmt_cno$PI[1:                                                                         (length(rownames(NAc_group_projection_tmt_cno))/2)])
+colnames(NAc_group_diffs_tmt_cno) <- c("id", "group", "time", "PI_diff")
+
+NAc_group_diffs_tmt <- rbind.data.frame(NAc_group_diffs_tmt_sal, NAc_group_diffs_tmt_cno)
+
+NAc_group_diffs_tmt$time <- factor(NAc_group_diffs_tmt$time, 
+                                        levels = c("SAL", "CNO"))
+
+NAc_group_diffs_tmt %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI_diff, type = "mean_se")
+```
+
+#### MeA
+
+```{r 8-MeA_pi_diff_stats, message = FALSE, warning = FALSE}
+MeA_group_diffs_tmt_sal <- cbind.data.frame(MeA_group_projection_tmt_sal$id[1:                                                                             (length(rownames(MeA_group_projection_tmt_sal))/2)],
+                                        MeA_group_projection_tmt_sal$group[1:                                                                          (length(rownames(MeA_group_projection_tmt_sal))/2)],
+                                    rep("SAL", times = length(rownames(MeA_group_projection_tmt_sal))/2),
+                               MeA_group_projection_tmt_sal$PI[(length(rownames(MeA_group_projection_tmt_sal))/2)+1:
+                                                               (length(rownames(MeA_group_projection_tmt_sal))/2)] -
+                                          MeA_group_projection_tmt_sal$PI[1:                                                                         (length(rownames(MeA_group_projection_tmt_sal))/2)])
+colnames(MeA_group_diffs_tmt_sal) <- c("id", "group", "time", "PI_diff")
+
+MeA_group_diffs_tmt_cno <- cbind.data.frame(MeA_group_projection_tmt_cno$id[1:                                                                             (length(rownames(MeA_group_projection_tmt_cno))/2)],
+                                        MeA_group_projection_tmt_cno$group[1:                                                                          (length(rownames(MeA_group_projection_tmt_cno))/2)],
+                                        rep("CNO", times = length(rownames(MeA_group_projection_tmt_cno))/2),
+                               MeA_group_projection_tmt_cno$PI[(length(rownames(MeA_group_projection_tmt_cno))/2)+1:
+                                                               (length(rownames(MeA_group_projection_tmt_cno))/2)] -
+                                          MeA_group_projection_tmt_cno$PI[1:                                                                         (length(rownames(MeA_group_projection_tmt_cno))/2)])
+colnames(MeA_group_diffs_tmt_cno) <- c("id", "group", "time", "PI_diff")
+
+MeA_group_diffs_tmt <- rbind.data.frame(MeA_group_diffs_tmt_sal, MeA_group_diffs_tmt_cno)
+
+MeA_group_diffs_tmt$time <- factor(MeA_group_diffs_tmt$time, 
+                                        levels = c("SAL", "CNO"))
+
+MeA_group_diffs_tmt %>%
+  group_by(group, time) %>%
+  get_summary_stats(PI_diff, type = "mean_se")
+```
+
+### Two-way repeated-measures ANOVA {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 9-NAc_pi_diff_anova_tmt, message = FALSE, warning = FALSE}
+display_anova(NAc_group_diffs_tmt, "PI_diff")
+```
+
+##### Pairwise comparisons
+
+```{r 10-NAc_pi_diff_pairwise_tmt, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_diffs_tmt, "PI_diff")
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 11-MeA_pi_diff_anova_tmt, message = FALSE, warning = FALSE}
+display_anova(MeA_group_diffs_tmt, "PI_diff")
+```
+
+##### Pairwise comparisons
+
+```{r 12-MeA_pi_pairwise_tmt, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_diffs_tmt, "PI_diff")
+```
+
+### Plots {.tabset}
+
+#### NAc
+
+```{r 13-NAc_pi_diff_tmt, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.8, fig.width = 2.4}
+bg_twogroup(NAc_group_diffs_tmt, diff_pi_label_silence, 
+            c(control_color, nac_color), pi_axes_tmt, "white")
+```
+
+#### MeA
+
+```{r 14-MeA_pi_diff_tmt, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.8, fig.width = 2.4}
+bg_twogroup(MeA_group_diffs_tmt, diff_pi_label_silence, 
+            c(control_color, mea_color), pi_axes_tmt, "white")
+```
+
+## Difference in Differences {.tabset}
+
+### NAc {.tabset}
+
+```{r 15-NAc_pi_diff2x_tmt, message = FALSE, warning = FALSE}
+NAc_group_diffs2x_tmt <- cbind.data.frame(NAc_group_diffs_tmt$id[1:                                                                             (length(rownames(NAc_group_diffs_tmt))/2)],
+                                        NAc_group_diffs_tmt$group[1:                                                                          (length(rownames(NAc_group_diffs_tmt))/2)],
+                              NAc_group_diffs_tmt$PI_diff[(length(rownames(NAc_group_diffs_tmt))/2)+1:
+                                                               (length(rownames(NAc_group_diffs_tmt))/2)] -
+                                          NAc_group_diffs_tmt$PI_diff[1:                                                                         (length(rownames(NAc_group_diffs_tmt))/2)])
+
+colnames(NAc_group_diffs2x_tmt) <- c("id", "group", "PI_diff")
+
+NAc_group_diffs2x_tmt %>%
+  group_by(group) %>%
+  get_summary_stats(PI_diff, type = "mean_se")
+```
+
+### MeA
+
+```{r 16-MeA_pi_diff2x_tmt, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 3, fig.width = 2}
+MeA_group_diffs2x_tmt <- cbind.data.frame(MeA_group_diffs_tmt$id[1:                                                                             (length(rownames(MeA_group_diffs_tmt))/2)],
+                                        MeA_group_diffs_tmt$group[1:                                                                          (length(rownames(MeA_group_diffs_tmt))/2)],
+                              MeA_group_diffs_tmt$PI_diff[(length(rownames(MeA_group_diffs_tmt))/2)+1:
+                                                               (length(rownames(MeA_group_diffs_tmt))/2)] -
+                                          MeA_group_diffs_tmt$PI_diff[1:                                                                         (length(rownames(MeA_group_diffs_tmt))/2)])
+
+colnames(MeA_group_diffs2x_tmt) <- c("id", "group", "PI_diff")
+
+MeA_group_diffs2x_tmt %>%
+  group_by(group) %>%
+  get_summary_stats(PI_diff, type = "mean_se")
+```
+
+### T-tests {.tabset}
+
+#### NAc
+
+```{r 17-nac_pi_diff_ttest, message = FALSE, warning = FALSE}
+t.test(x = NAc_group_diffs2x_tmt$PI_diff[NAc_group_diffs2x_tmt$group %in% "Gi"], 
+       y = NAc_group_diffs2x_tmt$PI_diff[NAc_group_diffs2x_tmt$group %in% "mCh"])
+```
+
+#### MeA
+
+```{r 18-MeA_pi_diff_ttest, message = FALSE, warning = FALSE}
+t.test(x = MeA_group_diffs2x_tmt$PI_diff[MeA_group_diffs2x_tmt$group %in% "Gi"], 
+       y = MeA_group_diffs2x_tmt$PI_diff[MeA_group_diffs2x_tmt$group %in% "mCh"])
+```
+
+### Graphs {.tabset}
+
+#### NAc
+
+```{r 19-nac_diff_graph_tmt, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.3, fig.height = 3}
+bg_diff(NAc_group_diffs2x_tmt, "CNO - SAL", nac_color, ap_pi_axes, tmt_colors)
+```
+
+#### MeA
+
+```{r 20-mea_diff_graph_tmt, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.3, fig.height = 3}
+bg_diff(MeA_group_diffs2x_tmt, "CNO - SAL", mea_color, ap_pi_axes, tmt_colors)
+```
+
+# Port Distance metrics
+
+## Difference {.tabset}
+
+### Summary statistics
+
+```{r 21-pd_calculate, message = FALSE, warning = FALSE}
+#saline
+baseline_array_projection_tmt_sal_pd <- transform_pd(data_projection_tmt_sal, "baseline", "PortDistance", 1, 2400)
+treatment_array_projection_tmt_sal_pd <- transform_pd(data_projection_tmt_sal, "treatment", "PortDistance", 1, 2881)
+
+pd_group_projection_tmt_sal <- group_array(data_projection_tmt_sal, 
+                                           baseline_array_projection_tmt_sal_pd, 
+                                           treatment_array_projection_tmt_sal_pd, "pd")
+
+# cno
+baseline_array_projection_tmt_cno_pd <- transform_pd(data_projection_tmt_cno, "baseline", "PortDistance", 1, 2400)
+treatment_array_projection_tmt_cno_pd <- transform_pd(data_projection_tmt_cno, "treatment", "PortDistance", 1, 2881)
+
+pd_group_projection_tmt_cno <- group_array(data_projection_tmt_cno, 
+                                           baseline_array_projection_tmt_cno_pd, 
+                                           treatment_array_projection_tmt_cno_pd, "pd")
+```
+
+#### NAc
+
+```{r 22-NAc_pd_diff_stats, message = FALSE, warning = FALSE}
+# saline
+NAc_group_projection_tmt_sal_pd <- pd_group_projection_tmt_sal[pd_group_projection_tmt_sal$group 
+                                     %in% c("NAc Gi", "NAc mCh"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(NAc_group_projection_tmt_sal_pd$time) <- c("Air", "TMT")
+
+NAc_group_projection_tmt_sal_pd$group <- factor(NAc_group_projection_tmt_sal_pd$group, 
+                                   levels = c("NAc mCh", "NAc Gi"))
+levels(NAc_group_projection_tmt_sal_pd$group) <- c("mCh", "Gi")
+
+NAc_group_diffs_tmt_sal_pd <- cbind.data.frame(NAc_group_projection_tmt_sal_pd$id[1:                                                                             (length(rownames(NAc_group_projection_tmt_sal_pd))/2)],
+                                        NAc_group_projection_tmt_sal_pd$group[1:                                                                          (length(rownames(NAc_group_projection_tmt_sal_pd))/2)],
+                                    rep("SAL", times = length(rownames(NAc_group_projection_tmt_sal_pd))/2),
+                               NAc_group_projection_tmt_sal_pd$PD[(length(rownames(NAc_group_projection_tmt_sal_pd))/2)+1:
+                                                               (length(rownames(NAc_group_projection_tmt_sal_pd))/2)] -
+                                          NAc_group_projection_tmt_sal_pd$PD[1:                                                                         (length(rownames(NAc_group_projection_tmt_sal_pd))/2)])
+colnames(NAc_group_diffs_tmt_sal_pd) <- c("id", "group", "time", "PD_diff")
+
+# CNO
+NAc_group_projection_tmt_cno_pd <- pd_group_projection_tmt_cno[pd_group_projection_tmt_cno$group 
+                                     %in% c("NAc Gi", "NAc mCh"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(NAc_group_projection_tmt_cno_pd$time) <- c("Air", "TMT")
+
+NAc_group_projection_tmt_cno_pd$group <- factor(NAc_group_projection_tmt_cno_pd$group, 
+                                   levels = c("NAc mCh", "NAc Gi"))
+levels(NAc_group_projection_tmt_cno_pd$group) <- c("mCh", "Gi")
+
+NAc_group_diffs_tmt_cno_pd <- cbind.data.frame(NAc_group_projection_tmt_cno_pd$id[1:                                                                             (length(rownames(NAc_group_projection_tmt_cno_pd))/2)],
+                                        NAc_group_projection_tmt_cno_pd$group[1:                                                                          (length(rownames(NAc_group_projection_tmt_cno_pd))/2)],
+                                    rep("CNO", times = length(rownames(NAc_group_projection_tmt_cno_pd))/2),
+                               NAc_group_projection_tmt_cno_pd$PD[(length(rownames(NAc_group_projection_tmt_cno_pd))/2)+1:
+                                                               (length(rownames(NAc_group_projection_tmt_cno_pd))/2)] -
+                                          NAc_group_projection_tmt_cno_pd$PD[1:                                                                         (length(rownames(NAc_group_projection_tmt_cno_pd))/2)])
+colnames(NAc_group_diffs_tmt_cno_pd) <- c("id", "group", "time", "PD_diff")
+
+NAc_group_diffs_tmt_pd <- rbind.data.frame(NAc_group_diffs_tmt_sal_pd, NAc_group_diffs_tmt_cno_pd)
+
+NAc_group_diffs_tmt_pd$time <- factor(NAc_group_diffs_tmt_pd$time, 
+                                        levels = c("SAL", "CNO"))
+
+NAc_group_diffs_tmt_pd %>%
+  group_by(group, time) %>%
+  get_summary_stats(PD_diff, type = "mean_se")
+```
+
+#### MeA
+
+```{r 23-MeA_pd_diff_stats, message = FALSE, warning = FALSE}
+# saline
+MeA_group_projection_tmt_sal_pd <- pd_group_projection_tmt_sal[pd_group_projection_tmt_sal$group 
+                                     %in% c("MeA Gi", "MeA mCh"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(MeA_group_projection_tmt_sal_pd$time) <- c("Air", "TMT")
+
+MeA_group_projection_tmt_sal_pd$group <- factor(MeA_group_projection_tmt_sal_pd$group, 
+                                   levels = c("MeA mCh", "MeA Gi"))
+levels(MeA_group_projection_tmt_sal_pd$group) <- c("mCh", "Gi")
+
+MeA_group_diffs_tmt_sal_pd <- cbind.data.frame(MeA_group_projection_tmt_sal_pd$id[1:                                                                             (length(rownames(MeA_group_projection_tmt_sal_pd))/2)],
+                                        MeA_group_projection_tmt_sal_pd$group[1:                                                                          (length(rownames(MeA_group_projection_tmt_sal_pd))/2)],
+                                    rep("SAL", times = length(rownames(MeA_group_projection_tmt_sal_pd))/2),
+                               MeA_group_projection_tmt_sal_pd$PD[(length(rownames(MeA_group_projection_tmt_sal_pd))/2)+1:
+                                                               (length(rownames(MeA_group_projection_tmt_sal_pd))/2)] -
+                                          MeA_group_projection_tmt_sal_pd$PD[1:                                                                         (length(rownames(MeA_group_projection_tmt_sal_pd))/2)])
+colnames(MeA_group_diffs_tmt_sal_pd) <- c("id", "group", "time", "PD_diff")
+
+# CNO
+MeA_group_projection_tmt_cno_pd <- pd_group_projection_tmt_cno[pd_group_projection_tmt_cno$group 
+                                     %in% c("MeA Gi", "MeA mCh"),] %>%
+  gather(key = "time", value = "PD", baseline_pd, treatment_pd) %>%
+  convert_as_factor(group, time)
+levels(MeA_group_projection_tmt_cno_pd$time) <- c("Air", "TMT")
+
+MeA_group_projection_tmt_cno_pd$group <- factor(MeA_group_projection_tmt_cno_pd$group, 
+                                   levels = c("MeA mCh", "MeA Gi"))
+levels(MeA_group_projection_tmt_cno_pd$group) <- c("mCh", "Gi")
+
+MeA_group_diffs_tmt_cno_pd <- cbind.data.frame(MeA_group_projection_tmt_cno_pd$id[1:                                                                             (length(rownames(MeA_group_projection_tmt_cno_pd))/2)],
+                                        MeA_group_projection_tmt_cno_pd$group[1:                                                                          (length(rownames(MeA_group_projection_tmt_cno_pd))/2)],
+                                    rep("CNO", times = length(rownames(MeA_group_projection_tmt_cno_pd))/2),
+                               MeA_group_projection_tmt_cno_pd$PD[(length(rownames(MeA_group_projection_tmt_cno_pd))/2)+1:
+                                                               (length(rownames(MeA_group_projection_tmt_cno_pd))/2)] -
+                                          MeA_group_projection_tmt_cno_pd$PD[1:                                                                         (length(rownames(MeA_group_projection_tmt_cno_pd))/2)])
+colnames(MeA_group_diffs_tmt_cno_pd) <- c("id", "group", "time", "PD_diff")
+
+MeA_group_diffs_tmt_pd <- rbind.data.frame(MeA_group_diffs_tmt_sal_pd, MeA_group_diffs_tmt_cno_pd)
+
+MeA_group_diffs_tmt_pd$time <- factor(MeA_group_diffs_tmt_pd$time, 
+                                        levels = c("SAL", "CNO"))
+
+MeA_group_diffs_tmt_pd %>%
+  group_by(group, time) %>%
+  get_summary_stats(PD_diff, type = "mean_se")
+```
+
+### Two-way repeated-measures ANOVA {.tabset}
+
+#### NAc {.tabset}
+
+##### ANOVA
+
+```{r 24-NAc_pd_diff_anova_tmt, message = FALSE, warning = FALSE}
+display_anova(NAc_group_diffs_tmt_pd, "PD_diff")
+```
+
+##### Pairwise comparisons
+
+```{r 25-NAc_pd_diff_pairwise_tmt, message = FALSE, warning = FALSE}
+pairwise_comp_anova(NAc_group_diffs_tmt_pd, "PD_diff")
+```
+
+#### MeA {.tabset}
+
+##### ANOVA
+
+```{r 26-MeA_pd_diff_anova_tmt, message = FALSE, warning = FALSE}
+display_anova(MeA_group_diffs_tmt_pd, "PD_diff")
+```
+
+##### Pairwise comparisons
+
+```{r 27-MeA_pd_pairwise_tmt, message = FALSE, warning = FALSE}
+pairwise_comp_anova(MeA_group_diffs_tmt_pd, "PD_diff")
+```
+
+### Plots {.tabset}
+
+#### NAc
+
+```{r 28-NAc_pd_diff_tmt, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.8, fig.width = 2.4}
+bg_twogroup_nobar(NAc_group_diffs_tmt_pd, diff_pd_label_silence, 
+                   c(control_color, nac_color), pd_axes_tmt, "white", 0)
+```
+
+#### MeA
+
+```{r 29-MeA_pd_diff_tmt, message = FALSE, warning = FALSE, dev = 'pdf', fig.height = 2.8, fig.width = 2.4}
+bg_twogroup_nobar(MeA_group_diffs_tmt_pd, diff_pd_label_silence,  
+                   c(control_color, mea_color), pd_axes_tmt, "white", 0)
+```
+
+## Difference in Differences {.tabset}
+
+### NAc {.tabset}
+
+```{r 30-NAc_pd_diff2x_tmt, message = FALSE, warning = FALSE}
+NAc_group_diffs2x_tmt_pd <- cbind.data.frame(NAc_group_diffs_tmt_pd$id[1:                                                                             (length(rownames(NAc_group_diffs_tmt_pd))/2)],
+                                        NAc_group_diffs_tmt_pd$group[1:                                                                          (length(rownames(NAc_group_diffs_tmt_pd))/2)],
+                              NAc_group_diffs_tmt_pd$PD_diff[(length(rownames(NAc_group_diffs_tmt_pd))/2)+1:
+                                                               (length(rownames(NAc_group_diffs_tmt_pd))/2)] -
+                                          NAc_group_diffs_tmt_pd$PD_diff[1:                                                                         (length(rownames(NAc_group_diffs_tmt_pd))/2)])
+
+colnames(NAc_group_diffs2x_tmt_pd) <- c("id", "group", "PD_diff")
+
+NAc_group_diffs2x_tmt_pd %>%
+  group_by(group) %>%
+  get_summary_stats(PD_diff, type = "mean_se")
+```
+
+### MeA
+
+```{r 31-MeA_pd_diff2x_tmt, message = FALSE, warning = FALSE, dev = 'pdf'}
+MeA_group_diffs2x_tmt_pd <- cbind.data.frame(MeA_group_diffs_tmt_pd$id[1:                                                                             (length(rownames(MeA_group_diffs_tmt_pd))/2)],
+                                        MeA_group_diffs_tmt_pd$group[1:                                                                          (length(rownames(MeA_group_diffs_tmt_pd))/2)],
+                              MeA_group_diffs_tmt_pd$PD_diff[(length(rownames(MeA_group_diffs_tmt_pd))/2)+1:
+                                                               (length(rownames(MeA_group_diffs_tmt_pd))/2)] -
+                                          MeA_group_diffs_tmt_pd$PD_diff[1:                                                                         (length(rownames(MeA_group_diffs_tmt_pd))/2)])
+
+colnames(MeA_group_diffs2x_tmt_pd) <- c("id", "group", "PD_diff")
+
+MeA_group_diffs2x_tmt_pd %>%
+  group_by(group) %>%
+  get_summary_stats(PD_diff, type = "mean_se")
+```
+
+### T-tests {.tabset}
+
+#### NAc
+
+```{r 32-nac_pd_diff_ttest_2x, message = FALSE, warning = FALSE}
+t.test(x = NAc_group_diffs2x_tmt_pd$PD_diff[NAc_group_diffs2x_tmt_pd$group %in% "Gi"], 
+       y = NAc_group_diffs2x_tmt_pd$PD_diff[NAc_group_diffs2x_tmt_pd$group %in% "mCh"])
+```
+
+#### MeA
+
+```{r 33-MeA_pd_diff_ttest_2x, message = FALSE, warning = FALSE}
+t.test(x = MeA_group_diffs2x_tmt_pd$PD_diff[MeA_group_diffs2x_tmt_pd$group %in% "Gi"], 
+       y = MeA_group_diffs2x_tmt_pd$PD_diff[MeA_group_diffs2x_tmt_pd$group %in% "mCh"])
+```
+
+### Graphs {.tabset}
+
+#### NAc
+
+```{r 34-nac_diff_graph_tmt_pd, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.2, fig.height = 3}
+bg_diff(NAc_group_diffs2x_tmt_pd, "∆ CNO - SAL", nac_color, pd_axes_tmt_diff, tmt_colors)
+```
+
+#### MeA
+
+```{r 35-mea_diff_graph_tmt_pd, message = FALSE, warning = FALSE, dev = 'pdf', fig.width = 1.2, fig.height = 3}
+bg_diff(MeA_group_diffs2x_tmt_pd, "∆ CNO - SAL", mea_color, pd_axes_tmt_diff, tmt_colors)
+```
+
+# Heatmap {.tabset}
+
+Generates a heatmap for each group. Sums all groups together at baseline and at treatment, and applies a gaussian smooth filter to both. It then subtracts the baseline from the treatment to identify the difference between treatment and baseline for all groups. 
+
+## SAL {.tabset}
+
+```{r 36-heatmap_generate_sal, message=FALSE, warning=FALSE}
+heatmap_list_sal <- get_heatmap(data_projection_tmt_sal)
+```
+
+## MeA mCh
+
+```{r 37-heatmap_mea_mch_sal, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_sal$`MeA-control`)
+```
+
+## MeA Gi
+
+```{r 38-heatmap_mea_gi_sal, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_sal$`MeA-Gi`)
+```
+
+## NAc mCh
+
+```{r 39-heatmap_nac_mch_sal, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_sal$`NAc-control`)
+```
+
+## NAc Gi
+
+```{r 40-heatmap_nac_gi_sal, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_sal$`NAc-Gi`)
+```
+
+## CNO {.tabset}
+
+```{r 41-heatmap_generate_cno, message=FALSE, warning=FALSE}
+heatmap_list_cno <- get_heatmap(data_projection_tmt_cno)
+```
+
+## MeA mCh
+
+```{r 42-heatmap_mea_mch_cno, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_cno$`MeA-control`)
+```
+
+## MeA Gi
+
+```{r 43-heatmap_mea_gi_cno, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_cno$`MeA-Gi`)
+```
+
+## NAc mCh
+
+```{r 44-heatmap_nac_mch_cno, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_cno$`NAc-control`)
+```
+
+## NAc Gi
+
+```{r 45-heatmap_nac_gi_cno, message = FALSE, warning = FALSE, fig.height = 4, fig.width = 4, dev = "svg"}
+plot_heatmap(heatmap_array = heatmap_list_cno$`NAc-Gi`)
+```
