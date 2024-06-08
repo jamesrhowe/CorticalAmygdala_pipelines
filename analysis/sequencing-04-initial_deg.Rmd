@@ -1,0 +1,459 @@
+---
+author: "James Howe"
+params:
+  id: "plCoA"
+  input_path: "output/sequencing/03-clusters-RNA/"
+title: "Initial cell type classification: `r params$id`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Introduction
+
+This notebook assigns broad identities based on well-known marker genes, consolidates them into legible identities, and then exports them for subclustering within their broad identities.
+
+```{r setup, message = FALSE, warning = FALSE}
+id <- params$id
+input <- paste0(params$input_path, id, "_all_initial.rds")
+dimn <- params$dimn
+
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
+
+require(Seurat)
+require(tidyverse)
+require(knitr)
+require(EnhancedVolcano)
+require(Libra)
+require(enrichR)
+
+# all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = 'pdf')
+```
+
+## Read in data from step 03
+
+Imports the merged and transformed Seurat object from step 03: initial clustering. This object should contain SCT data, all relevant metadata, and it should be barcode- and feature-filtered already, as well as have clusters assigned.
+
+```{r 1-read_data, message = FALSE, warning = FALSE}
+array <- readRDS(input)
+```
+
+## Find Proportion Expressed Per Gene
+
+```{r 2-percent_expressed, message, FALSE, warning = FALSE}
+pct_expressed_aplCoA <- do.call(cbind.data.frame, 
+                         (lapply(levels(array$Class), 
+                 function(x) rowSums(array@assays$RNA@counts[, array$Class == x & array$Region == "aplCoA"] != 0) 
+                             / length(array$Class[array$Class == x & array$Region == "aplCoA"]))))
+
+pct_expressed_pplCoA <- do.call(cbind.data.frame, 
+                         (lapply(levels(array$Class), 
+                 function(x) rowSums(array@assays$RNA@counts[, array$Class == x & array$Region == "pplCoA"] != 0) 
+                             / length(array$Class[array$Class == x & array$Region == "pplCoA"]))))
+
+pct_expressed <- pmax(pct_expressed_aplCoA, pct_expressed_pplCoA)
+
+colnames(pct_expressed) <- levels(array$Class)
+
+rm(pct_expressed_aplCoA, pct_expressed_pplCoA)
+```
+
+# De Novo Markers {.tabset}
+
+Chooses de novo markers first for individual cell types at the tissue and class level, and also for regions within these cell types. Markers are found using the Seurat FindMarkers algorithm, which uses the Wilcoxon rank-sum test between both groups of cells being compared. Requires at least 3 cells expressing the feature in each group being compared, and sets a lower bound of a fold change of 1.5 and a minimum of 10% of cells in the group expressing the feature, with p-values of 0.01 after adjustment. Region-specific markers are identified using pseudobulk edgeR-LRT testing with batches as replicates and regions as labels within cell types.
+
+```{r 2-find_markers, message = FALSE, warning = FALSE, results = "hide"}
+# find de novo markers, clusters
+marker_tissue <- markers_sc_wilcox(array, "Tissue")
+marker_class <- markers_sc_wilcox(array, "Class")
+
+# find regional markers within cell types
+marker_tissue_region <- markers_pb_edgeRLRT(array, "Tissue", 0.1)
+marker_class_region <- markers_pb_edgeRLRT(array, "Class", 0.1)
+```
+
+# Volcano (region markers) {.tabset}
+
+## Unlabeled {.tabset}
+
+### Tissue {.tabset}
+
+```{r 3-volcano_tissue, message = FALSE, warning = FALSE, results = "hide", fig.height = 6, fig.width = 4}
+src_list <- lapply(levels(as.factor(array$Tissue)), function(tissue) {
+    src <- c(
+        "##### {{tissue}} {.unnumbered}",
+        "```{r volcano-tissue-{{tissue}}, message = FALSE, warning = FALSE, fig.height = 6, fig.width = 4}",
+        "enhanced_volcano_plot(marker_tissue_region${{tissue}}, 
+                               title_id = paste('{{tissue}}'), label_size = 0)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Class {.tabset}
+
+```{r 4-volcano_class, message = FALSE, warning = FALSE, results = "hide", fig.height = 6, fig.width = 4}
+src_list <- lapply(levels(as.factor(array$Class)), function(class) {
+    src <- c(
+        "##### {{class}} {.unnumbered}",
+        "```{r volcano-class-{{class}}, message = FALSE, warning = FALSE, fig.height = 6, fig.width = 4}",
+        "enhanced_volcano_plot(marker_class_region${{class}}, 
+                               title_id = paste('{{class}}'), label_size = 0)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Labeled {.tabset}
+
+### Tissue {.tabset}
+
+```{r 5-volcano_tissue_label, message = FALSE, warning = FALSE, results = "hide", fig.height = 12, fig.width = 12}
+src_list <- lapply(levels(as.factor(array$Tissue)), function(tissue) {
+    src <- c(
+        "##### {{tissue}} {.unnumbered}",
+        "```{r volcano-tissue-{{tissue}}-label, message = FALSE, warning = FALSE, fig.height = 12, fig.width = 12}",
+        "enhanced_volcano_plot(marker_tissue_region${{tissue}}, 
+                               title_id = paste('{{tissue}}'), label_size = 2)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Class {.tabset}
+
+```{r 6-volcano_class_label, message = FALSE, warning = FALSE, results = "hide", fig.height = 12, fig.width = 12}
+src_list <- lapply(levels(as.factor(array$Class)), function(class) {
+    src <- c(
+        "##### {{class}} {.unnumbered}",
+        "```{r volcano-class-{{class}}-label, message = FALSE, warning = FALSE, fig.height = 12, fig.width = 12}",
+        "enhanced_volcano_plot(marker_class_region${{class}}, title_id = paste('{{class}}'), 
+        label_size = 2)",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Cell type marker genes
+
+```{r 7-filter_marker_lists, message = FALSE, warning = FALSE, results = "hide"}
+# region-specific
+marker_tissue_region_aplCoA <- lapply(marker_tissue_region, 
+                                      function(x) {x[x$p_val_adj < .05 & x$avg_logFC > 0.585,]})
+marker_tissue_region_pplCoA <- lapply(marker_tissue_region, 
+                                      function(x) {x[x$p_val_adj < .05 & x$avg_logFC < -0.585,]})
+
+# 1.5-fold difference
+marker_class_region_aplCoA <- lapply(marker_class_region, 
+                              function(x) {x[x$p_val_adj < .05 & x$avg_logFC > 0.585,]})
+marker_class_region_pplCoA <- lapply(marker_class_region, 
+                                       function(x) {x[x$p_val_adj < .05 & x$avg_logFC < -0.585,]})
+
+# based on numbers for max of each one
+deg_range_tissue <- c(0, 450)
+deg_range_class <- c(0, 250)
+```
+
+## Tissue {.tabset}
+
+```{r 8-markers_list_tissue, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_tissue), function(group) {
+    src <- c(
+        "### {{group}} {.unnumbered}",
+        "```{r marker-tissue-{{group}}, message = FALSE, warning = FALSE}",
+        "marker_tissue${{group}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## Class {.tabset}
+
+```{r 9-markers_list_class, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_class), function(group) {
+    src <- c(
+        "### {{group}} {.unnumbered}",
+        "```{r marker-class-{{group}}, message = FALSE, warning = FALSE}",
+        "marker_class${{group}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# Region marker genes {.tabset}
+
+## aplCoA {.tabset}
+
+### Tissue {.tabset}
+
+```{r 10-markers_list_aplCoA_tissue, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_tissue_region_aplCoA), function(tissue) {
+    src <- c(
+        "##### {{tissue}} {.unnumbered}",
+        "```{r marker-tissue-aplCoA-{{tissue}}, message = FALSE, warning = FALSE}",
+        "marker_tissue_region_aplCoA${{tissue}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Class {.tabset}
+
+```{r 11-markers_list_aplCoA_class, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_class_region_aplCoA), function(class) {
+    src <- c(
+        "##### {{class}} {.unnumbered}",
+        "```{r marker-class-aplCoA-{{class}}, message = FALSE, warning = FALSE}",
+        "marker_class_region_aplCoA${{class}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+## pplCoA {.tabset}
+
+### Tissue {.tabset}
+
+```{r 12-markers_list_pplCoA_tissue, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_tissue_region_pplCoA), function(tissue) {
+    src <- c(
+        "##### {{tissue}} {.unnumbered}",
+        "```{r marker-tissue-pplCoA-{{tissue}}, message = FALSE, warning = FALSE}",
+        "marker_tissue_region_pplCoA${{tissue}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+### Class {.tabset}
+
+```{r 13-markers_list_cea_class, message = FALSE, warning = FALSE, results = "hide"}
+src_list <- lapply(names(marker_class_region_pplCoA), function(class) {
+    src <- c(
+        "##### {{class}} {.unnumbered}",
+        "```{r marker-class-pplCoA-{{class}}, message = FALSE, warning = FALSE}",
+        "marker_class_region_pplCoA${{class}}",  
+        "```",
+        ""
+    )
+    knit_expand(text = src)
+})
+out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
+```
+
+`r out`
+
+# DEG Abundance
+
+## Region-specific {.tabset}
+
+### Tissue {.tabset}
+
+#### All DEGs {.tabset}
+
+##### aplCoA
+
+```{r 14-deg_abundance_tissue_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
+deg_abundance_plot(marker_tissue_region_aplCoA, rep(region_colors[1], times = length(levels(array$Tissue))),
+                   array$Tissue, deg_range_tissue)
+```
+
+##### pplCoA
+
+```{r 15-deg_abundance_tissue_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
+deg_abundance_plot(marker_tissue_region_pplCoA, rep(region_colors[2], times = length(levels(array$Tissue))),
+                   array$Tissue, deg_range_tissue)
+```
+
+#### Magnitude-based DEGs {.tabset}
+
+##### aplCoA
+
+```{r 16-deg_abundance_magnitude_tissue_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
+deg_abundance_plot_magnitude(marker_tissue_region_aplCoA, deg_intensity_colors_aplCoA, deg_range_tissue, "aplCoA")
+```
+
+##### pplCoA
+
+```{r 17-deg_abundance_magnitude_tissue_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
+deg_abundance_plot_magnitude(marker_tissue_region_pplCoA, deg_intensity_colors_pplCoA, deg_range_tissue, "pplCoA")
+```
+
+### Class {.tabset}
+
+#### All DEGs {.tabset}
+
+##### aplCoA
+
+```{r 18-deg_abundance_class_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
+deg_abundance_plot(marker_class_region_aplCoA, rep(region_colors[1], times = length(levels(array$Class))),
+                   array$Class, deg_range_class)
+```
+
+##### pplCoA
+
+```{r 19-deg_abundance_class_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
+deg_abundance_plot(marker_class_region_pplCoA, rep(region_colors[2], times = length(levels(array$Class))),
+                   array$Class, deg_range_class)
+```
+
+#### Magnitude-based DEGs {.tabset}
+
+##### aplCoA
+
+```{r 20-deg_abundance_magnitude_class_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
+deg_abundance_plot_magnitude(marker_class_region_aplCoA, deg_intensity_colors_aplCoA, deg_range_class, "aplCoA")
+```
+
+##### pplCoA
+
+```{r 21-deg_abundance_magnitude_class_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
+deg_abundance_plot_magnitude(marker_class_region_pplCoA, deg_intensity_colors_pplCoA, deg_range_class, "pplCoA")
+```
+
+# enrichR {.tabset}
+
+```{r 22-start_enrichR, message = FALSE, warning = FALSE}
+dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018", "KEGG_2016")
+```
+
+## Type {.tabset}
+
+### Tissue
+
+```{r 23-run_enrichR-tissue, message = FALSE, warning = FALSE, results = 'hide'}
+enrichr_tissue <- marker_tissue
+
+for (i in 1:length(enrichr_tissue)){
+  enrichr_tissue[[i]] <- enrichr(marker_tissue[[i]]$gene, databases = dbs) 
+}
+```
+
+### Class
+
+```{r 24-run_enrichR-class, message = FALSE, warning = FALSE, results = 'hide'}
+enrichr_class <- marker_class
+
+for (i in 1:length(enrichr_class)){
+  enrichr_class[[i]] <- enrichr(marker_class[[i]]$gene, databases = dbs) 
+}
+```
+
+## Region {.tabset}
+
+### Tissue
+
+```{r 25-run_enrichR-region-tissue, message = FALSE, warning = FALSE, results = 'hide'}
+enrichr_region_tissue <- list(marker_tissue_region_aplCoA, marker_tissue_region_pplCoA)
+
+enrichr_region_tissue[[1]] <- lapply(marker_tissue_region_aplCoA, function(x) enrichr(rownames(x), databases = dbs))
+enrichr_region_tissue[[2]] <- lapply(marker_tissue_region_pplCoA, function(x) enrichr(rownames(x), databases = dbs))
+                              
+names(enrichr_region_tissue) <- c("aplCoA", "pplCoA")
+```
+
+### Class
+
+```{r 26-run_enrichR-region-class, message = FALSE, warning = FALSE, results = 'hide'}
+enrichr_region <- list(marker_class_region_aplCoA, marker_class_region_aplCoA)
+
+enrichr_region[[1]] <- lapply(marker_class_region_aplCoA, function(x) enrichr(rownames(x), databases = dbs))
+enrichr_region[[2]] <- lapply(marker_class_region_pplCoA, function(x) enrichr(rownames(x), databases = dbs))
+                              
+names(enrichr_region) <- c("aplCoA", "pplCoA")
+```
+
+# Save gene lists
+
+Save the gene lists produced by identifying DEGs from each method.
+
+```{r 27-save_matrices, message = FALSE, warning = FALSE}
+# need to loop separately due to subsetting quirks
+
+# save marker lists
+for (i in 1:length(names(marker_tissue))){
+  write.csv(marker_tissue[[i]], 
+            file = paste0("output/sequencing/marker_lists/cell_type/", names(marker_tissue)[i], ".csv"))
+}
+
+for (i in 1:length(names(marker_class))){
+  write.csv(marker_class[[i]], 
+            file = paste0("output/sequencing/marker_lists/cell_type/", names(marker_class)[i], ".csv"))
+}
+
+# save the overgroups/tissues
+for (i in 1:length(names(marker_tissue_region_aplCoA))){
+    write.csv(marker_tissue_region_aplCoA[[i]], 
+              file = paste0("output/sequencing/marker_lists/region_in_celltype/", 
+                            names(marker_tissue_region_aplCoA)[i], "_aplCoA.csv")) 
+}
+
+for (i in 1:length(names(marker_tissue_region_pplCoA))){
+  for (j in 1:length(names(marker_tissue_region_pplCoA[[i]]))){
+    write.csv(marker_tissue_region_pplCoA[[i]], 
+              file = paste0("output/sequencing/marker_lists/region_in_celltype/", 
+                            names(marker_tissue_region_pplCoA)[i], "_pplCoA.csv"))
+  }
+}
+
+# save the subgroups/classes
+for (i in 1:length(names(marker_class_region_aplCoA))){
+    write.csv(marker_class_region_aplCoA[[i]], 
+              file = paste0("output/sequencing/marker_lists/region_in_celltype/", 
+                            names(marker_class_region_aplCoA)[i], "_aplCoA.csv")) 
+}
+
+for (i in 1:length(names(marker_class_region_pplCoA))){
+  for (j in 1:length(names(marker_class_region_pplCoA[[i]]))){
+    write.csv(marker_class_region_pplCoA[[i]], 
+              file = paste0("output/sequencing/marker_lists/region_in_celltype/", 
+                            names(marker_class_region_pplCoA)[i], "_pplCoA.csv"))
+  }
+}
+```
