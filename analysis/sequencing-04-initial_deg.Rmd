@@ -155,9 +155,43 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 `r out`
 
+```{r 7-glut-volcano-pub, message = FALSE, warning = FALSE, results = "hide", fig.height = 6, fig.width = 4}
+EnhancedVolcano(marker_class_region$Glutamatergic,  
+                title = "Glutamatergic",
+                subtitle = 'P-value < .01, Magnitude change > log2(0.585)-fold (1.5 or 50%)',
+                pointSize = 1.5,
+                labSize = 0,
+                lab = rownames(marker_class_region$Glutamatergic),
+                pCutoff = 1e-02,
+                FCcutoff = 0.585,
+                x = 'avg_logFC',
+                y = 'p_val_adj',
+                xlim = c(-6, 6),
+                ylim = c(0, 20),
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE)
+```
+
+```{r 8-gaba-volcano-pub, message = FALSE, warning = FALSE, results = "hide", fig.height = 6, fig.width = 4}
+EnhancedVolcano(marker_class_region$GABAergic,  
+                title = "GABAergic",
+                subtitle = 'P-value < .01, Magnitude change > log2(0.585)-fold (1.5 or 50%)',
+                pointSize = 1.5,
+                labSize = 0,
+                lab = rownames(marker_class_region$GABAergic),
+                pCutoff = 1e-02,
+                FCcutoff = 0.585,
+                x = 'avg_logFC',
+                y = 'p_val_adj',
+                xlim = c(-6, 6),
+                ylim = c(0, 20),
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE)
+```
+
 # Cell type marker genes
 
-```{r 7-filter_marker_lists, message = FALSE, warning = FALSE, results = "hide"}
+```{r 9-filter_marker_lists, message = FALSE, warning = FALSE, results = "hide"}
 # region-specific
 marker_tissue_region_aplCoA <- lapply(marker_tissue_region, 
                                       function(x) {x[x$p_val_adj < .05 & x$avg_logFC > 0.585,]})
@@ -177,7 +211,7 @@ deg_range_class <- c(0, 250)
 
 ## Tissue {.tabset}
 
-```{r 8-markers_list_tissue, message = FALSE, warning = FALSE, results = "hide"}
+```{r 10-markers_list_tissue, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(names(marker_tissue), function(group) {
     src <- c(
         "### {{group}} {.unnumbered}",
@@ -195,7 +229,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ## Class {.tabset}
 
-```{r 9-markers_list_class, message = FALSE, warning = FALSE, results = "hide"}
+```{r 11-markers_list_class, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(names(marker_class), function(group) {
     src <- c(
         "### {{group}} {.unnumbered}",
@@ -217,7 +251,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Tissue {.tabset}
 
-```{r 10-markers_list_aplCoA_tissue, message = FALSE, warning = FALSE, results = "hide"}
+```{r 12-markers_list_aplCoA_tissue, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(names(marker_tissue_region_aplCoA), function(tissue) {
     src <- c(
         "##### {{tissue}} {.unnumbered}",
@@ -235,7 +269,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Class {.tabset}
 
-```{r 11-markers_list_aplCoA_class, message = FALSE, warning = FALSE, results = "hide"}
+```{r 13-markers_list_aplCoA_class, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(names(marker_class_region_aplCoA), function(class) {
     src <- c(
         "##### {{class}} {.unnumbered}",
@@ -255,7 +289,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Tissue {.tabset}
 
-```{r 12-markers_list_pplCoA_tissue, message = FALSE, warning = FALSE, results = "hide"}
+```{r 14-markers_list_pplCoA_tissue, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(names(marker_tissue_region_pplCoA), function(tissue) {
     src <- c(
         "##### {{tissue}} {.unnumbered}",
@@ -273,7 +307,7 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ### Class {.tabset}
 
-```{r 13-markers_list_cea_class, message = FALSE, warning = FALSE, results = "hide"}
+```{r 15-markers_list_cea_class, message = FALSE, warning = FALSE, results = "hide"}
 src_list <- lapply(names(marker_class_region_pplCoA), function(class) {
     src <- c(
         "##### {{class}} {.unnumbered}",
@@ -299,14 +333,14 @@ out <- knit_child(text = unlist(src_list), options = list(cache = FALSE))
 
 ##### aplCoA
 
-```{r 14-deg_abundance_tissue_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
+```{r 16-deg_abundance_tissue_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
 deg_abundance_plot(marker_tissue_region_aplCoA, rep(region_colors[1], times = length(levels(array$Tissue))),
                    array$Tissue, deg_range_tissue)
 ```
 
 ##### pplCoA
 
-```{r 15-deg_abundance_tissue_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
+```{r 17-deg_abundance_tissue_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
 deg_abundance_plot(marker_tissue_region_pplCoA, rep(region_colors[2], times = length(levels(array$Tissue))),
                    array$Tissue, deg_range_tissue)
 ```
@@ -315,13 +349,13 @@ deg_abundance_plot(marker_tissue_region_pplCoA, rep(region_colors[2], times = le
 
 ##### aplCoA
 
-```{r 16-deg_abundance_magnitude_tissue_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
+```{r 18-deg_abundance_magnitude_tissue_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
 deg_abundance_plot_magnitude(marker_tissue_region_aplCoA, deg_intensity_colors_aplCoA, deg_range_tissue, "aplCoA")
 ```
 
 ##### pplCoA
 
-```{r 17-deg_abundance_magnitude_tissue_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
+```{r 19-deg_abundance_magnitude_tissue_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 4, fig.width = 1}
 deg_abundance_plot_magnitude(marker_tissue_region_pplCoA, deg_intensity_colors_pplCoA, deg_range_tissue, "pplCoA")
 ```
 
@@ -331,14 +365,14 @@ deg_abundance_plot_magnitude(marker_tissue_region_pplCoA, deg_intensity_colors_p
 
 ##### aplCoA
 
-```{r 18-deg_abundance_class_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
+```{r 20-deg_abundance_class_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
 deg_abundance_plot(marker_class_region_aplCoA, rep(region_colors[1], times = length(levels(array$Class))),
                    array$Class, deg_range_class)
 ```
 
 ##### pplCoA
 
-```{r 19-deg_abundance_class_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
+```{r 21-deg_abundance_class_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
 deg_abundance_plot(marker_class_region_pplCoA, rep(region_colors[2], times = length(levels(array$Class))),
                    array$Class, deg_range_class)
 ```
@@ -347,19 +381,19 @@ deg_abundance_plot(marker_class_region_pplCoA, rep(region_colors[2], times = len
 
 ##### aplCoA
 
-```{r 20-deg_abundance_magnitude_class_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
+```{r 22-deg_abundance_magnitude_class_aplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
 deg_abundance_plot_magnitude(marker_class_region_aplCoA, deg_intensity_colors_aplCoA, deg_range_class, "aplCoA")
 ```
 
 ##### pplCoA
 
-```{r 21-deg_abundance_magnitude_class_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
+```{r 23-deg_abundance_magnitude_class_pplCoA, message = FALSE, warning = FALSE, results = "hide", fig.height = 2, fig.width = 3.5}
 deg_abundance_plot_magnitude(marker_class_region_pplCoA, deg_intensity_colors_pplCoA, deg_range_class, "pplCoA")
 ```
 
 # enrichR {.tabset}
 
-```{r 22-start_enrichR, message = FALSE, warning = FALSE}
+```{r 24-start_enrichR, message = FALSE, warning = FALSE}
 dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018", "KEGG_2016")
 ```
 
@@ -367,7 +401,7 @@ dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biologi
 
 ### Tissue
 
-```{r 23-run_enrichR-tissue, message = FALSE, warning = FALSE, results = 'hide'}
+```{r 25-run_enrichR-tissue, message = FALSE, warning = FALSE, results = 'hide'}
 enrichr_tissue <- marker_tissue
 
 for (i in 1:length(enrichr_tissue)){
@@ -377,7 +411,7 @@ for (i in 1:length(enrichr_tissue)){
 
 ### Class
 
-```{r 24-run_enrichR-class, message = FALSE, warning = FALSE, results = 'hide'}
+```{r 26-run_enrichR-class, message = FALSE, warning = FALSE, results = 'hide'}
 enrichr_class <- marker_class
 
 for (i in 1:length(enrichr_class)){
@@ -389,7 +423,7 @@ for (i in 1:length(enrichr_class)){
 
 ### Tissue
 
-```{r 25-run_enrichR-region-tissue, message = FALSE, warning = FALSE, results = 'hide'}
+```{r 27-run_enrichR-region-tissue, message = FALSE, warning = FALSE, results = 'hide'}
 enrichr_region_tissue <- list(marker_tissue_region_aplCoA, marker_tissue_region_pplCoA)
 
 enrichr_region_tissue[[1]] <- lapply(marker_tissue_region_aplCoA, function(x) enrichr(rownames(x), databases = dbs))
@@ -400,7 +434,7 @@ names(enrichr_region_tissue) <- c("aplCoA", "pplCoA")
 
 ### Class
 
-```{r 26-run_enrichR-region-class, message = FALSE, warning = FALSE, results = 'hide'}
+```{r 28-run_enrichR-region-class, message = FALSE, warning = FALSE, results = 'hide'}
 enrichr_region <- list(marker_class_region_aplCoA, marker_class_region_aplCoA)
 
 enrichr_region[[1]] <- lapply(marker_class_region_aplCoA, function(x) enrichr(rownames(x), databases = dbs))
@@ -413,7 +447,7 @@ names(enrichr_region) <- c("aplCoA", "pplCoA")
 
 Save the gene lists produced by identifying DEGs from each method.
 
-```{r 27-save_matrices, message = FALSE, warning = FALSE}
+```{r 29-save_matrices, message = FALSE, warning = FALSE}
 # need to loop separately due to subsetting quirks
 
 # save marker lists

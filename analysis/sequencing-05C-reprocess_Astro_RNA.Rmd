@@ -2,7 +2,7 @@
 author: "James Howe"
 params:
   id: "plCoA"
-  class: "Glut"
+  class: "Astro"
   input_path: "output/sequencing/04-subcluster_datasets-RNA/"
   output_path: "output/sequencing/03-processed_datasets-RNA/"
 title: "Transform subclustered datasets (final): `r params$id` `r params$class`"
@@ -19,9 +19,9 @@ input <- params$input_path
 output <- params$output_path
 cell_class <- params$class
 
-source("code/sequencing_misc.R")
-source("code/sequencing-color_scales.R")
-source("code/sequencing-plot_functions.R")
+source("../code/sequencing_misc.R")
+source("../code/sequencing-color_scales.R")
+source("../code/sequencing-plot_functions.R")
 
 require(tidyverse)
 require(Seurat)
@@ -229,9 +229,6 @@ cat(paste0("First 50 PCs explain ", round(plot_var_array$Cumulative_variance[50]
 
 ```{r 15-elbow, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 16}
 pc_info <- find_optimum_pcs(array)
-pc_info$`Diff<0.1` <- 14
-pc_info$Optimal_PCs <- 14 
-# algorithm finds one low drop at 11, but has another after, ends up artificially reducing dimensions taken
 
 improved_elbow_plot(pc_info)
 ```
