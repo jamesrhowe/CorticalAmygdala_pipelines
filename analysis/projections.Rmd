@@ -9,12 +9,12 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
 
 ```{r setup}
-source("code/behavior-refs.R")
-source("code/behavior-misc_processes.R")
-source("code/behavior-plot_functions.R")
-source("code/sequencing_misc.R")
-source("code/sequencing-color_scales.R")
-source("code/sequencing-plot_functions.R")
+source("../code/behavior-refs.R")
+source("../code/behavior-misc_processes.R")
+source("../code/behavior-plot_functions.R")
+source("../code/sequencing_misc.R")
+source("../code/sequencing-color_scales.R")
+source("../code/sequencing-plot_functions.R")
 
 require(ggtree)
 require(pvclust)
@@ -54,8 +54,7 @@ ggplot(retro_mea_nac[retro_mea_nac$group == "MeA",], aes(x = ap_location, y = nu
   scale_x_reverse(limits = c(-1.29, -2.51), expand = c(0, 0)) +
   scale_y_continuous(limits = c(0, 202)) +
   ylab("Labeled Cells") + xlab("AP location (mm from bregma)") +
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
-        axis.text.x = element_text(colour = "black"), axis.text.y = element_text(colour = "black"),
+  theme(axis.text.x = element_text(colour = "black"), axis.text.y = element_text(colour = "black"),
         legend.position = "none", legend.title = element_blank())
 ```
 
@@ -71,8 +70,7 @@ ggplot(retro_mea_nac[retro_mea_nac$group == "NAc",], aes(x = ap_location, y = nu
   scale_x_reverse(limits = c(-1.29, -2.51), expand = c(0, 0)) +
   scale_y_continuous(limits = c(0, 120)) +
   ylab("Labeled Cells") + xlab("AP location (mm from bregma)") +
-  theme(axis.ticks.x = element_blank(), axis.ticks.y = element_blank(),
-        axis.text.x = element_text(colour = "black"), axis.text.y = element_text(colour = "black"),
+  theme(axis.text.x = element_text(colour = "black"), axis.text.y = element_text(colour = "black"),
         legend.position = "none", legend.title = element_blank())
 ```
 
@@ -139,7 +137,7 @@ percent_retro %>% tukey_hsd(value ~ name * group, paired = FALSE,
 
 #### Plot
 
-```{r 8-retro_proportion_plot, message = FALSE, warning = FALSE, fig.height = 2.6, fig.width = 2}
+```{r 8-retro_proportion_plot, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 2}
 # remove middle for graphing
 percent_retro <- percent_retro[percent_retro$name != "mplCoA",]
 
@@ -460,6 +458,7 @@ ggplot(data = norm_anterograde_syp, aes(x = region, y = value)) +
                 width = .3, position = position_dodge(width = 0.9)) +
   ylab("SypEGFP Fiber Density (a.u.)") +
   xlab("") +
+  scale_x_reverse() +
   scale_y_continuous(expand = c(0, 0)) +
   coord_cartesian(ylim = c(0, 5)) +
   theme_classic() +
@@ -522,7 +521,7 @@ ggplot(anterograde_2coa, aes(x = group, y = value, fill = name)) +
 
 ## Everywhere else fluorescence
 
-```{r 25-brain_2color, message = FALSE, warning = FALSE, fig.height = 2.6, fig.width = 2}
+```{r 25-brain_2color, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 2}
 # set up the object with pointers
 anterograde_2noncoa <- anterograde_2c[, colnames(anterograde_2c) %in% 
                                         c("group", "MeA", "Nac")]
@@ -600,7 +599,7 @@ colnames(summary_anterograde_cre_nonamy) <- c("group", "name", "value", "sem")
 anterograde_cre_nonamy <- anterograde_cre_nonamy %>% pivot_longer(!group)
 ```
 
-```{r 27-nacmea_solo, message = FALSE, warning = FALSE, fig.height = 3.2, fig.width = 2.6}
+```{r 27-nacmea_solo, message = FALSE, warning = FALSE, fig.height = 2.5, fig.width = 2.6}
 ggplot(anterograde_cre_nonamy[anterograde_cre_nonamy$name %in% c("Nac", "MeA"),], aes(x = name, y = value, group = group, colour = group)) +
   geom_bar(stat = "summary", width = 0.7, position = position_dodge(width=0.8), fill = NA) +
   geom_errorbar(aes(ymin = value - sem, ymax = value + sem), 
@@ -619,7 +618,7 @@ ggplot(anterograde_cre_nonamy[anterograde_cre_nonamy$name %in% c("Nac", "MeA"),]
           strip.background = element_blank())
 ```
 
-```{r 28-vg1vg2_solo, message = FALSE, warning = FALSE, fig.height = 3.2, fig.width = 2.6}
+```{r 28-vg1vg2_solo, message = FALSE, warning = FALSE, fig.height = 2.5, fig.width = 2.6}
 ggplot(anterograde_cre_nonamy[anterograde_cre_nonamy$name %in% c("Nac", "MeA"),], aes(x = group, y = value, group = name, colour = name)) +
   geom_bar(stat = "summary", width = 0.7, position = position_dodge(width=0.8), fill = NA) +
   geom_errorbar(aes(ymin = value - sem, ymax = value + sem), 
@@ -654,14 +653,4 @@ t.test(x = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == 
 
 t.test(x = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == "Nac"],
        y = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == "MeA"])
-```
-
-# Correlations {.tabset}
-
-## SypEGFP {.tabset}
-
-
-
-```{r 30-correlation_anterograde_sypegfp, message = FALSE, warning = FALSE}
-
 ```
