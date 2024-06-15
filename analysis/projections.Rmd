@@ -9,12 +9,12 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
 
 ```{r setup}
-source("../code/behavior-refs.R")
-source("../code/behavior-misc_processes.R")
-source("../code/behavior-plot_functions.R")
-source("../code/sequencing_misc.R")
-source("../code/sequencing-color_scales.R")
-source("../code/sequencing-plot_functions.R")
+source("code/behavior-refs.R")
+source("code/behavior-misc_processes.R")
+source("code/behavior-plot_functions.R")
+source("code/sequencing_misc.R")
+source("code/sequencing-color_scales.R")
+source("code/sequencing-plot_functions.R")
 
 require(ggtree)
 require(pvclust)
