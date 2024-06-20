@@ -9,12 +9,12 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 This is a notebook that processes 4-quad data and outputs analyses and figures for publication. 
 
 ```{r setup}
-source("code/behavior-refs.R")
-source("code/behavior-misc_processes.R")
-source("code/behavior-plot_functions.R")
-source("code/sequencing_misc.R")
-source("code/sequencing-color_scales.R")
-source("code/sequencing-plot_functions.R")
+source("../code/behavior-refs.R")
+source("../code/behavior-misc_processes.R")
+source("../code/behavior-plot_functions.R")
+source("../code/sequencing_misc.R")
+source("../code/sequencing-color_scales.R")
+source("../code/sequencing-plot_functions.R")
 
 require(ggtree)
 require(pvclust)
@@ -567,6 +567,35 @@ ggplot(anterograde_2noncoa, aes(x = name, y = value, group = group, colour = gro
           axis.text.x = element_text(colour = "black"),
           axis.text.y = element_text(colour = "black"),
           strip.background = element_blank())
+```
+
+#### Two-way ANOVA {.tabset}
+
+##### ANOVA
+
+```{r 17-collateralization_anova, message = FALSE, warning = FALSE}
+anterograde_2noncoa <- cbind.data.frame(anterograde_2noncoa, c(1,2,3,4,5,6,7,8,9))
+colnames(anterograde_2noncoa)[4] <- "id"
+
+proportion_anova <- anova_test(data = anterograde_2noncoa,
+                               dv = value,
+                               wid = id,
+                               between = group,
+                               within = name)
+
+proportion_anova$ANOVA
+
+proportion_anova
+```
+
+##### Pairwise comparisons
+
+```{r 18-collateralization_pairwise, message = FALSE, warning = FALSE}
+pairwise_group_anova <- ant_col_mea_nac %>%
+    tukey_hsd(density ~ region * retroaav_site, paired = FALSE,
+              p.adjust.method = "bonferroni")
+  
+pairwise_group_anova
 ```
 
 # Two color anterograde projection mapping
