@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Howe" />
+
+
+<title>Fluorescence projections analysis</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">CorticalAmygdala_pipelines</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Fluorescence projections analysis</h1>
+<h4 class="author">James Howe</h4>
+<h4 class="date">11 June, 2024</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-06-11
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>CorticalAmygdala_pipelines/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted
+changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown file has unstaged changes. To know which version of
+the R Markdown file created these results, you’ll want to first commit
+it to the Git repo. If you’re still working on the analysis, you can
+ignore this warning. When you’re finished, you can run
+<code>wflow_publish</code> to commit the R Markdown file and build the
+HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20220906code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20220906)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20220906code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20220906)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree60d6a1714f013f17dc9be23006d8d01d726e2e0etargetblank60d6a17a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/60d6a1714f013f17dc9be23006d8d01d726e2e0e" target="_blank">60d6a17</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomjamesrhoweCorticalAmygdalapipelinestree60d6a1714f013f17dc9be23006d8d01d726e2e0etargetblank60d6a17a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/tree/60d6a1714f013f17dc9be23006d8d01d726e2e0e" target="_blank">60d6a17</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .RData
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/behavior/
+    Ignored:    data/projections/
+    Ignored:    data/rnascope/
+    Ignored:    data/sequencing/
+    Ignored:    imaging_code/.DS_Store
+    Ignored:    imaging_code/data/
+    Ignored:    output/.DS_Store
+    Ignored:    renv/library/
+    Ignored:    renv/staging/
+
+Untracked files:
+    Untracked:  analysis/sequencing-07A-preprocess_aplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07B-preprocess_aplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07C-preprocess_aplCoA-2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07D-preprocess_pplCoA-1_P1_ATAC.Rmd
+    Untracked:  analysis/sequencing-07E-preprocess_pplCoA-1_P2_ATAC.Rmd
+    Untracked:  analysis/sequencing-07F-preprocess_pplCoA-2_ATAC.Rmd
+    Untracked:  analysis/sequencing-08-merge_ATAC.Rmd
+    Untracked:  analysis/sequencing-08A-merge_peaks_ATAC.Rmd
+    Untracked:  analysis/sequencing-09A-initial_classification_ATAC.Rmd
+    Untracked:  analysis/sequencing-10A-reprocess_ATAC_Neuron.Rmd
+    Untracked:  analysis/sequencing-10B-reprocess_ATAC_Nonneuron.Rmd
+    Untracked:  analysis/sequencing-10C-Neuron_classification_ATAC.Rmd
+    Untracked:  analysis/sequencing-10D-Nonneuron_classification_ATAC.Rmd
+    Untracked:  analysis/sequencing-11A-reprocess_ATAC_Glut.Rmd
+    Untracked:  analysis/sequencing-11B-reprocess_ATAC_GABA.Rmd
+    Untracked:  analysis/sequencing-11C-reprocess_ATAC_Astro.Rmd
+    Untracked:  analysis/sequencing-11D-reprocess_ATAC_Micro.Rmd
+    Untracked:  analysis/sequencing-11E-reprocess_ATAC_Macro.Rmd
+    Untracked:  analysis/sequencing-11F-reprocess_ATAC_OPC.Rmd
+    Untracked:  analysis/sequencing-11G-reprocess_ATAC_NFOL.Rmd
+    Untracked:  analysis/sequencing-11H-reprocess_ATAC_MOL.Rmd
+    Untracked:  analysis/sequencing-11I-reprocess_ATAC_Mural.Rmd
+    Untracked:  analysis/sequencing-11J-reprocess_ATAC_ABC.Rmd
+    Untracked:  analysis/sequencing-11K-reprocess_ATAC_VLMC.Rmd
+    Untracked:  output/sequencing/
+    Untracked:  output/spatial/
+
+Unstaged changes:
+    Modified:   analysis/projections.Rmd
+    Modified:   code/sequencing-color_scales.R
+    Modified:   code/sequencing-plot_functions.R
+    Modified:   code/sequencing_misc.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/projections.Rmd</code>) and HTML
+(<code>docs/projections.html</code>) files. If you’ve configured a
+remote Git repository (see <code>?wflow_git_remote</code>), click on the
+hyperlinks in the table below to view the files as they were in that
+past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/jamesrhowe/CorticalAmygdala_pipelines/blob/07e9eedb1626117f396286fba28dfc36886ae320/analysis/projections.Rmd" target="_blank">07e9eed</a>
+</td>
+<td>
+jamesrhowe
+</td>
+<td>
+2024-02-21
+</td>
+<td>
+Added projection information.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This is a notebook that processes 4-quad data and outputs analyses
+and figures for publication.</p>
+<pre class="r"><code>source(&quot;code/behavior-refs.R&quot;)</code></pre>
+<pre><code>Loading required package: MASS</code></pre>
+<pre><code>Loading required package: tidyverse</code></pre>
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+✖ dplyr::select() masks MASS::select()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+Loading required package: colorRamps
+
+Loading required package: RColorBrewer
+
+Loading required package: spatstat
+
+Loading required package: spatstat.data
+
+Loading required package: spatstat.geom
+
+spatstat.geom 3.2-8
+
+
+Attaching package: &#39;spatstat.geom&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    area
+
+
+Loading required package: spatstat.random
+
+spatstat.random 3.2-2
+
+Loading required package: spatstat.explore
+
+Loading required package: nlme
+
+
+Attaching package: &#39;nlme&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    collapse
+
+
+spatstat.explore 3.2-6
+
+Loading required package: spatstat.model
+
+Loading required package: rpart
+
+spatstat.model 3.2-10
+
+Loading required package: spatstat.linnet
+
+spatstat.linnet 3.1-4
+
+
+spatstat 3.0-7 
+For an introduction to spatstat, type &#39;beginner&#39; 
+
+
+Loading required package: viridis
+
+Loading required package: viridisLite
+
+Loading required package: cowplot
+
+
+Attaching package: &#39;cowplot&#39;
+
+
+The following object is masked from &#39;package:lubridate&#39;:
+
+    stamp
+
+
+Loading required package: grid
+
+
+Attaching package: &#39;grid&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    as.mask
+
+
+Loading required package: gridExtra
+
+
+Attaching package: &#39;gridExtra&#39;
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    combine
+
+
+Loading required package: colorspace
+
+
+Attaching package: &#39;colorspace&#39;
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    coords
+
+
+Loading required package: scales
+
+
+Attaching package: &#39;scales&#39;
+
+
+The following object is masked from &#39;package:viridis&#39;:
+
+    viridis_pal
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    rescale
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    discard
+
+
+The following object is masked from &#39;package:readr&#39;:
+
+    col_factor
+
+
+
+Attaching package: &#39;zoo&#39;
+
+
+The following objects are masked from &#39;package:base&#39;:
+
+    as.Date, as.Date.numeric
+
+
+Loading required package: carData
+
+
+Attaching package: &#39;car&#39;
+
+
+The following object is masked from &#39;package:spatstat.model&#39;:
+
+    bc
+
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    ellipse
+
+
+The following object is masked from &#39;package:dplyr&#39;:
+
+    recode
+
+
+The following object is masked from &#39;package:purrr&#39;:
+
+    some
+
+
+Loading required package: mvtnorm
+
+Loading required package: survival
+
+Loading required package: TH.data
+
+
+Attaching package: &#39;TH.data&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    geyser
+
+
+
+Attaching package: &#39;rstatix&#39;
+
+
+The following object is masked from &#39;package:MASS&#39;:
+
+    select
+
+
+The following object is masked from &#39;package:stats&#39;:
+
+    filter
+
+
+
+Attaching package: &#39;ggpubr&#39;
+
+
+The following object is masked from &#39;package:cowplot&#39;:
+
+    get_legend
+
+
+The following objects are masked from &#39;package:spatstat.geom&#39;:
+
+    border, rotate</code></pre>
+<pre class="r"><code>source(&quot;code/behavior-misc_processes.R&quot;)
+source(&quot;code/behavior-plot_functions.R&quot;)
+source(&quot;code/sequencing_misc.R&quot;)
+source(&quot;code/sequencing-color_scales.R&quot;)</code></pre>
+<pre><code>Loading required package: jamba
+
+Attaching package: &#39;jamba&#39;
+
+The following object is masked from &#39;package:scales&#39;:
+
+    col2hcl</code></pre>
+<pre class="r"><code>source(&quot;code/sequencing-plot_functions.R&quot;)
+
+require(ggtree)</code></pre>
+<pre><code>Loading required package: ggtree</code></pre>
+<pre><code>Warning: package &#39;ggtree&#39; was built under R version 4.3.2</code></pre>
+<pre><code>ggtree v3.10.0 For help: https://yulab-smu.top/treedata-book/
+
+If you use the ggtree package suite in published research, please cite
+the appropriate paper(s):
+
+Guangchuang Yu, David Smith, Huachen Zhu, Yi Guan, Tommy Tsan-Yuk Lam.
+ggtree: an R package for visualization and annotation of phylogenetic
+trees with their covariates and other associated data. Methods in
+Ecology and Evolution. 2017, 8(1):28-36. doi:10.1111/2041-210X.12628
+
+LG Wang, TTY Lam, S Xu, Z Dai, L Zhou, T Feng, P Guo, CW Dunn, BR
+Jones, T Bradley, H Zhu, Y Guan, Y Jiang, G Yu. treeio: an R package
+for phylogenetic tree input and output with richly annotated and
+associated data. Molecular Biology and Evolution. 2020, 37(2):599-603.
+doi: 10.1093/molbev/msz240
+
+G Yu. Data Integration, Manipulation and Visualization of Phylogenetic
+Trees (1st ed.). Chapman and Hall/CRC. 2022. ISBN: 9781032233574
+
+Attaching package: &#39;ggtree&#39;
+
+The following object is masked from &#39;package:ggpubr&#39;:
+
+    rotate
+
+The following object is masked from &#39;package:nlme&#39;:
+
+    collapse
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    rotate
+
+The following object is masked from &#39;package:tidyr&#39;:
+
+    expand</code></pre>
+<pre class="r"><code>require(pvclust)</code></pre>
+<pre><code>Loading required package: pvclust</code></pre>
+<pre class="r"><code>require(dendextend)</code></pre>
+<pre><code>Loading required package: dendextend
+Registered S3 method overwritten by &#39;dendextend&#39;:
+  method       from   
+  text.pvclust pvclust
+
+---------------------
+Welcome to dendextend version 1.17.1
+Type citation(&#39;dendextend&#39;) for how to cite the package.
+
+Type browseVignettes(package = &#39;dendextend&#39;) for the package vignette.
+The github page is: https://github.com/talgalili/dendextend/
+
+Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues
+You may ask questions at stackoverflow, use the r and dendextend tags: 
+     https://stackoverflow.com/questions/tagged/dendextend
+
+    To suppress this message use:  suppressPackageStartupMessages(library(dendextend))
+---------------------
+
+
+Attaching package: &#39;dendextend&#39;
+
+The following object is masked from &#39;package:ggtree&#39;:
+
+    rotate
+
+The following object is masked from &#39;package:ggpubr&#39;:
+
+    rotate
+
+The following object is masked from &#39;package:rpart&#39;:
+
+    prune
+
+The following object is masked from &#39;package:spatstat.geom&#39;:
+
+    rotate
+
+The following object is masked from &#39;package:stats&#39;:
+
+    cutree</code></pre>
+<pre class="r"><code>require(heatmap3)</code></pre>
+<pre><code>Loading required package: heatmap3</code></pre>
+<pre class="r"><code># all images are PDFs, avoids pixelation
+knitr::opts_chunk$set(dev = &#39;pdf&#39;)</code></pre>
+</div>
+<div id="topographic-mea-and-nac" class="section level1">
+<h1>Topographic MeA and NAc</h1>
+<div id="retrograde-nac-and-mea-to-plcoa" class="section level2 tabset">
+<h2 class="tabset">Retrograde NAc and MeA to plCoA</h2>
+<div id="total-numbers" class="section level3 tabset">
+<h3 class="tabset">Total numbers</h3>
+<pre class="r"><code># set up the object
+retro_mea_nac &lt;- read.csv(&quot;data/projections/retrograde_mea_nac.csv&quot;)
+
+mea_means &lt;- retro_mea_nac[retro_mea_nac$group == &quot;MeA&quot;,] %&gt;% group_by(ap_location) %&gt;% 
+  summarise(sem = sd(number)/sqrt(4), number = mean(number))
+
+nac_means &lt;- retro_mea_nac[retro_mea_nac$group == &quot;NAc&quot;,] %&gt;% group_by(ap_location) %&gt;% 
+  summarise(sem = sd(number)/sqrt(4), number = mean(number))</code></pre>
+<div id="mea" class="section level4">
+<h4>MeA</h4>
+<pre class="r"><code>ggplot(retro_mea_nac[retro_mea_nac$group == &quot;MeA&quot;,], aes(x = ap_location, y = number, group = animal_id)) +
+  geom_line(aes(y = number, x = ap_location), data = mea_means, group = 1, colour = mea_color) +
+  geom_errorbar(aes(ymin = number - sem, ymax = number + sem), 
+                data = mea_means, group = 1, width = 0, colour = mea_color) +
+  geom_line(colour = &quot;gray&quot;) +
+  theme_classic() +
+  scale_x_reverse(limits = c(-1.29, -2.51), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 202)) +
+  ylab(&quot;Labeled Cells&quot;) + xlab(&quot;AP location (mm from bregma)&quot;) +
+  theme(axis.text.x = element_text(colour = &quot;black&quot;), axis.text.y = element_text(colour = &quot;black&quot;),
+        legend.position = &quot;none&quot;, legend.title = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/2-mea_total-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="nac" class="section level4">
+<h4>NAc</h4>
+<pre class="r"><code>ggplot(retro_mea_nac[retro_mea_nac$group == &quot;NAc&quot;,], aes(x = ap_location, y = number, group = animal_id)) +
+  geom_line(aes(y = number, x = ap_location), data = nac_means, group = 1, colour = nac_color) +
+  geom_errorbar(aes(ymin = number - sem, ymax = number + sem), 
+                data = nac_means, group = 1, width = 0, colour = nac_color) +
+  geom_line(colour = &quot;gray&quot;) +
+  theme_classic() +
+  scale_x_reverse(limits = c(-1.29, -2.51), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 120)) +
+  ylab(&quot;Labeled Cells&quot;) + xlab(&quot;AP location (mm from bregma)&quot;) +
+  theme(axis.text.x = element_text(colour = &quot;black&quot;), axis.text.y = element_text(colour = &quot;black&quot;),
+        legend.position = &quot;none&quot;, legend.title = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/3-nac_total-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="proportion" class="section level3">
+<h3>Proportion</h3>
+<pre class="r"><code>new_proportions &lt;- retro_mea_nac %&gt;% group_by(group, ap_location) %&gt;% summarise(number = sum(number))
+divisor &lt;- retro_mea_nac %&gt;% group_by(ap_location) %&gt;% summarise(number = sum(number))
+new_proportions$number[1:13] &lt;- new_proportions$number[1:13] / divisor$number
+new_proportions$number[14:26] &lt;- new_proportions$number[14:26] / divisor$number
+
+new_proportions$ap_location &lt;- factor(new_proportions$ap_location, levels = rev(new_proportions$ap_location[1:13]))
+
+ggplot(new_proportions, aes(x = ap_location, y = number, fill = group)) +
+  geom_bar(position=&quot;stack&quot;, stat=&quot;identity&quot;) +
+  geom_hline(yintercept = 0.568, linetype = &quot;dashed&quot;) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_fill_manual(values = c(mea_color, nac_color)) +
+  labs(fill = &#39;&#39;) + xlab(&quot;&quot;) + ylab(&#39;Proportion in bin&#39;) +
+  theme_classic() +
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))</code></pre>
+<embed src="figure/projections.Rmd/4-label_proportion-1.pdf" width="480" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="projection-in-region" class="section level3 tabset">
+<h3 class="tabset">Projection in Region</h3>
+<pre class="r"><code>retro_list &lt;- split(retro_mea_nac, f = retro_mea_nac$animal_id)
+
+percent_retro &lt;- cbind.data.frame(c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;, &quot;F&quot;, &quot;G&quot;, &quot;H&quot;),
+                                  c(&quot;MeA&quot;, &quot;NAc&quot;, &quot;MeA&quot;, &quot;MeA&quot;, &quot;NAc&quot;, &quot;NAc&quot;, &quot;MeA&quot;, &quot;NAc&quot;),
+                                  unlist(lapply(retro_list, function(x) sum(x$number[1:5]) / sum(x$number))),
+                                  unlist(lapply(retro_list, function(x) sum(x$number[6:8]) / sum(x$number))),
+                                  unlist(lapply(retro_list, function(x) sum(x$number[9:13]) / sum(x$number))))
+colnames(percent_retro) &lt;- c(&quot;id&quot;, &quot;group&quot;, &quot;aplCoA&quot;, &quot;mplCoA&quot;, &quot;pplCoA&quot;)
+
+percent_retro  &lt;- percent_retro %&gt;% pivot_longer(cols = c(aplCoA, mplCoA, pplCoA))
+
+percent_retro %&gt;%
+  group_by(group, name) %&gt;%
+  get_summary_stats(value, type = &quot;mean_se&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["group"],"name":[1],"type":["chr"],"align":["left"]},{"label":["name"],"name":[2],"type":["chr"],"align":["left"]},{"label":["variable"],"name":[3],"type":["fct"],"align":["left"]},{"label":["n"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["mean"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"MeA","2":"aplCoA","3":"value","4":"4","5":"0.732","6":"0.046"},{"1":"MeA","2":"mplCoA","3":"value","4":"4","5":"0.160","6":"0.021"},{"1":"MeA","2":"pplCoA","3":"value","4":"4","5":"0.107","6":"0.026"},{"1":"NAc","2":"aplCoA","3":"value","4":"4","5":"0.218","6":"0.023"},{"1":"NAc","2":"mplCoA","3":"value","4":"4","5":"0.227","6":"0.025"},{"1":"NAc","2":"pplCoA","3":"value","4":"4","5":"0.554","6":"0.006"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<div id="two-way-anova" class="section level4 tabset">
+<h4 class="tabset">Two-way ANOVA</h4>
+<div id="anova" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>proportion_anova &lt;- anova_test(data = percent_retro,
+                               dv = value,
+                               wid = id,
+                               between = group,
+                               within = name)
+
+proportion_anova$ANOVA</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"group","2":"1","3":"6","4":"-6.39000e-14","5":"1.00e+00","6":"","7":"3.45e-31"},{"1":"name","2":"2","3":"12","4":"3.54730e+01","5":"9.17e-06","6":"*","7":"8.55e-01"},{"1":"group:name","2":"2","3":"12","4":"1.04819e+02","5":"2.52e-08","6":"*","7":"9.46e-01"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>percent_retro %&gt;% tukey_hsd(value ~ name * group, paired = FALSE,
+                            p.adjust.method = &quot;bonferroni&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[3],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[9],"type":["chr"],"align":["left"]}],"data":[{"1":"name","2":"aplCoA","3":"mplCoA","4":"0","5":"-2.814602e-01","6":"-0.351102964","7":"-0.21181736","8":"1.61e-08","9":"****","_rn_":"1"},{"1":"name","2":"aplCoA","3":"pplCoA","4":"0","5":"-1.446944e-01","6":"-0.214337213","7":"-0.07505161","8":"1.37e-04","9":"***","_rn_":"2"},{"1":"name","2":"mplCoA","3":"pplCoA","4":"0","5":"1.367658e-01","6":"0.067122949","7":"0.20640855","8":"2.55e-04","9":"***","_rn_":"3"},{"1":"group","2":"MeA","3":"NAc","4":"0","5":"1.110223e-16","6":"-0.046809294","7":"0.04680929","8":"1.00e+00","9":"ns","_rn_":"4"},{"1":"name:group","2":"aplCoA:MeA","3":"mplCoA:MeA","4":"0","5":"-5.719229e-01","6":"-0.694565581","7":"-0.44928032","8":"2.20e-10","9":"****","_rn_":"5"},{"1":"name:group","2":"aplCoA:MeA","3":"pplCoA:MeA","4":"0","5":"-6.250942e-01","6":"-0.747736815","7":"-0.50245155","8":"4.84e-11","9":"****","_rn_":"6"},{"1":"name:group","2":"aplCoA:MeA","3":"aplCoA:NAc","4":"0","5":"-5.139084e-01","6":"-0.636551004","7":"-0.39126574","8":"1.27e-09","9":"****","_rn_":"7"},{"1":"name:group","2":"aplCoA:MeA","3":"mplCoA:NAc","4":"0","5":"-5.049057e-01","6":"-0.627548379","7":"-0.38226312","8":"1.69e-09","9":"****","_rn_":"8"},{"1":"name:group","2":"aplCoA:MeA","3":"pplCoA:NAc","4":"0","5":"-1.782030e-01","6":"-0.300845644","7":"-0.05556038","8":"2.49e-03","9":"**","_rn_":"9"},{"1":"name:group","2":"mplCoA:MeA","3":"pplCoA:MeA","4":"0","5":"-5.317123e-02","6":"-0.175813865","7":"0.06947140","8":"7.39e-01","9":"ns","_rn_":"10"},{"1":"name:group","2":"mplCoA:MeA","3":"aplCoA:NAc","4":"0","5":"5.801458e-02","6":"-0.064628055","7":"0.18065721","8":"6.67e-01","9":"ns","_rn_":"11"},{"1":"name:group","2":"mplCoA:MeA","3":"mplCoA:NAc","4":"0","5":"6.701720e-02","6":"-0.055625430","7":"0.18965983","8":"5.27e-01","9":"ns","_rn_":"12"},{"1":"name:group","2":"mplCoA:MeA","3":"pplCoA:NAc","4":"0","5":"3.937199e-01","6":"0.271077305","7":"0.51636257","8":"8.82e-08","9":"****","_rn_":"13"},{"1":"name:group","2":"pplCoA:MeA","3":"aplCoA:NAc","4":"0","5":"1.111858e-01","6":"-0.011456821","7":"0.23382844","8":"8.87e-02","9":"ns","_rn_":"14"},{"1":"name:group","2":"pplCoA:MeA","3":"mplCoA:NAc","4":"0","5":"1.201884e-01","6":"-0.002454196","7":"0.24283107","8":"5.67e-02","9":"ns","_rn_":"15"},{"1":"name:group","2":"pplCoA:MeA","3":"pplCoA:NAc","4":"0","5":"4.468912e-01","6":"0.324248539","7":"0.56953380","8":"1.21e-08","9":"****","_rn_":"16"},{"1":"name:group","2":"aplCoA:NAc","3":"mplCoA:NAc","4":"0","5":"9.002625e-03","6":"-0.113640007","7":"0.13164526","8":"1.00e+00","9":"ns","_rn_":"17"},{"1":"name:group","2":"aplCoA:NAc","3":"pplCoA:NAc","4":"0","5":"3.357054e-01","6":"0.213062729","7":"0.45834799","8":"9.68e-07","9":"****","_rn_":"18"},{"1":"name:group","2":"mplCoA:NAc","3":"pplCoA:NAc","4":"0","5":"3.267027e-01","6":"0.204060104","7":"0.44934537","8":"1.44e-06","9":"****","_rn_":"19"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="plot" class="section level4">
+<h4>Plot</h4>
+<pre class="r"><code># remove middle for graphing
+percent_retro &lt;- percent_retro[percent_retro$name != &quot;mplCoA&quot;,]
+
+summary &lt;- percent_retro %&gt;%
+    group_by(group, name) %&gt;%
+    summarize(sem = sd(value)/sqrt(n()), value = mean(value))
+
+ggplot(percent_retro, aes(x = name, y = value, group = group, colour = group)) + 
+  geom_bar(stat = &quot;summary&quot;, width = 0.7, position = position_dodge(width=0.8), fill = NA) +
+    geom_errorbar(aes(ymin = value - sem, ymax = value + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = &quot;black&quot;) +
+    geom_point(aes(fill = group, group = group), shape = 21, color = &#39;black&#39;, 
+               position = position_dodge(width = 0.8)) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 1)) +
+    scale_colour_manual(values = c(mea_color, nac_color)) +
+    scale_fill_manual(values = c(mea_color, nac_color)) +
+    xlab(&quot;&quot;) +
+    ylab(&quot;Proportion from zone&quot;) +
+    theme_classic() +
+    theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = &quot;black&quot;),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/8-retro_proportion_plot-1.pdf" width="192" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+</div>
+</div>
+<div id="mea-nac-anterograde-collateralization"
+class="section level1 tabset">
+<h1 class="tabset">MeA-NAc Anterograde Collateralization</h1>
+<pre class="r"><code># set up the object
+ant_col_mea_nac &lt;- read.csv(&quot;data/projections/anterograde_collateralization_mea_nac.csv&quot;)
+ant_col_mea_nac[,3:8] &lt;- ant_col_mea_nac[,3:8] / 10000000
+
+paired_nac &lt;- cbind.data.frame(rep(ant_col_mea_nac$animal_id[1:5], 6),
+                               c(rep(&quot;NAc&quot;, 5), rep(&quot;MeA&quot;, 5), rep(&quot;AHi&quot;, 5), rep(&quot;OT&quot;, 5), 
+                                 rep(&quot;pmCoA&quot;, 5), rep(&quot;BNST&quot;, 5)),
+                               c(rep(1, 5), 
+                                 ant_col_mea_nac$MeA_density[1:5] / ant_col_mea_nac$NAc_density[1:5],
+                                 ant_col_mea_nac$AHi_density[1:5] / ant_col_mea_nac$NAc_density[1:5],
+                                 ant_col_mea_nac$OT_density[1:5] / ant_col_mea_nac$NAc_density[1:5],
+                                 ant_col_mea_nac$pmCoA_density[1:5] / ant_col_mea_nac$NAc_density[1:5],
+                                 ant_col_mea_nac$BNST_density[1:5] / ant_col_mea_nac$NAc_density[1:5]))
+colnames(paired_nac) &lt;- c(&quot;animal_id&quot;, &quot;region&quot;, &quot;NAc_norm_density&quot;)
+paired_nac$region &lt;- factor(paired_nac$region, levels = c(&quot;NAc&quot;, &quot;MeA&quot;, &quot;AHi&quot;, 
+                                                          &quot;OT&quot;, &quot;pmCoA&quot;, &quot;BNST&quot;))
+
+paired_mea &lt;- cbind.data.frame(rep(ant_col_mea_nac$animal_id[6:length(rownames(ant_col_mea_nac))], 6),
+                               c(rep(&quot;MeA&quot;, 7), rep(&quot;NAc&quot;, 7), rep(&quot;AHi&quot;, 7), rep(&quot;OT&quot;, 7), 
+                                 rep(&quot;pmCoA&quot;, 7), rep(&quot;BNST&quot;, 7)),
+                               c(rep(1, times = 7),
+                                 ant_col_mea_nac$NAc_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))],
+                                 ant_col_mea_nac$AHi_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))],
+                                 ant_col_mea_nac$OT_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))],
+                                 ant_col_mea_nac$pmCoA_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))],
+                                 ant_col_mea_nac$BNST_density[6:length(rownames(ant_col_mea_nac))] /
+                                   ant_col_mea_nac$MeA_density[6:length(rownames(ant_col_mea_nac))]))
+colnames(paired_mea) &lt;- c(&quot;animal_id&quot;, &quot;region&quot;, &quot;MeA_norm_density&quot;)
+paired_mea$region &lt;- factor(paired_mea$region, levels = c(&quot;MeA&quot;, &quot;NAc&quot;, &quot;AHi&quot;, 
+                                                          &quot;OT&quot;, &quot;pmCoA&quot;, &quot;BNST&quot;))</code></pre>
+<div id="absolute-difference" class="section level2 tabset">
+<h2 class="tabset">Absolute Difference</h2>
+<div id="mea-1" class="section level3 tabset">
+<h3 class="tabset">MeA</h3>
+<div id="plot-1" class="section level4">
+<h4>Plot</h4>
+<pre class="r"><code>summary &lt;- ant_col_mea_nac %&gt;%
+    group_by(retroaav_site) %&gt;%
+    summarize(sem = sd(MeA_density)/sqrt(n()), MeA_density = mean(MeA_density))
+
+ggplot(ant_col_mea_nac, aes(x = retroaav_site, y = MeA_density, group = retroaav_site, colour = retroaav_site)) + 
+    geom_bar(stat = &quot;summary&quot;, fill = NA) +
+    geom_errorbar(aes(ymin = MeA_density - sem, ymax = MeA_density + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = &quot;black&quot;) +
+    geom_point(aes(fill = retroaav_site, group = retroaav_site), shape = 21, color = &#39;black&#39;) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 5)) +
+    scale_colour_manual(values = c(mea_color, nac_color)) +
+    scale_fill_manual(values = c(mea_color, nac_color)) +
+    xlab(&quot;&quot;) +
+    ylab(&quot;MeA integrated fluorescence (a.u.)&quot;) +
+    theme_classic() +
+    theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = &quot;black&quot;),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/10-ant_col_mea_plot-1.pdf" width="192" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="t-test" class="section level4">
+<h4>T-test</h4>
+<pre class="r"><code>t.test(x = ant_col_mea_nac$MeA_density[ant_col_mea_nac$retroaav_site %in% &quot;MeA&quot;], 
+       y = ant_col_mea_nac$MeA_density[ant_col_mea_nac$retroaav_site %in% &quot;NAc&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  ant_col_mea_nac$MeA_density[ant_col_mea_nac$retroaav_site %in% &quot;MeA&quot;] and ant_col_mea_nac$MeA_density[ant_col_mea_nac$retroaav_site %in% &quot;NAc&quot;]
+t = 3.7684, df = 7.0617, p-value = 0.006885
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 0.5931616 2.5820239
+sample estimates:
+mean of x mean of y 
+2.1163551 0.5287623 </code></pre>
+</div>
+</div>
+<div id="nac-1" class="section level3 tabset">
+<h3 class="tabset">NAc</h3>
+<div id="plot-2" class="section level4">
+<h4>Plot</h4>
+<pre class="r"><code>summary &lt;- ant_col_mea_nac %&gt;%
+    group_by(retroaav_site) %&gt;%
+    summarize(sem = sd(NAc_density)/sqrt(n()), NAc_density = mean(NAc_density))
+
+ggplot(ant_col_mea_nac, aes(x = retroaav_site, y = NAc_density, group = retroaav_site, colour = retroaav_site)) + 
+    geom_bar(stat = &quot;summary&quot;, fill = NA) +
+    geom_errorbar(aes(ymin = NAc_density - sem, ymax = NAc_density + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = &quot;black&quot;) +
+    geom_point(aes(fill = retroaav_site, group = retroaav_site), shape = 21, color = &#39;black&#39;) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 5)) +
+    scale_colour_manual(values = c(mea_color, nac_color)) +
+    scale_fill_manual(values = c(mea_color, nac_color)) +
+    xlab(&quot;&quot;) +
+    ylab(&quot;NAc integrated fluorescence (a.u.)&quot;) +
+    theme_classic() +
+    theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = &quot;black&quot;),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/12-ant_col_nac_plot-1.pdf" width="192" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="t-test-1" class="section level4">
+<h4>T-test</h4>
+<pre class="r"><code>t.test(x = ant_col_mea_nac$NAc_density[ant_col_mea_nac$retroaav_site %in% &quot;NAc&quot;], 
+       y = ant_col_mea_nac$NAc_density[ant_col_mea_nac$retroaav_site %in% &quot;MeA&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  ant_col_mea_nac$NAc_density[ant_col_mea_nac$retroaav_site %in% &quot;NAc&quot;] and ant_col_mea_nac$NAc_density[ant_col_mea_nac$retroaav_site %in% &quot;MeA&quot;]
+t = 6.1839, df = 4.8155, p-value = 0.001843
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 1.777045 4.356255
+sample estimates:
+mean of x mean of y 
+3.5964831 0.5298331 </code></pre>
+</div>
+</div>
+<div id="combined-plot" class="section level3">
+<h3>Combined Plot</h3>
+<pre class="r"><code>ant_col_mea_nac &lt;- ant_col_mea_nac[,1:4]
+
+ant_col_mea_nac &lt;- ant_col_mea_nac %&gt;%
+  gather(key = &quot;region&quot;, value = &quot;density&quot;, MeA_density, NAc_density) %&gt;%
+  convert_as_factor(animal_id, retroaav_site, region)
+levels(ant_col_mea_nac$region) &lt;- c(&quot;MeA&quot;, &quot;NAc&quot;)
+
+summary &lt;- ant_col_mea_nac %&gt;%
+  group_by(retroaav_site, region) %&gt;%
+  summarize(sem = sd(density)/sqrt(n()), density= mean(density))
+
+ggplot(ant_col_mea_nac, aes(x = region, y = density, colour = as.character(retroaav_site))) +
+    geom_bar(stat = &quot;summary&quot;, position = &quot;dodge&quot;, fill = NA) +
+    geom_errorbar(aes(ymin = density - sem, ymax = density + sem), 
+                  data = summary, width = .5, position = position_dodge(width = 0.9)) +
+    #geom_point(aes(group = animal_id), shape = 21, color = &#39;black&#39;) +
+    geom_point(aes(fill = as.character(retroaav_site), 
+                   group = as.character(retroaav_site)), shape = 21, color = &#39;black&#39;, 
+               position = position_dodge(width = 0.8)) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 5)) +
+    scale_colour_manual(values = c(mea_color, nac_color)) +
+    scale_fill_manual(values = c(mea_color, nac_color)) +
+    xlab(&quot;&quot;) +
+    ylab(&quot;Integrated fluorescence (a.u.)&quot; ) +
+    facet_wrap(~ retroaav_site) +
+    theme_classic() +
+    theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = &quot;black&quot;),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/14-ant_col_nac_combined-1.pdf" width="249.6" style="display: block; margin: auto;" type="application/pdf" />
+<div id="two-way-anova-1" class="section level4 tabset">
+<h4 class="tabset">Two-way ANOVA</h4>
+<div id="anova-1" class="section level5">
+<h5>ANOVA</h5>
+<pre class="r"><code>proportion_anova &lt;- anova_test(data = ant_col_mea_nac,
+                               dv = density,
+                               wid = animal_id,
+                               between =  retroaav_site,
+                               within = region)
+
+proportion_anova</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Effect"],"name":[1],"type":["chr"],"align":["left"]},{"label":["DFn"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["DFd"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p<.05"],"name":[6],"type":["chr"],"align":["left"]},{"label":["ges"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"retroaav_site","2":"1","3":"10","4":"4.790","5":"5.30e-02","6":"","7":"0.203","_rn_":"1"},{"1":"region","2":"1","3":"10","4":"5.440","5":"4.20e-02","6":"*","7":"0.203","_rn_":"2"},{"1":"retroaav_site:region","2":"1","3":"10","4":"53.713","5":"2.51e-05","6":"*","7":"0.716","_rn_":"3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="pairwise-comparisons-1" class="section level5">
+<h5>Pairwise comparisons</h5>
+<pre class="r"><code>pairwise_group_anova &lt;- ant_col_mea_nac %&gt;%
+    tukey_hsd(density ~ region * retroaav_site, paired = FALSE,
+              p.adjust.method = &quot;bonferroni&quot;)
+  
+pairwise_group_anova</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["group1"],"name":[2],"type":["chr"],"align":["left"]},{"label":["group2"],"name":[3],"type":["chr"],"align":["left"]},{"label":["null.value"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["estimate"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["conf.low"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["conf.high"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["p.adj"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["p.adj.signif"],"name":[9],"type":["chr"],"align":["left"]}],"data":[{"1":"region","2":"MeA","3":"NAc","4":"0","5":"0.352745833","6":"-0.32159609","7":"1.0270878","8":"2.88e-01","9":"ns","_rn_":"1"},{"1":"retroaav_site","2":"MeA","3":"NAc","4":"0","5":"0.739528624","6":"0.05562109","7":"1.4234362","8":"3.55e-02","9":"*","_rn_":"2"},{"1":"region:retroaav_site","2":"MeA:MeA","3":"NAc:MeA","4":"0","5":"-1.586521985","6":"-2.77122116","7":"-0.4018228","8":"6.39e-03","9":"**","_rn_":"3"},{"1":"region:retroaav_site","2":"MeA:MeA","3":"MeA:NAc","4":"0","5":"-1.587592758","6":"-2.88536568","7":"-0.2898198","8":"1.32e-02","9":"*","_rn_":"4"},{"1":"region:retroaav_site","2":"MeA:MeA","3":"NAc:NAc","4":"0","5":"1.480128021","6":"0.18235510","7":"2.7779009","8":"2.18e-02","9":"*","_rn_":"5"},{"1":"region:retroaav_site","2":"NAc:MeA","3":"MeA:NAc","4":"0","5":"-0.001070773","6":"-1.29884369","7":"1.2967021","8":"1.00e+00","9":"ns","_rn_":"6"},{"1":"region:retroaav_site","2":"NAc:MeA","3":"NAc:NAc","4":"0","5":"3.066650006","6":"1.76887708","7":"4.3644229","8":"1.08e-05","9":"****","_rn_":"7"},{"1":"region:retroaav_site","2":"MeA:NAc","3":"NAc:NAc","4":"0","5":"3.067720779","6":"1.66596581","7":"4.4694757","8":"3.05e-05","9":"****","_rn_":"8"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="within-animal-relative-difference"
+class="section level2 tabset">
+<h2 class="tabset">Within-animal Relative Difference</h2>
+<div id="retro-mea" class="section level3 tabset">
+<h3 class="tabset">retro-MeA</h3>
+<div id="plot-3" class="section level4">
+<h4>Plot</h4>
+<pre class="r"><code>summary &lt;- paired_mea %&gt;%
+    group_by(region) %&gt;%
+    summarize(sem = sd(MeA_norm_density)/sqrt(n()), MeA_norm_density = mean(MeA_norm_density))
+
+ggplot(paired_mea, aes(x = region, y = MeA_norm_density, group = region, colour = region)) + 
+    geom_hline(yintercept = 1, linetype = &quot;dashed&quot;) +
+    geom_line(aes(group = animal_id), colour = &quot;black&quot;) +
+    geom_bar(stat = &quot;summary&quot;, fill = NA) +
+    geom_errorbar(aes(ymin = MeA_norm_density - sem, ymax = MeA_norm_density + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = &quot;black&quot;) +
+    geom_point(aes(fill = region, group = region), shape = 21, color = &#39;black&#39;) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 2)) +
+    scale_colour_manual(values = rep(mea_color, 6)) +
+    scale_fill_manual(values = rep(mea_color, 6)) +
+    xlab(&quot;&quot;) +
+    ylab(&quot;Within-animal integrated fluorescence (% MeA fluorescence)&quot;) +
+    theme_classic() +
+    theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = &quot;black&quot;),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/19-ant_col_retromea_plot-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="paired-t-test" class="section level4">
+<h4>Paired T-test</h4>
+<pre class="r"><code>t.test(x = paired_mea$MeA_norm_density[paired_mea$region %in% &quot;MeA&quot;], 
+       y = paired_mea$MeA_norm_density[paired_mea$region %in% &quot;NAc&quot;],
+       paired = TRUE)</code></pre>
+<pre><code>
+    Paired t-test
+
+data:  paired_mea$MeA_norm_density[paired_mea$region %in% &quot;MeA&quot;] and paired_mea$MeA_norm_density[paired_mea$region %in% &quot;NAc&quot;]
+t = 9.1947, df = 6, p-value = 9.329e-05
+alternative hypothesis: true mean difference is not equal to 0
+95 percent confidence interval:
+ 0.5211422 0.8991019
+sample estimates:
+mean difference 
+       0.710122 </code></pre>
+</div>
+</div>
+<div id="retro-nac" class="section level3 tabset">
+<h3 class="tabset">retro-NAc</h3>
+<div id="plot-4" class="section level4">
+<h4>Plot</h4>
+<pre class="r"><code>summary &lt;- paired_nac %&gt;%
+    group_by(region) %&gt;%
+    summarize(sem = sd(NAc_norm_density)/sqrt(n()), NAc_norm_density = mean(NAc_norm_density))
+
+ggplot(paired_nac, aes(x = region, y = NAc_norm_density, group = region, colour = region)) + 
+    geom_hline(yintercept = 1, linetype = &quot;dashed&quot;) +
+    geom_line(aes(group = animal_id), colour = &quot;black&quot;) +
+    geom_bar(stat = &quot;summary&quot;, fill = NA) +
+    geom_errorbar(aes(ymin = NAc_norm_density - sem, ymax = NAc_norm_density + sem), data = summary, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = &quot;black&quot;) +
+    geom_point(aes(fill = region, group = region), shape = 21, color = &#39;black&#39;) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, 1.2)) +
+    scale_colour_manual(values = rep(nac_color, 6)) +
+    scale_fill_manual(values = rep(nac_color, 6)) +
+    xlab(&quot;&quot;) +
+    ylab(&quot;Within-animal integrated fluorescence (% NAc fluorescence)&quot;) +
+    theme_classic() +
+    theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = &quot;black&quot;),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/21-ant_col_retronac_plot-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="paired-t-test-1" class="section level4">
+<h4>Paired T-test</h4>
+<pre class="r"><code>t.test(x = paired_nac$NAc_norm_density[paired_nac$region %in% &quot;NAc&quot;], 
+       y = paired_nac$NAc_norm_density[paired_nac$region %in% &quot;MeA&quot;],
+       paired = TRUE)</code></pre>
+<pre><code>
+    Paired t-test
+
+data:  paired_nac$NAc_norm_density[paired_nac$region %in% &quot;NAc&quot;] and paired_nac$NAc_norm_density[paired_nac$region %in% &quot;MeA&quot;]
+t = 31.824, df = 4, p-value = 5.812e-06
+alternative hypothesis: true mean difference is not equal to 0
+95 percent confidence interval:
+ 0.7762982 0.9247006
+sample estimates:
+mean difference 
+      0.8504994 </code></pre>
+</div>
+</div>
+</div>
+</div>
+<div id="anterograde-sypegfp" class="section level1">
+<h1>Anterograde SypEGFP</h1>
+<pre class="r"><code># set up the object with pointers
+anterograde_syp &lt;- read.csv(&quot;data/projections/anterograde_syp.csv&quot;, row.names = 1)
+
+# change names to something more recognizable
+rownames(anterograde_syp)[rownames(anterograde_syp) %in% &quot;CPu&quot;] &lt;- &quot;Str&quot;
+rownames(anterograde_syp)[rownames(anterograde_syp) %in% &quot;Tu&quot;] &lt;- &quot;OT&quot;
+rownames(anterograde_syp)[rownames(anterograde_syp) %in% &quot;MPA&quot;] &lt;- &quot;MPOA&quot;
+
+anterograde_syp &lt;- anterograde_syp[!rownames(anterograde_syp) %in% &quot;sox&quot;,]
+anterograde_syp &lt;- anterograde_syp[!rownames(anterograde_syp) %in% &quot;mfb&quot;,]
+
+# get means for each region
+avg_anterograde_syp &lt;- cbind.data.frame(apply(anterograde_syp, 1, mean),
+                                        apply(anterograde_syp, 1, function(x) sd(x)/sqrt(5)))
+colnames(avg_anterograde_syp) &lt;- c(&quot;Mean&quot;, &quot;SEM&quot;)
+
+norm_anterograde_syp &lt;- anterograde_syp / apply(anterograde_syp[76,], 1, mean)
+
+# cut at half of plCoA fluorescence
+norm_anterograde_syp &lt;- norm_anterograde_syp[apply(norm_anterograde_syp, 1, mean) &gt; 0.1,]
+
+summary_anterograde_syp &lt;- cbind.data.frame(apply(norm_anterograde_syp, 1, mean),
+                                            apply(norm_anterograde_syp, 1, 
+                                                  function(x) sd(x)/sqrt(5)),
+                                           rownames(norm_anterograde_syp))
+colnames(summary_anterograde_syp) &lt;- c(&quot;value&quot;, &quot;sem&quot;, &quot;region&quot;)
+
+norm_anterograde_syp &lt;- cbind.data.frame(norm_anterograde_syp, rownames(norm_anterograde_syp))
+colnames(norm_anterograde_syp) &lt;- c(&quot;M1&quot;, &quot;M2&quot;, &quot;M3&quot;, &quot;M4&quot;, &quot;M5&quot;, &quot;region&quot;)
+
+# remove BMA because it could be some leak, and Nv and MPA, which are buoyed by outliers
+norm_anterograde_syp &lt;- norm_anterograde_syp[!rownames(norm_anterograde_syp) %in% c(&quot;BMA&quot;, &quot;MPOA&quot;, &quot;Nv&quot;),]
+summary_anterograde_syp &lt;- summary_anterograde_syp[!rownames(summary_anterograde_syp) %in% c(&quot;BMA&quot;, &quot;MPOA&quot;, &quot;Nv&quot;),]
+
+norm_anterograde_syp &lt;- norm_anterograde_syp %&gt;% pivot_longer(M1:M5)
+norm_anterograde_syp$region &lt;- factor(norm_anterograde_syp$region)
+norm_anterograde_syp$region &lt;- reorder(norm_anterograde_syp$region, -norm_anterograde_syp$value) 
+
+#
+ggplot(data = norm_anterograde_syp, aes(x = region, y = value)) + 
+  geom_bar(stat = &quot;summary&quot;, position = &quot;dodge&quot;, width = 0.5, fill = &quot;grey&quot;) +
+  geom_hline(yintercept = 1, linetype = &quot;dashed&quot;) +
+  geom_errorbar(aes(ymin = value - sem, ymax = value + sem), data = summary_anterograde_syp, 
+                width = .3, position = position_dodge(width = 0.9)) +
+  ylab(&quot;SypEGFP Fiber Density (a.u.)&quot;) +
+  xlab(&quot;&quot;) +
+  scale_y_continuous(expand = c(0, 0)) +
+  coord_cartesian(ylim = c(0, 5)) +
+  theme_classic() +
+  theme(legend.position=&quot;none&quot;,
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(colour = &quot;black&quot;, angle = 45, vjust = 1, hjust = 1),
+        axis.text.y = element_text(colour = &quot;black&quot;))</code></pre>
+<embed src="figure/projections.Rmd/23-anterograde_graph-1.pdf" width="921.6" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="two-color-anterograde-projection-mapping"
+class="section level1">
+<h1>Two color anterograde projection mapping</h1>
+<div id="plcoa-zone-fluorescence" class="section level2">
+<h2>plCoA zone fluorescence</h2>
+<pre class="r"><code># set up the object with pointers
+anterograde_2c &lt;- read.csv(&quot;data/projections/anterograde_2color.csv&quot;, row.names = 1)
+
+anterograde_2c_test &lt;- cbind.data.frame(rownames(anterograde_2c), anterograde_2c) 
+colnames(anterograde_2c_test)[1] &lt;- &quot;id&quot;
+anterograde_2c_test &lt;- anterograde_2c_test %&gt;% pivot_longer(AA:VP)
+
+anterograde_2coa &lt;- anterograde_2c[, colnames(anterograde_2c) %in% c(&quot;group&quot;, 
+                                                                     &quot;plCoAa&quot;, &quot;plCoAm&quot;, &quot;plCoAp&quot;)]
+colnames(anterograde_2coa) &lt;- c(&quot;group&quot;, &quot;aplCoA&quot;, &quot;mplCoA&quot;, &quot;pplCoA&quot;)
+
+summary_anterograde_2coa &lt;- cbind.data.frame(c(rep(&quot;aplCoA&quot;, times = 3), rep(&quot;pplCoA&quot;, times = 3)),
+                                             rep(c(&quot;aplCoA&quot;, &quot;mplCoA&quot;, &quot;pplCoA&quot;), times = 2),
+                                             c(mean(anterograde_2coa[1:5,2]),
+                                               mean(anterograde_2coa[1:5,3]),
+                                               mean(anterograde_2coa[c(1:3,5),4]),
+                                               mean(anterograde_2coa[6:9,2]),
+                                               mean(anterograde_2coa[6:9,3]),
+                                               mean(anterograde_2coa[6:9,4])),
+                                             c(sd(anterograde_2coa[1:5,2])/sqrt(5),
+                                               sd(anterograde_2coa[1:5,3])/sqrt(5),
+                                               sd(anterograde_2coa[c(1:3,5),4])/sqrt(4),
+                                               sd(anterograde_2coa[6:9,2])/sqrt(4),
+                                               sd(anterograde_2coa[6:9,3])/sqrt(4),
+                                               sd(anterograde_2coa[6:9,4])/sqrt(4)))
+colnames(summary_anterograde_2coa) &lt;- c(&quot;group&quot;, &quot;name&quot;, &quot;value&quot;, &quot;sem&quot;)
+
+anterograde_2coa &lt;- anterograde_2coa %&gt;% pivot_longer(aplCoA:pplCoA)
+
+ggplot(anterograde_2coa, aes(x = group, y = value, fill = name)) +
+  geom_bar(stat = &quot;summary&quot;, position = &quot;dodge&quot;) + 
+  geom_errorbar(aes(ymin = value - sem, ymax = value + sem), 
+                data = summary_anterograde_2coa, width = .5, 
+                position = position_dodge(width = 0.9)) +
+  geom_point(aes(group = name), shape = 21, color = &#39;black&#39;, position = position_dodge(width = .9)) +
+  scale_fill_manual(values = c(anterior_color, mid_color, posterior_color)) +
+  xlab(&quot;&quot;) + ylab(&quot;Output proportion&quot;) +
+  scale_y_continuous(expand = c(0,0), limits = c(0, .27)) +
+  theme_classic() +
+  theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = &quot;black&quot;),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/24-plCoA_zones_2color-1.pdf" width="384" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+<div id="everywhere-else-fluorescence" class="section level2">
+<h2>Everywhere else fluorescence</h2>
+<pre class="r"><code># set up the object with pointers
+anterograde_2noncoa &lt;- anterograde_2c[, colnames(anterograde_2c) %in% 
+                                        c(&quot;group&quot;, &quot;MeA&quot;, &quot;Nac&quot;)]
+
+mea_test &lt;- t.test(x = anterograde_2noncoa$MeA[anterograde_2noncoa$group == &quot;aplCoA&quot;],
+       y = anterograde_2noncoa$MeA[anterograde_2noncoa$group == &quot;pplCoA&quot;])
+
+nac_test &lt;- t.test(x = anterograde_2noncoa$Nac[anterograde_2noncoa$group == &quot;aplCoA&quot;],
+       y = anterograde_2noncoa$Nac[anterograde_2noncoa$group == &quot;pplCoA&quot;])
+
+summary_anterograde_2noncoa &lt;- cbind.data.frame(c(rep(&quot;aplCoA&quot;, times = 2), 
+                                                  rep(&quot;pplCoA&quot;, times = 2)),
+                                                c(rep(colnames(anterograde_2noncoa[2:3]), 
+                                                      times = 2)),
+                                                c(colMeans(anterograde_2noncoa[1:5,2:3], 
+                                                           na.rm = TRUE),
+                                                  colMeans(anterograde_2noncoa[6:9,2:3], 
+                                                           na.rm = TRUE)),
+                                                c(apply(anterograde_2noncoa[1:5,2:3], 2, 
+                                                        function(x) sd(x, na.rm = TRUE) /
+                                                          sum(!is.na(x))),
+                                                  apply(anterograde_2noncoa[6:9,2:3], 2, 
+                                                        function(x) sd(x, na.rm = TRUE) / 
+                                                          sum(!is.na(x)))))
+colnames(summary_anterograde_2noncoa) &lt;- c(&quot;group&quot;, &quot;name&quot;, &quot;value&quot;, &quot;sem&quot;)
+
+anterograde_2noncoa &lt;- anterograde_2noncoa %&gt;% pivot_longer(!group)
+
+ggplot(anterograde_2noncoa, aes(x = name, y = value, group = group, colour = group)) + 
+  geom_bar(stat = &quot;summary&quot;, width = 0.7, position = position_dodge(width=0.8), fill = NA) +
+    geom_errorbar(aes(ymin = value - sem, ymax = value + sem), data = summary_anterograde_2noncoa, 
+                  width = 0.3, position = position_dodge(width = 0.8), colour = &quot;black&quot;) +
+    geom_point(aes(fill = group, group = group), shape = 21, color = &#39;black&#39;, 
+               position = position_dodge(width = 0.8)) +
+    scale_y_continuous(expand = c(0,0), limits = c(0, .08)) +
+    scale_colour_manual(values = c(anterior_color, posterior_color)) +
+    scale_fill_manual(values = c(anterior_color, posterior_color)) +
+    xlab(&quot;&quot;) +
+    ylab(&quot;Output proportion&quot;) +
+    theme_classic() +
+    theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.x = element_text(colour = &quot;black&quot;),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/25-brain_2color-1.pdf" width="192" style="display: block; margin: auto;" type="application/pdf" />
+</div>
+</div>
+<div id="two-color-anterograde-projection-mapping-1"
+class="section level1">
+<h1>Two color anterograde projection mapping</h1>
+<div id="plcoa-zone-fluorescence-1" class="section level2">
+<h2>plCoA zone fluorescence</h2>
+<pre class="r"><code># set up the object with pointers
+anterograde_cre &lt;- read.csv(&quot;data/projections/anterograde_cre.csv&quot;, row.names = 1)
+
+anterograde_cre_nonamy &lt;- anterograde_cre[, !colnames(anterograde_cre) %in% 
+                                        c(&quot;BMA&quot;, &quot;plCoAa&quot;, &quot;plCoAm&quot;, &quot;plCoAp&quot;, &quot;NAc&quot;)]
+
+summary_anterograde_cre_nonamy  &lt;- cbind.data.frame(c(rep(&quot;Slc17a6-Cre&quot;, times = 16), 
+                                                  rep(&quot;Slc17a7-Cre&quot;, times = 16)),
+                                                  rep(colnames(anterograde_cre_nonamy[2:17]), 
+                                                      times = 2),
+                                             c(colMeans(anterograde_cre_nonamy[1:4,2:17], 
+                                                           na.rm = TRUE),
+                                                  colMeans(anterograde_cre_nonamy[5:9,2:17], 
+                                                           na.rm = TRUE)),
+                                                c(apply(anterograde_cre_nonamy[1:4,2:17], 2, 
+                                                        function(x) sd(x, na.rm = TRUE) /
+                                                          sum(!is.na(x))),
+                                                  apply(anterograde_cre_nonamy[5:9,2:17], 2, 
+                                                        function(x) sd(x, na.rm = TRUE) / 
+                                                          sum(!is.na(x)))))
+colnames(summary_anterograde_cre_nonamy) &lt;- c(&quot;group&quot;, &quot;name&quot;, &quot;value&quot;, &quot;sem&quot;)
+
+anterograde_cre_nonamy &lt;- anterograde_cre_nonamy %&gt;% pivot_longer(!group)</code></pre>
+<pre class="r"><code>ggplot(anterograde_cre_nonamy[anterograde_cre_nonamy$name %in% c(&quot;Nac&quot;, &quot;MeA&quot;),], aes(x = name, y = value, group = group, colour = group)) +
+  geom_bar(stat = &quot;summary&quot;, width = 0.7, position = position_dodge(width=0.8), fill = NA) +
+  geom_errorbar(aes(ymin = value - sem, ymax = value + sem), 
+                data = summary_anterograde_cre_nonamy[summary_anterograde_cre_nonamy$name %in% c(&quot;Nac&quot;, &quot;MeA&quot;),], width = .5, 
+                position = position_dodge(width = 0.8), color = &quot;black&quot;) +
+  geom_point(aes(fill = group, group = group), shape = 21, color = &#39;black&#39;, 
+               position = position_dodge(width = 0.8)) +
+  scale_colour_manual(values = c(VGlut2_color, VGlut1_color)) +
+  scale_fill_manual(values = c(VGlut2_color, VGlut1_color)) +
+  xlab(&quot;&quot;) + ylab(&quot;Output proportion&quot;) +
+  scale_y_continuous(expand = c(0,0), limits = c(0, 14)) +
+  theme_classic() +
+  theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/27-nacmea_solo-1.pdf" width="249.6" style="display: block; margin: auto;" type="application/pdf" />
+<pre class="r"><code>ggplot(anterograde_cre_nonamy[anterograde_cre_nonamy$name %in% c(&quot;Nac&quot;, &quot;MeA&quot;),], aes(x = group, y = value, group = name, colour = name)) +
+  geom_bar(stat = &quot;summary&quot;, width = 0.7, position = position_dodge(width=0.8), fill = NA) +
+  geom_errorbar(aes(ymin = value - sem, ymax = value + sem), 
+                data = summary_anterograde_cre_nonamy[summary_anterograde_cre_nonamy$name %in% c(&quot;Nac&quot;, &quot;MeA&quot;),], width = .5, 
+                position = position_dodge(width = 0.8), color = &quot;black&quot;) +
+  geom_point(aes(fill = name, group = name), shape = 21, color = &#39;black&#39;, 
+               position = position_dodge(width = 0.8)) +
+  scale_colour_manual(values = c(mea_color, nac_color)) +
+  scale_fill_manual(values = c(mea_color, nac_color)) +
+  xlab(&quot;&quot;) + ylab(&quot;Output proportion&quot;) +
+  scale_y_continuous(expand = c(0,0), limits = c(0, 14)) +
+  theme_classic() +
+  theme(legend.position=&quot;none&quot;,
+          axis.ticks.x=element_blank(),
+          axis.text.y = element_text(colour = &quot;black&quot;),
+          strip.background = element_blank())</code></pre>
+<embed src="figure/projections.Rmd/28-vg1vg2_solo-1.pdf" width="249.6" style="display: block; margin: auto;" type="application/pdf" />
+<pre class="r"><code>anterograde_cre_nonamy_vg1 &lt;- anterograde_cre_nonamy[anterograde_cre_nonamy$group %in% &quot;Slc17a7-Cre&quot;,]
+
+anterograde_cre_nonamy_vg2 &lt;- anterograde_cre_nonamy[anterograde_cre_nonamy$group %in% &quot;Slc17a6-Cre&quot;,]
+
+t.test(x = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == &quot;Nac&quot;],
+       y = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == &quot;Nac&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  anterograde_cre_nonamy_vg1$value[anterograde_cre_nonamy_vg1$name == &quot;Nac&quot;] and anterograde_cre_nonamy_vg2$value[anterograde_cre_nonamy_vg2$name == &quot;Nac&quot;]
+t = 2.8106, df = 6.9999, p-value = 0.02612
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 0.5308554 6.1602424
+sample estimates:
+mean of x mean of y 
+ 5.467555  2.122006 </code></pre>
+<pre class="r"><code>t.test(x = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == &quot;MeA&quot;],
+       y = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == &quot;MeA&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  anterograde_cre_nonamy_vg1$value[anterograde_cre_nonamy_vg1$name == &quot;MeA&quot;] and anterograde_cre_nonamy_vg2$value[anterograde_cre_nonamy_vg2$name == &quot;MeA&quot;]
+t = -2.1872, df = 4.4584, p-value = 0.08699
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -8.8428435  0.8748111
+sample estimates:
+mean of x mean of y 
+ 3.258175  7.242191 </code></pre>
+<pre class="r"><code>t.test(x = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == &quot;Nac&quot;],
+       y = anterograde_cre_nonamy_vg1$value[ anterograde_cre_nonamy_vg1$name == &quot;MeA&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  anterograde_cre_nonamy_vg1$value[anterograde_cre_nonamy_vg1$name == &quot;Nac&quot;] and anterograde_cre_nonamy_vg1$value[anterograde_cre_nonamy_vg1$name == &quot;MeA&quot;]
+t = 1.8261, df = 7.9154, p-value = 0.1057
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.5858186  5.0045791
+sample estimates:
+mean of x mean of y 
+ 5.467555  3.258175 </code></pre>
+<pre class="r"><code>t.test(x = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == &quot;Nac&quot;],
+       y = anterograde_cre_nonamy_vg2$value[ anterograde_cre_nonamy_vg2$name == &quot;MeA&quot;])</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  anterograde_cre_nonamy_vg2$value[anterograde_cre_nonamy_vg2$name == &quot;Nac&quot;] and anterograde_cre_nonamy_vg2$value[anterograde_cre_nonamy_vg2$name == &quot;MeA&quot;]
+t = -2.831, df = 4.3051, p-value = 0.04345
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -10.0044469  -0.2359228
+sample estimates:
+mean of x mean of y 
+ 2.122006  7.242191 </code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.5
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/New_York
+tzcode source: internal
+
+attached base packages:
+[1] grid      stats     graphics  grDevices datasets  utils     methods  
+[8] base     
+
+other attached packages:
+ [1] heatmap3_1.1.9         dendextend_1.17.1      pvclust_2.2-0         
+ [4] ggtree_3.10.0          matrixStats_1.2.0      farver_2.1.1          
+ [7] colorjam_0.0.27.900    jamba_0.0.98.900       knitr_1.45            
+[10] ggpubr_0.6.0           emmeans_1.10.0         rstatix_0.7.2         
+[13] multcomp_1.4-25        TH.data_1.1-2          survival_3.5-7        
+[16] mvtnorm_1.2-4          car_3.1-2              carData_3.0-5         
+[19] gmodels_2.18.1.1       zoo_1.8-12             scales_1.3.0          
+[22] colorspace_2.1-0       gridExtra_2.3          cowplot_1.1.3         
+[25] viridis_0.6.5          viridisLite_0.4.2      spatstat_3.0-7        
+[28] spatstat.linnet_3.1-4  spatstat.model_3.2-10  rpart_4.1.23          
+[31] spatstat.explore_3.2-6 nlme_3.1-164           spatstat.random_3.2-2 
+[34] spatstat.geom_3.2-8    spatstat.data_3.0-4    RColorBrewer_1.1-3    
+[37] colorRamps_2.3.1       lubridate_1.9.3        forcats_1.0.0         
+[40] stringr_1.5.1          dplyr_1.1.4            purrr_1.0.2           
+[43] readr_2.1.5            tidyr_1.3.1            tibble_3.2.1          
+[46] ggplot2_3.4.4          tidyverse_2.0.0        MASS_7.3-60.0.1       
+[49] workflowr_1.7.1       
+
+loaded via a namespace (and not attached):
+ [1] rstudioapi_0.15.0     jsonlite_1.8.8        magrittr_2.0.3       
+ [4] estimability_1.4.1    spatstat.utils_3.0-4  rmarkdown_2.25       
+ [7] fs_1.6.3              vctrs_0.6.5           memoise_2.0.1        
+[10] htmltools_0.5.7       broom_1.0.5           gridGraphics_0.5-1   
+[13] sass_0.4.8            bslib_0.6.1           sandwich_3.1-0       
+[16] cachem_1.0.8          whisker_0.4.1         lifecycle_1.0.4      
+[19] pkgconfig_2.0.3       Matrix_1.6-5          R6_2.5.1             
+[22] fastmap_1.1.1         digest_0.6.34         aplot_0.2.2          
+[25] patchwork_1.2.0       ps_1.7.6              rprojroot_2.0.4      
+[28] tensor_1.5            labeling_0.4.3        fansi_1.0.6          
+[31] spatstat.sparse_3.0-3 timechange_0.3.0      gdata_3.0.0          
+[34] httr_1.4.7            polyclip_1.10-6       abind_1.4-5          
+[37] mgcv_1.9-1            compiler_4.3.1        withr_3.0.0          
+[40] backports_1.4.1       highr_0.10            ggsignif_0.6.4       
+[43] gtools_3.9.5          tools_4.3.1           ape_5.7-1            
+[46] httpuv_1.6.14         goftest_1.2-3         glue_1.7.0           
+[49] callr_3.7.3           promises_1.2.1        getPass_0.2-4        
+[52] generics_0.1.3        gtable_0.3.4          tzdb_0.4.0           
+[55] hms_1.1.3             utf8_1.2.4            pillar_1.9.0         
+[58] yulab.utils_0.1.4     later_1.3.2           splines_4.3.1        
+[61] treeio_1.27.0.002     lattice_0.22-5        renv_1.0.3           
+[64] deldir_2.0-2          tidyselect_1.2.0      git2r_0.33.0         
+[67] xfun_0.41             stringi_1.8.3         lazyeval_0.2.2       
+[70] ggfun_0.1.4           yaml_2.3.8            evaluate_0.23        
+[73] codetools_0.2-19      BiocManager_1.30.22   ggplotify_0.1.2      
+[76] cli_3.6.2             xtable_1.8-4          munsell_0.5.0        
+[79] processx_3.8.3        jquerylib_0.1.4       Rcpp_1.0.12          
+[82] fastcluster_1.2.6     parallel_4.3.1        tidytree_0.4.6       
+[85] rlang_1.1.3          </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

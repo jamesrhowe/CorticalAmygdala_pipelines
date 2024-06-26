@@ -81,9 +81,9 @@ find_optimum_pcs <- function(pc_array){
 }
 
 # adapted from Harvard Chan Bioinformatics Core instructions
-find_optimum_pcs_atac <- function(pc_array){
+find_optimum_pcs_atac <- function(pc_array, reduction){
 
-  pct <- pc_array[["lsi_bin"]]@stdev / sum(pc_array[["lsi_bin"]]@stdev) * 100
+  pct <- pc_array[[reduction]]@stdev / sum(pc_array[[reduction]]@stdev) * 100
 
   # Calculate cumulative percents for each PC
   cumu <- cumsum(pct)
@@ -113,15 +113,16 @@ targeted_comp_markers <- function(x, i1, i2, gene_vector){
 
 pc_list <- c(1, 2, 3, 50)
 
-# Dimensionality reduction IDs
-dr_params <- cbind.data.frame(c("PCA", "tSNE", "UMAP"),
-                                  c("pca", "tsne", "umap"))
-colnames(dr_params) <- c("name", "type")
+# Dimensionality reduction IDs for atac
+dr_params_atac <- cbind.data.frame(c("tSNE", "UMAP"),
+                              c("tsne", "umap"))
+colnames(dr_params_atac) <- c("name", "type")
 
 
-vln_metrics <- cbind.data.frame(c("nCount_RNA", "nFeature_RNA", "Mito_proportion", "Ribo_proportion"),
-                                    c("UMIs", "Genes", "% Mito", "% Ribo"))
-colnames(vln_metrics) <- c("id", "label")
+vln_metrics_atac <- cbind.data.frame(c("nCount_ATAC", "nFeature_ATAC", "TSS.enrichment",
+                                       "nucleosome_signal", 'fraction_reads_in_peaks'),
+                                    c("Peak fragments", "Peaks", "TSS enrichment", "Nucleosome_signal", "FRIP"))
+colnames(vln_metrics_atac) <- c("id", "label")
 
 batch_region <- c("Batch", "Region")
 identity_region <- c("orig.ident", "Region")
@@ -168,6 +169,31 @@ create_dendrogram <- function(array_id, label_id, color_id){
 
   output <- list(medians, dend)
   names(output) <- c("Medians", "Dendrogram")
+
+  return(output)
+}
+
+create_dendrogram_projection <- function(array_id, label_id, color_id){
+
+  pivoted_matrix <- pivot_wider(array_id)
+  regions <- as.character(c(pivoted_matrix[,1])$region)
+  pivoted_matrix <- as.data.frame(pivoted_matrix[,2:5])
+  rownames(pivoted_matrix) <- regions
+
+  pvclust_matrix <- pvclust(data = t(pivoted_matrix), method.dist = "cor",
+                            method.hclust = "average", nboot = 100, parallel = TRUE)
+
+  dend <- as.dendrogram(pvclust_matrix$hclust)
+
+  color_labels <- setNames(color_id, levels(label_id))
+
+  dend <- dend %>% set("labels_cex", 0.7)
+  dend <- dend %>% set("leaves_pch", 19) %>% set("leaves_cex", 0.5)
+  dend <- dend %>% set("labels_col", color_labels[labels(dend)])
+  dend <- dend %>% set("leaves_col", color_labels[labels(dend)])
+
+  output <- list(array_id, dend)
+  names(output) <- c("Data", "Dendrogram")
 
   return(output)
 }
@@ -356,6 +382,19 @@ marker_features <- c("Syp", "Eno2", # pan-neuronal
                      "Slc47a1", "Rspo3", # ABC
                      "Slc6a13", "Slc13a4") # VLMC
 
+marker_features_full_atac <- c("Syp", "Eno2", # pan-neuronal
+                     "Slc17a7", "Slc17a6", # glutamatergic neuron
+                     "Gad1", "Gad2", # GABAergic neuron
+                     "Aldh1l1", "Aqp4", # astrocyte
+                     "Tmem119", "Ptprc", # microglia
+                     "Pdgfra", "Cspg4", #OPC
+                     "Bmp4", "Enpp6", # NFOL
+                     "Mog", "Mal", # oligodendrocyte/OLG
+                     "Cldn5", # endothelial cell
+                     "Kcnj8", "Abcc9", # mural cell
+                     "Slc47a1", "Rspo3", # ABC
+                     "Slc6a13", "Slc13a4") # VLMC
+
 marker_features_half <- c("Syp",
                           "Slc17a7", "Slc17a6", # glutamatergic neuron
                           "Gad2", # GABAergic neuron
@@ -396,3 +435,5 @@ marker_features_glia_half <- c("Aqp4", # Astrocytes
 micro_markers <- c("Tmem119", "Ptprc", # general markers
                    "Cd83", "Csf1", # dendritic cells
                    "F13a1", "Aoah") # macrophages
+
+enrichment_cutoff <- 4

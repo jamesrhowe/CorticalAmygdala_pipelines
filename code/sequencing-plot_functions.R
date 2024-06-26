@@ -436,6 +436,30 @@ relative_bar_plot_formatted <- function(x, bar_group, stack_group, colors){
   return(plot)
 }
 
+relative_bar_plot_formatted_ranked <- function(x, bar_group, stack_group, colors){
+
+  plot_prop_array <- table(x[[bar_group]], x[[stack_group]])
+  plot_prop_array <- as.data.frame(plot_prop_array / rowSums(plot_prop_array))
+
+  plot_prop_array %>%
+    filter(Var2 == "aplCoA") %>%
+    mutate(x = factor(Var1, levels = Var1[order(Freq)])) %>%
+    pull(x) %>%
+    levels -> x_levels
+
+  plot_prop_array <- plot_prop_array %>%
+                     mutate(Var1 = factor(Var1, levels = x_levels))
+
+  plot <- ggplot(plot_prop_array, aes(x = Var1, y = Freq, fill = Var2)) +
+    geom_bar(position="stack", stat="identity") + scale_y_continuous(expand = c(0,0)) +
+    scale_fill_manual(values = colors) +
+    labs(fill = '') + xlab('') + ylab('Proportion in region') +
+    theme_classic() +
+    theme(axis.ticks.x = element_blank(),
+          axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  return(plot)
+}
+
 ## Cluster distance plot ##
 # Takes median distance between clusters and the dendrogram to show relatedness between different clusters
 

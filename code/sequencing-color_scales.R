@@ -168,11 +168,11 @@ nfol_type_colors <- c("#E05A00", # NFOL.1/Frmd4a
 mol_type_colors <- c("#844421", # MOL.1/Mast4
                      "#553C2B") # MOL.2/Prom1
 
-abc_type_colors <- c("#FBC901", # ABC.1/Slc4a10
+vlmc_type_colors <- c("#FBC901", # ABC.1/Slc4a10
                      "#FFB302",
                      "#8B8000") # ABC.2/Ranbp3l
 
-vlmc_type_colors <- c("#FAFA0F", # VLMC.1/Mgat4c
+abc_type_colors <- c("#FAFA0F", # VLMC.1/Mgat4c
                       "#FDFD96", # VLMC.2/Bnc2
                       "#F0E68C") # VLMC.3/Hecw2
 
@@ -283,4 +283,5 @@ for (i in 1:length(vlmc_type_colors)){
 }
 
 batch_color_list <- c("batch_colors_rna", "region_colors")
+batch_color_list_atac <- c("batch_colors_atac", "region_colors")
 tissue_color_list <- c("tissue_colors", "class_colors")
